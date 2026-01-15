@@ -34,7 +34,7 @@ const Login = () => {
 
     // Handle login logic here
     console.log('Login submitted:', { email, password, rememberMe });
-    // Navigate to dashboard or call your API
+     navigate('/dashboard');
   };
 
   return (
