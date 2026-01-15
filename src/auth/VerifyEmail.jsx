@@ -1,108 +1,163 @@
-import otpImage from '../../public/image/otp.png';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import React, { useState } from 'react';
-import OTPInput from 'react-otp-input'; 
-
-import { Button } from 'antd';
-import { MdOutlineArrowBackIos } from 'react-icons/md';
- 
- 
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const VerifyOtp = () => {
-    // const location = useLocation()
-    // const queryParams = new URLSearchParams(location.search)
-    // const [error, setError] = useState('')
-    // const email = queryParams.get('email')
-    const [otp, setOtp] = useState('');
-     const navigate = useNavigate()
-//  const [verifyOtp, {isLoading}] = useVerifyEmailMutation()
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const handleChange = (index, value) => {
+    if (value.length > 1) return;
+    if (!/^\d*$/.test(value)) return;
 
-    //  const verifyData = {
-    //     oneTimeCode : otp,
-    //        email: email 
-    //  }
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+    setError('');
 
-    const sendOtp = async() => { 
-        console.log(otp);
-        navigate(`/updatepassword`)
-        // try{
-        //     const res = await verifyOtp(verifyData).unwrap()
-        //     if(res?.code == 200 ){
-        //         toast.success(res?.message)
-        //         setTimeout(() => {
-        //             navigate(`/updatepassword?email=${email}`)
-        //         }, 1000)
-        //     }
-        // }catch(error){
-        //     console.log(error);
-        //     setError(error?.data?.message)
-            
-        // }
-        
+    // Auto focus next input
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`otp-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+  };
 
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`);
+      if (prevInput) prevInput.focus();
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData('text').slice(0, 6);
+    if (!/^\d+$/.test(pasteData)) return;
+
+    const newOtp = [...otp];
+    for (let i = 0; i < pasteData.length; i++) {
+      newOtp[i] = pasteData[i];
+    }
+    setOtp(newOtp);
+  };
+
+  const handleVerify = () => {
+    const otpValue = otp.join('');
     
+    if (otpValue.length !== 6) {
+      setError('Please enter complete OTP');
+      return;
     }
 
-    return (
-        <div className='w-full max-w-[1296px] shadow-xl mt-12 sm:mt-24 mx-auto rounded-[8px] p-4 sm:p-10'>
-            {/* <Toaster position='top-center' reverseOrder = {false} /> */}
-            
-            <div className="flex flex-col sm:flex-row md:justify-around justify-between items-center gap-4 sm:gap-10">
-                <div className='w-full sm:w-[480px] flex justify-center sm:justify-start'>
-                    <img src={otpImage} alt="OTP Illustration" className='w-[200px] sm:w-[480px] h-auto' />
-                </div>
-                <div className='w-full sm:w-[494px] mt-4 sm:mt-0'>
-                <div className="flex items-center gap-2">
-         <MdOutlineArrowBackIos onClick={() => navigate('/forgotpassword')} className="text-2xl cursor-pointer" />
+    console.log('Verify OTP:', otpValue);
+    // Navigate to update password page or call your API
+    navigate('/updatepassword');
+  };
 
-          <h1 className="text-[#222222] font-medium text-xl md:text-2xl">
-            Send Otp!
-          </h1>
-         </div>
-                    <p className='font-poppins text-[14px] sm:text-[16px] font-normal mt-2'>
-                        We'll send a verification code to your email. Check your inbox and enter the code here.
-                    </p>
-                    <div className="py-4 sm:py-6">
-                        <div className="flex justify-center sm:justify-start items-center gap-2 outline-none focus:border-blue-400 w-full">
-                        <OTPInput
-                                value={otp}
-                                onChange={setOtp}
-                                numInputs={6}
-                                inputStyle={{
-                                    height: "52px",
-                                    width: "55px", // Default width for mobile
-                                    background: "transparent",
-                                    border: "1px solid green",
 
-                                    borderRadius: '10px',
-                                    marginRight: "8px",
-                                    outline: "none",
-                                    // Adjusting width for larger screens
-                                    sm: {
-                                        width: "80px" // Width for larger screens
-                                    }
-                                }}
-                                renderSeparator={<span className="md:w-6"> </span>}
-                                renderInput={(props) => <input {...props} className="sm:w-[60px]" />}
-                            />
-                        </div>
-                        <div className='flex justify-between items-center mt-4 sm:mt-6'>
-                            <small className='text-[14px] sm:text-[16px] font-normal'>Didn’t receive the code?</small>
-                            <small className='text-[14px] sm:text-[16px] font-medium text-[#00BF63] cursor-pointer'>Resend</small>
-                        </div>
-                    </div>
-                        {/* <p className="text-red-500 font-medium">{error}</p> */}
-                     
-                        <Button  onClick={sendOtp} 
-                        className="block w-full h-[52px] px-2 py-4 mt-2 text-[#FFFFFF] !bg-[#594756]"
-                         >
-                            Verify
-                        </Button>
-                    
-                </div>
+  const handleResend = () => {
+    console.log('Resend OTP');
+    setOtp(['', '', '', '', '', '']);
+    setError('');
+    // Add your resend OTP logic here
+  };
+
+  const handleBack = () => {
+    window.history.back();
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-7xl bg-white rounded-2xl overflow-hidden">
+        <div className="flex flex-col md:flex-row">
+          {/* Left Side - Illustration */}
+          <div className="md:w-1/2 bg-gradient-to-br border-r border-[#20BFA9] from-cyan-50 to-teal-50 p-8 md:p-12 flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center">
+              <img 
+                src="/image/otp.png" 
+                alt="OTP Verification" 
+                className="w-full h-auto max-w-md object-contain"
+              />
             </div>
+          </div>
+
+          {/* Right Side - Form */}
+          <div className="md:w-1/2 p-8 md:p-12 flex items-center">
+            <div className="w-full max-w-md mx-auto">
+              {/* Back button */}
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
+
+              {/* Header */}
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">Verify OTP!</h1>
+              <p className="text-gray-600 mb-8">
+                We've sent a verification code to your email. Check your inbox and enter the code here.
+              </p>
+
+              {/* OTP Input */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-4">
+                    Enter OTP Code
+                  </label>
+                  <div className="flex gap-2 justify-between" onPaste={handlePaste}>
+                    {otp.map((digit, index) => (
+                      <input
+                        key={index}
+                        id={`otp-${index}`}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleChange(index, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        className={`w-12 h-14 text-center text-xl font-semibold border-2 ${
+                          error ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition`}
+                      />
+                    ))}
+                  </div>
+                  {error && (
+                    <p className="mt-2 text-sm text-red-500">{error}</p>
+                  )}
+                </div>
+
+                {/* Resend OTP */}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">Didn't receive the code?</span>
+                  <button
+                    onClick={handleResend}
+                    className="text-cyan-500 hover:text-cyan-600 font-medium"
+                  >
+                    Resend
+                  </button>
+                </div>
+
+                {/* Verify Button */}
+                <button
+                  onClick={handleVerify}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-teal-500 text-white py-3 rounded-lg font-semibold hover:from-cyan-600 hover:to-teal-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  Verify
+                </button>
+              </div>
+
+              {/* Additional info */}
+              <div className="mt-8 text-center">
+                <p className="text-sm text-gray-600">
+                  The code will expire in <span className="font-semibold text-cyan-600">10 minutes</span>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default VerifyOtp;
