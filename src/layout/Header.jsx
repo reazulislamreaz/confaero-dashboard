@@ -79,33 +79,16 @@ const Header = () => {
 const handleMenuVisibility = (visible) => {
   setMenuVisible(visible);
 };
-
-// const menu = (
-//   <Menu className={`transition ease-in-out duration-300 transform ${menuVisible ? 'custom-dropdown-menu-visible' : 'custom-dropdown-menu'}`}>
-//     <Menu.Item className=" hover:!bg-[#193664]" key="1">
-//       <Link to="dashboard/profile" className=" hover:!bg-[#193664] hover:!text-white">Profile</Link>
-//     </Menu.Item>
-//     <Menu.Item  className=" hover:!bg-[#193664]" key="2">
-//       <p onClick={openModal} className="hover:!bg-[#193664] hover:!text-white">Change Password</p>
-//     </Menu.Item>
-//     <Menu.Item  className=" hover:!bg-[#193664]" key="3">
-//       <p onClick={handleLogOut} className="hover:!bg-[#193664] hover:!text-white">Logout</p>
-//     </Menu.Item>
-//   </Menu>
-// );
-
-
+ 
 
   return (
-    <div className=" flex justify-between items-center shadow-md border-b-2 mb-[24px] p-[16px] rounded-md bg-[#FFF]"> 
+    <div className=" flex justify-between items-center shadow-md mb-[24px] p-[16px] rounded-md bg-[#FFF]"> 
     {/* <Toaster /> */}
-     <div className="
-     w">
-      <p className="text-header 
-      wText font-medium">Welcome !</p>
-      {/* <h1>{profile?.data?.attributes?.name}</h1> */}
-      <h1 className="
-      wText">{"absayed"}</h1>
+     <div className="flex items-center gap-1.5
+     ">
+      <img className="h-12 rounded-full" src="https://randomuser.me/api/portraits/men/57.jpg" alt=""/>
+      <h1 className=" font-bold">AbSayed  <br /><span className="text-#2E978C font-normal">Organizer Panel</span></h1>
+       
      </div>
 
       <div className="flex gap-5 items-center">
@@ -131,13 +114,7 @@ const handleMenuVisibility = (visible) => {
         </div> */}
         <div>
         {/* <Dropdown className="px-2" overlay={menu} trigger={['click']} onVisibleChange={handleMenuVisibility}> */}
-    <a className="flex items-center 
-    w cursor-pointer 
-    wText">
-      <Avatar src={'https://randomuser.me/api/portraits/men/57.jpg'} className="mr-2 h-[52px] w-[52px]" />
-   
-      AbSayed  
-    </a>
+  
   {/* </Dropdown> */}
         </div>
         <Modal

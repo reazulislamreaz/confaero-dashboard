@@ -49,7 +49,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="lg:w-[250px] xl:w-[300px] md:w-[200px] sm:w-[120px] border-r-2 !bg-[#0F2D15] border-[#21612E] w-[120px] flex flex-col justify-between h-full min-h-screen rounded-md">
+    <div className="lg:w-[250px] xl:w-[300px] md:w-[200px] sm:w-[120px] border-r-2 !bg-[] border-[#32A69A] w-[120px] flex flex-col justify-between h-full min-h-screen rounded-md">
       <div>
         <div className="p-[10px] grid justify-items-stretch  sm:p-[16px]">
           <img className="h-16 rounded-lg justify-self-center" src={logo} alt="Logo" />
@@ -62,8 +62,8 @@ const Sidebar = () => {
               to="home"
               className={({ isActive }) =>
                 isActive
-                  ? "flex cursor-pointer items-center text-[18px] font-medium p-[10px] bg-[#21612E] text-[#D4D4D4] m-[6px] rounded-lg"
-                  : "flex text-[#B8B8B8] cursor-pointer items-center text-[18px] font-medium p-[10px] m-[6px] rounded-lg"
+                  ? "flex cursor-pointer items-center text-[18px] font-medium p-[10px] bg-[#32A69A] text-[#F6F6F6] m-[6px] rounded-lg"
+                  : "flex text-[#252525] cursor-pointer items-center text-[18px] font-medium p-[10px] m-[6px] rounded-lg"
               }
             >
               <BiSolidDashboard className="h-7 w-7 lg:h-5 lg:w-5"/>
@@ -74,8 +74,8 @@ const Sidebar = () => {
               to="earning"
               className={({ isActive }) =>
                 isActive
-                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#21612E] text-[#D4D4D4] rounded-lg"
-                  : "flex text-[#B8B8B8] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
               }
             >
               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -86,8 +86,8 @@ const Sidebar = () => {
               to="users"
               className={({ isActive }) =>
                 isActive
-                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#21612E] text-[#D4D4D4] rounded-lg"
-                  : "flex text-[#B8B8B8] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
               }
             >
               <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -103,8 +103,8 @@ const Sidebar = () => {
               to="settings"
               className={({ isActive }) =>
                 isActive
-                  ? "flex p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium bg-[#21612E] text-[#D4D4D4] rounded-lg"
-                  : "flex text-[#B8B8B8] p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium   rounded-lg"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium   rounded-lg"
               }
             >
               <CiSettings className="h-8 w-8 lg:h-5 lg:w-5" />
