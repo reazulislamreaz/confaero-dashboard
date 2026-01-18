@@ -1,257 +1,209 @@
 import React, { useState } from 'react';
-import { 
-  Table, 
-  Input, 
-  DatePicker, 
-  Button, 
-  Typography, 
-  Space,
-  Pagination,
-  Modal,
-  Descriptions
-} from 'antd';
-import { SearchOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Search, Filter, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const { Title } = Typography;
+export default function UserManagement() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [selectedRole, setSelectedRole] = useState('');
+ const navigate = useNavigate();
+  // Sample user data
+  const users = Array(50).fill(null).map((_, index) => ({
+    id: `#01`,
+    name: 'Dr. Sarah Wilson',
+    email: 'example@email.com',
+    address: 'Dhaka, Bangladesh',
+    roll: 'Attendee'
+  }));
 
-const UserListsPage = () => {
-  const [currentPage, setCurrentPage] = useState(2);
-  const [searchDate, setSearchDate] = useState(null);
-  const [searchUser, setSearchUser] = useState('');
-  const [isViewModalVisible, setIsViewModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
-
-  // Sample data
-  const userData = [
-    { key: 1, id: '234445', userName: 'tamim', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '433' },
-    { key: 2, id: '234445', userName: 'hasan', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '5644' },
-    { key: 3, id: '234445', userName: 'Robin', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '5433' },
-    { key: 4, id: '234445', userName: 'Shakib', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '6543' },
-    { key: 5, id: '234445', userName: 'hamza', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '5444' },
-    { key: 6, id: '234445', userName: 'Ridoy', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '5433' },
-    { key: 7, id: '234445', userName: 'Ridoy', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '6755' },
-    { key: 8, id: '234445', userName: 'Ridoy', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '7665' },
-    { key: 9, id: '234445', userName: 'Ridoy', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '6555' },
-    { key: 10, id: '234445', userName: 'Ridoy', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '6555' },
-    { key: 11, id: '234445', userName: 'Ridoy', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '7654' },
-    { key: 12, id: '234445', userName: 'Ridoy', email: 'tamim@gmail.com', joinDate: '16 Apr 2025', scans: '7654' }
+  const roles = [
+    'Attendee',
+    'Speakers',
+    'Exhibitor',
+    'Sponsors',
+    'Volunteers',
+    'Reviewer',
+    'Track Chair'
   ];
 
-  const handleSearch = () => {
-    // Handle search logic here
-    console.log('Search clicked', { searchDate, searchUser });
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = !selectedRole || user.roll === selectedRole;
+    return matchesSearch && matchesRole;
+  });
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
+  const handleDelete = (userId) => {
+    console.log('Delete user:', userId);
   };
 
-  const handleViewUser = (user) => {
-    setSelectedUser(user);
-    setIsViewModalVisible(true);
+  const handleDetails = (user) => {
+    console.log('View details:', user);
   };
-
-  const handleDeleteUser = (user) => {
-    setUserToDelete(user);
-    setIsDeleteModalVisible(true);
-  };
-
-  const handleConfirmDelete = () => {
-    // Handle delete logic here
-    console.log('Deleting user:', userToDelete);
-    setIsDeleteModalVisible(false);
-    setUserToDelete(null);
-    // Add your delete API call here
-  };
-
-  const handleCancelDelete = () => {
-    setIsDeleteModalVisible(false);
-    setUserToDelete(null);
-  };
-
-  const handleCloseViewModal = () => {
-    setIsViewModalVisible(false);
-    setSelectedUser(null);
-  };
-
-  const columns = [
-    {
-      title: 'Tr. ID',
-      dataIndex: 'id',
-      key: 'id',
-      className: 'text-blue-600 font-medium',
-    },
-    {
-      title: 'User Name',
-      dataIndex: 'userName',
-      key: 'userName',
-      className: 'text-blue-600 font-medium',
-    },
-    {
-      title: 'Email Address',
-      dataIndex: 'email',
-      key: 'email',
-      className: 'text-blue-600 font-medium',
-    },
-    {
-      title: 'Join Date',
-      dataIndex: 'joinDate',
-      key: 'joinDate',
-      className: 'text-gray-600',
-    },
-    {
-      title: 'Scans',
-      dataIndex: 'scans',
-      key: 'scans',
-      className: 'text-gray-600 text-center',
-      align: 'center',
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      align: 'center',
-      render: (_, record) => (
-        <Space size="small">
-          <Button 
-            type="text" 
-            icon={<EyeOutlined />} 
-            size="small"
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => handleViewUser(record)}
-          />
-          <Button 
-            type="text" 
-            icon={<DeleteOutlined />} 
-            size="small"
-            className="text-red-500 hover:text-red-700"
-            onClick={() => handleDeleteUser(record)}
-          />
-        </Space>
-      ),
-    },
-  ];
 
   return (
-    <div className="p-6 bg-gray-50">
-      <div className="bg-white rounded-lg shadow-sm">
+    <div className="  bg-gray-50 p-6 relative">
+      <div className=" ">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <Title level={3} className="mb-4 text-gray-800">
-            User Lists
-          </Title>
-          
-          {/* Search Section */}
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-600">Date</span>
-              <DatePicker 
-                value={searchDate}
-                onChange={setSearchDate}
-                className="w-40"
-                placeholder="Select date"
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800 mb-1">User Management</h1>
+          <p className="text-gray-500 text-sm">Manage User and profiles</p>
+        </div>
+
+        {/* Search and Filter Bar */}
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+          <div className="flex gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by email or name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-gray-600">User Name</span>
-              <Input 
-                value={searchUser}
-                onChange={(e) => setSearchUser(e.target.value)}
-                placeholder="Enter user name"
-                className="w-48"
-              />
-            </div>
-            
-            <Button 
-              type="primary" 
-              icon={<SearchOutlined />}
-              onClick={handleSearch}
-              className="bg-blue-500 hover:bg-blue-600"
+            <button 
+              className="p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
             >
-              Search
-            </Button>
+              <Search className="w-5 h-5" />
+            </button>
+            <div className="relative">
+              <select
+                value={selectedRole}
+                onChange={(e) => {
+                  setSelectedRole(e.target.value);
+                  console.log('Selected Role:', e.target.value);
+                }}
+                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white cursor-pointer min-w-40"
+              >
+                <option value="">All Roles</option>
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <svg 
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         </div>
 
         {/* Table */}
-        <div className="p-6">
-          <Table 
-            columns={columns}
-            dataSource={userData}
-            pagination={false}
-            className="mb-6"
-            size="middle"
-          />
-          
-          {/* Custom Pagination */}
-          <div className="flex justify-center">
-            <Pagination
-              current={currentPage}
-              total={50}
-              pageSize={10}
-              onChange={setCurrentPage}
-              showSizeChanger={false}
-              className="text-center"
-            />
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">S. ID</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Address</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Roll</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {currentUsers.map((user, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-600">{user.id}</td>
+                    <td className="px-6 py-4 text-sm text-gray-800">{user.name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{user.address}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{user.roll}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          // onClick={() => handleDetails(user)}
+                          onClick={() => navigate("/dashboard/users/details")}
+                          className="px-4 py-1 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition-colors"
+                        >
+                          Details
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.id)}
+                          className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Showing</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value={6}>6</option>
+                <option value={12}>12</option>
+                <option value={24}>24</option>
+                <option value={50}>50</option>
+              </select>
+              <span>of {filteredUsers.length}</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              {[...Array(Math.min(5, totalPages))].map((_, index) => {
+                const pageNum = index + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-8 h-8 rounded ${
+                      currentPage === pageNum
+                        ? 'bg-teal-600 text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* View User Modal */}
-        <Modal
-          title="User Details"
-          open={isViewModalVisible}
-          onCancel={handleCloseViewModal}
-          footer={[
-            <Button key="close" onClick={handleCloseViewModal}>
-              Close
-            </Button>
-          ]}
-          width={600}
-        >
-          {selectedUser && (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Transaction ID">
-                {selectedUser.id}
-              </Descriptions.Item>
-              <Descriptions.Item label="User Name">
-                {selectedUser.userName}
-              </Descriptions.Item>
-              <Descriptions.Item label="Email Address">
-                {selectedUser.email}
-              </Descriptions.Item>
-              <Descriptions.Item label="Join Date">
-                {selectedUser.joinDate}
-              </Descriptions.Item>
-              <Descriptions.Item label="Total Scans">
-                {selectedUser.scans}
-              </Descriptions.Item>
-            </Descriptions>
-          )}
-        </Modal>
-
-        {/* Delete Confirmation Modal */}
-        <Modal
-          title="Confirm Delete"
-          open={isDeleteModalVisible}
-          onOk={handleConfirmDelete}
-          onCancel={handleCancelDelete}
-          okText="Yes"
-          cancelText="No"
-          okType="danger"
-          className="text-center"
-        >
-          <div className="py-4">
-            <p className="text-gray-600 text-base">
-              Are you sure you want to delete user <strong>{userToDelete?.userName}</strong>?
-            </p>
-            <p className="text-gray-500 text-sm mt-2">
-              This action cannot be undone.
-            </p>
-          </div>
-        </Modal>
       </div>
+
+      {/* Sidebar - Removed */}
     </div>
   );
-};
-
-export default UserListsPage;
-
- 
+}

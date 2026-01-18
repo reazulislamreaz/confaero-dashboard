@@ -69,19 +69,7 @@ const Sidebar = () => {
               <BiSolidDashboard className="h-7 w-7 lg:h-5 lg:w-5"/>
               <span className="hidden ml-2 sm:block">Dashboard</span>
             </NavLink>
-
-            <NavLink
-              to="earning"
-              className={({ isActive }) =>
-                isActive
-                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
-              }
-            >
-              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
-              <span className="hidden ml-2 sm:block">Earnings</span>
-            </NavLink>
-
+ 
             <NavLink
               to="users"
               className={({ isActive }) =>
@@ -91,10 +79,32 @@ const Sidebar = () => {
               }
             >
               <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
-              <span className="hidden ml-2 sm:block">Users</span>
+              <span className="hidden ml-2 sm:block">Registration</span>
             </NavLink>
 
-       
+          <NavLink
+              to="invitaitons"
+              className={({ isActive }) =>
+                isActive
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+              }
+            >
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Invitations</span>
+            </NavLink>
+
+          <NavLink
+              to="enents"
+              className={({ isActive }) =>
+                isActive
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+              }
+            >
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Event Details & Agenda</span>
+            </NavLink>
 
       
 

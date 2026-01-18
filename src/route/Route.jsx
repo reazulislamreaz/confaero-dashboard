@@ -18,7 +18,11 @@ import Notification from "../dashboard/sidebarMenu/profile/Notification";
 import Profile from "../dashboard/sidebarMenu/profile/Profile";
 import EditProfiel from "../dashboard/sidebarMenu/profile/EditProfile";
 import UserListsPage from "../dashboard/sidebarMenu/Users";
-import EarningsPage from "../dashboard/sidebarMenu/Earning";
+ 
+import UserManagement from "../dashboard/sidebarMenu/Users";
+import UserDetailsPage from "../dashboard/sidebarMenu/UserDetailsPage";
+import EventAgendaBuilder from "../dashboard/sidebarMenu/EventManagement";
+import InvitationsPage from "../dashboard/sidebarMenu/Invitations";
  
  
 
@@ -55,8 +59,16 @@ export const router = createBrowserRouter([
                 element: <UserListsPage />
             },
             {
-                path: "earning",
-                element: <EarningsPage />
+                path: "users/details",
+                element: <UserDetailsPage />
+            },
+            {
+                path: "invitaitons",
+                element: <InvitationsPage />
+            },
+            {
+                path: "enents",
+                element: <EventAgendaBuilder />
             },
             {
                 path: 'settings',
