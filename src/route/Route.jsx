@@ -23,6 +23,8 @@ import UserManagement from "../dashboard/sidebarMenu/Users";
 import UserDetailsPage from "../dashboard/sidebarMenu/UserDetailsPage";
 import EventAgendaBuilder from "../dashboard/sidebarMenu/EventManagement";
 import InvitationsPage from "../dashboard/sidebarMenu/Invitations";
+import ReviewerManagement from "../dashboard/sidebarMenu/ReviewerManagement";
+import ExhibitorsSponsors from "../dashboard/sidebarMenu/ExhibitorsSponsors";
  
  
 
@@ -70,6 +72,19 @@ export const router = createBrowserRouter([
                 path: "enents",
                 element: <EventAgendaBuilder />
             },
+            {
+                path: "reviewer-management",
+                element: <ReviewerManagement />
+            },
+            {
+                path: "exhibitors-sponsors",
+                element: <ExhibitorsSponsors />
+            },
+            {
+                path: "volunteers",
+                element: <ExhibitorsSponsors />
+            },
+
             {
                 path: 'settings',
                 element:<Settings />

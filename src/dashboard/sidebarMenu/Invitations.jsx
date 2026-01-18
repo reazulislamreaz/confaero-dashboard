@@ -86,6 +86,7 @@ export default function InvitationsPage() {
         </div>
 
         {/* Tabs */}
+        
         <div className="bg-white rounded-lg shadow-sm mb-4">
           <div className="flex border-b overflow-x-auto">
             {tabs.map((tab) => (

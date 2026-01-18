@@ -106,6 +106,42 @@ const Sidebar = () => {
               <span className="hidden ml-2 sm:block">Event Details & Agenda</span>
             </NavLink>
 
+          <NavLink
+              to="reviewer-management"
+              className={({ isActive }) =>
+                isActive
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+              }
+            >
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Reviewer Management</span>
+            </NavLink>
+
+          <NavLink
+              to="exhibitors-sponsors"
+              className={({ isActive }) =>
+                isActive
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+              }
+            >
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Exhibitors & Sponsors</span>
+            </NavLink>
+
+          <NavLink
+              to="volunteers"
+              className={({ isActive }) =>
+                isActive
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+              }
+            >
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Volunteers</span>
+            </NavLink>
+
       
 
 
