@@ -83,40 +83,44 @@ export default function ExhibitorsSponsors() {
         {activeTab === 'Exhibitors' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {exhibitors.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
-                {/* Card Content - Now on Left Side */}
-                <div className="flex">
-                  {/* Left: Info Section */}
-                  <div className="flex-1 p-4 flex flex-col">
-                    <div className="mb-3">
-                      <h3 className="font-semibold text-gray-900 text-base mb-1">{item.name}</h3>
-                      <p className="text-sm text-gray-600">{item.subtitle}</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-gray-700 mb-auto">
-                      <Building2 className="w-4 h-4" />
-                      <span className="text-sm font-medium">{item.booth}</span>
-                    </div>
-                  </div>
+              <div key={item.id} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200 relative">
+                {/* Full Width Background Image */}
+                <div className="absolute inset-0 z-0">
+                  <img 
+                    src="/public/image/exi.jpg" 
+                    alt="Office" 
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Overlay for content visibility */}
+                  {/* <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/85 to-white/60"></div> */}
+                </div>
 
-                  {/* Right: Image Section */}
-                  <div className="w-32 relative bg-gradient-to-br from-green-100 via-emerald-50 to-teal-50 flex items-center justify-center">
-                    <div className="absolute top-2 right-2">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        item.status === 'Approved' 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-yellow-400 text-gray-800'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
-                    {/* Decorative S letter */}
-                    <div className="text-6xl font-bold text-green-200 opacity-40">S</div>
+                {/* Status Badge - Top Right */}
+                <div className="absolute top-3 right-3 z-20">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium shadow-md ${
+                    item.status === 'Approved' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-yellow-400 text-gray-800'
+                  }`}>
+                    {item.status}
+                  </span>
+                </div>
+
+                {/* Card Content */}
+                <div className="relative z-10 p-4">
+                  <div className="mb-3">
+                    <h3 className="font-semibold text-gray-900 text-base mb-1">{item.name}</h3>
+                    <p className="text-sm text-gray-700">{item.subtitle}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-gray-800 mb-16">
+                    <Building2 className="w-4 h-4" />
+                    <span className="text-sm font-medium">{item.booth}</span>
                   </div>
                 </div>
 
                 {/* Special Offer Section */}
-                <div className="bg-teal-50 px-4 py-3 border-t border-teal-100">
+                <div className="relative z-10 bg-teal-50/95 backdrop-blur-sm px-4 py-3 border-t border-teal-100">
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-teal-600 flex-shrink-0" />
                     <div>
@@ -127,7 +131,7 @@ export default function ExhibitorsSponsors() {
                 </div>
 
                 {/* View Details Button */}
-                <div className="px-4 py-3 border-t border-gray-100">
+                <div className="relative z-10 px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-gray-100">
                   <button
                     onClick={() => handleViewDetails(item)}
                     className="w-full text-center text-sm font-medium text-gray-700 hover:text-gray-900 py-1"
@@ -149,9 +153,7 @@ export default function ExhibitorsSponsors() {
                 <div className="p-4">
                   <div className="flex items-start gap-3 mb-4">
                     {/* Avatar */}
-                    <div className="w-14 h-14 bg-teal-400 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                      <span className="text-white font-bold text-lg">T</span>
-                    </div>
+                    <img src="/public/image/review.png" alt="" />
                     
                     {/* Info */}
                     <div className="flex-1 min-w-0">
