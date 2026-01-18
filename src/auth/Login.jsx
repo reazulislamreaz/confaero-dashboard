@@ -34,7 +34,7 @@ const Login = () => {
 
     // Handle login logic here
     console.log('Login submitted:', { email, password, rememberMe });
-     navigate('/dashboard');
+     navigate('/dashboard/home');
   };
 
   return (
