@@ -180,26 +180,22 @@
 
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  UserPlus, 
-  Mail, 
-  Calendar, 
-  UserCheck, 
-  Store, 
-  Users, 
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  Image,
-  Briefcase,
-  MessageSquare,
-  Volume2,
-  Settings,
-  LogOut
-} from 'lucide-react';
-import Swal from "sweetalert2";
 import logo from '../../public/image/logo.png';
+import { FaDollarSign, FaPersonRunning, FaSackDollar, FaUser, FaUsers, FaUsersLine } from "react-icons/fa6";
+import { MdCategory, MdOutlineMedicalServices, MdSubscriptions } from "react-icons/md";
+import { BiMenu, BiSolidDashboard } from "react-icons/bi";
+import { HiLogout } from "react-icons/hi";
+import { AiOutlineSafetyCertificate } from "react-icons/ai";
+import { PiGitPullRequestDuotone } from "react-icons/pi";
+import { RiAdminLine, RiSecurePaymentFill } from "react-icons/ri";
+import { CiSettings } from "react-icons/ci";
+import Swal from "sweetalert2";
+import { SiMagento } from "react-icons/si";
+import { BsExclude } from "react-icons/bs";
+import { FaUserAlt, FaUserFriends } from "react-icons/fa";
+import { TbTestPipe2 } from "react-icons/tb";
+import { GoMail } from "react-icons/go";
+import { ImCoinDollar } from "react-icons/im";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -230,208 +226,199 @@ const Sidebar = () => {
     });
   };
 
+  // Toggle Resources Dropdown
+  const toggleResources = () => {
+    setIsResourcesOpen(!isResourcesOpen);
+  };
+
   return (
-    <div className="w-[250px] border-r border-gray-200 bg-white flex flex-col justify-between h-full min-h-screen">
+    <div className="lg:w-[250px] xl:w-[300px] md:w-[200px] sm:w-[120px] border-r-2 !bg-white border-[#32A69A] w-[120px] flex flex-col justify-between h-full min-h-screen rounded-md">
       <div>
-        {/* Logo */}
-        <div className="p-4 border-b border-gray-200">
-          <img className="h-14 rounded-lg mx-auto" src={logo} alt="Logo" />
+        <div className="p-[10px] grid justify-items-stretch sm:p-[16px]">
+          <img className="h-16 rounded-lg justify-self-center" src={logo} alt="Logo" />
         </div>
 
-        {/* Navigation */}
-        <nav className="p-2 mt-2">
-          <ul className="space-y-1">
+        <div className="ml-5 mt-8">
+          <ul>
+            {/* Dashboard */}
             <NavLink
               to="home"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex cursor-pointer items-center text-[18px] font-medium p-[10px] bg-[#32A69A] text-[#F6F6F6] m-[6px] rounded-lg"
+                  : "flex text-[#252525] cursor-pointer items-center text-[18px] font-medium p-[10px] m-[6px] rounded-lg"
               }
             >
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Dashboard</span>
+              <BiSolidDashboard className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Dashboard</span>
             </NavLink>
 
+            {/* Registration */}
             <NavLink
               to="users"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <UserPlus className="w-5 h-5" />
-              <span>Registration</span>
+              <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Registration</span>
             </NavLink>
 
+            {/* Invitations */}
             <NavLink
-              to="invitations"
+              to="invitaitons"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <Mail className="w-5 h-5" />
-              <span>Invitations</span>
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Invitations</span>
             </NavLink>
 
+            {/* Event Details & Agenda */}
             <NavLink
-              to="events"
+              to="enents"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <Calendar className="w-5 h-5" />
-              <span>Event Details & Agenda</span>
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Event Details & Agenda</span>
             </NavLink>
 
+            {/* Reviewer Management */}
             <NavLink
               to="reviewer-management"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <UserCheck className="w-5 h-5" />
-              <span>Reviewer Management</span>
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Reviewer Management</span>
             </NavLink>
 
+            {/* Exhibitors & Sponsors */}
             <NavLink
               to="exhibitors-sponsors"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <Store className="w-5 h-5" />
-              <span>Exhibitors & Sponsors</span>
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Exhibitors & Sponsors</span>
             </NavLink>
 
+            {/* Volunteers */}
             <NavLink
               to="volunteers"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <Users className="w-5 h-5" />
-              <span>Volunteers</span>
+              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Volunteers</span>
             </NavLink>
 
-            {/* Resources Dropdown */}
-            <li>
+            {/* Resources (Dropdown) */}
+            <li className="mb-[6px]">
               <button
-                onClick={() => setIsResourcesOpen(!isResourcesOpen)}
-                className="flex items-center justify-between w-full px-4 py-2.5 text-white bg-teal-600 rounded-lg font-medium hover:bg-teal-700 transition-colors"
+                onClick={toggleResources}
+                className={`flex w-full items-center text-[18px] font-medium p-[10px] rounded-lg ${
+                  isResourcesOpen
+                    ? "bg-[#32A69A] text-[#F6F6F6]"
+                    : "text-[#252525] hover:bg-gray-100"
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5" />
-                  <span>resources</span>
-                </div>
-                {isResourcesOpen ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
+                <TbTestPipe2 className="h-7 w-7 lg:h-5 lg:w-5" />
+                <span className="hidden ml-2 sm:block">Resources</span>
+                <span className="ml-auto">
+                  {isResourcesOpen ? (
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </span>
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Submenu */}
               {isResourcesOpen && (
-                <ul className="mt-1 ml-4 space-y-1 bg-gray-50 rounded-lg p-2">
-                  <NavLink
-                    to="resources/documents"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "flex items-center gap-3 px-4 py-2 bg-white text-gray-900 rounded-lg text-sm"
-                        : "flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-white rounded-lg text-sm"
-                    }
-                  >
-                    <FileText className="w-4 h-4" />
-                    <span>Documents</span>
-                  </NavLink>
-
-                  <NavLink
-                    to="resources/photos"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "flex items-center gap-3 px-4 py-2 bg-white text-gray-900 rounded-lg text-sm"
-                        : "flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-white rounded-lg text-sm"
-                    }
-                  >
-                    <Image className="w-4 h-4" />
-                    <span>Photos</span>
-                  </NavLink>
-
-                  <NavLink
-                    to="resources/job-posts"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "flex items-center gap-3 px-4 py-2 bg-white text-gray-900 rounded-lg text-sm"
-                        : "flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-white rounded-lg text-sm"
-                    }
-                  >
-                    <Briefcase className="w-4 h-4" />
-                    <span>Job Posts</span>
-                  </NavLink>
-
-                  <NavLink
-                    to="resources/qa-polls-survey"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "flex items-center gap-3 px-4 py-2 bg-white text-gray-900 rounded-lg text-sm"
-                        : "flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-white rounded-lg text-sm"
-                    }
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Q/A, Polls & Survey</span>
-                  </NavLink>
+                <ul className="ml-4 mt-1 space-y-1">
+                  {[
+                    { path: "resources/documents", label: "Documents" },
+                    { path: "resources/photos", label: "Photos" },
+                    { path: "resources/job-posts", label: "Job Posts" },
+                    { path: "resources/qa-polls-survey", label: "Q/A, Polls & Survey" },
+                  ].map((item) => (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={({ isActive }) =>
+                        isActive
+                          ? "flex items-center text-sm font-medium p-[8px] bg-teal-400 text-teal-800 rounded-md"
+                          : "flex items-center text-sm font-medium p-[8px] text-gray-700 hover:bg-gray-100 rounded-md"
+                      }
+                    >
+                      <span className="hidden ml-2 sm:block">{item.label}</span>
+                    </NavLink>
+                  ))}
                 </ul>
               )}
             </li>
 
+            {/* Announcements */}
             <NavLink
               to="announcements"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <Volume2 className="w-5 h-5" />
-              <span>Announcements</span>
+              <AiOutlineSafetyCertificate className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Announcements</span>
             </NavLink>
 
+            {/* Settings */}
             <NavLink
               to="settings"
               className={({ isActive }) =>
                 isActive
-                  ? "flex items-center gap-3 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium"
-                  : "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium rounded-lg"
               }
             >
-              <Settings className="w-5 h-5" />
-              <span>Setting</span>
+              <CiSettings className="h-8 w-8 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Settings</span>
             </NavLink>
           </ul>
-        </nav>
+        </div>
       </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-gray-200">
-        <button
+      {/* Bottom Section: Log Out */}
+      <div className="mb-[60px] mt-2">
+        <div
           onClick={handleLogOut}
-          className="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-lg font-medium w-full transition-colors"
+          className="flex items-center ml-[18px] cursor-pointer gap-2 text-[#942020] font-medium"
         >
-          <LogOut className="w-5 h-5" />
-          <span>Log Out</span>
-        </button>
+          <HiLogout className="h-8 w-8 lg:h-5 lg:w-5" />
+          <span className="hidden sm:block text-[20px]">Log Out</span>
+        </div>
       </div>
     </div>
   );

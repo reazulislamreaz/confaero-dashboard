@@ -26,6 +26,8 @@ import InvitationsPage from "../dashboard/sidebarMenu/Invitations";
 import ReviewerManagement from "../dashboard/sidebarMenu/ReviewerManagement";
 import ExhibitorsSponsors from "../dashboard/sidebarMenu/ExhibitorsSponsors";
 import VolunteerManagementPage from "../dashboard/sidebarMenu/Volunteers";
+import DocumentManagement from "../dashboard/sidebarMenu/resoursce/Documents";
+import Photos from "../dashboard/sidebarMenu/resoursce/Photos";
  
  
 
@@ -84,6 +86,22 @@ export const router = createBrowserRouter([
             {
                 path: "volunteers",
                 element: <VolunteerManagementPage />
+            },
+            {
+                path: "resources/documents",
+                element: <DocumentManagement />
+            },
+            {
+                path: "resources/photos",
+                element: <Photos />
+            },
+            {
+                path: "resources/job-posts",
+                element: <DocumentManagement />
+            },
+            {
+                path: "resources/qa-polls-survey",
+                element: <DocumentManagement />
             },
 
             {
