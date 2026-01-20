@@ -25,6 +25,7 @@ import EventAgendaBuilder from "../dashboard/sidebarMenu/EventManagement";
 import InvitationsPage from "../dashboard/sidebarMenu/Invitations";
 import ReviewerManagement from "../dashboard/sidebarMenu/ReviewerManagement";
 import ExhibitorsSponsors from "../dashboard/sidebarMenu/ExhibitorsSponsors";
+import VolunteerManagementPage from "../dashboard/sidebarMenu/Volunteers";
  
  
 
@@ -82,7 +83,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "volunteers",
-                element: <ExhibitorsSponsors />
+                element: <VolunteerManagementPage />
             },
 
             {

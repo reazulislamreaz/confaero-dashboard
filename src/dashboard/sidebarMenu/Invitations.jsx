@@ -8,6 +8,13 @@ export default function InvitationsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(9);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteForm, setInviteForm] = useState({
+    role: '',
+    session: '',
+    name: '',
+    email: ''
+  });
 
   const tabs = ['All', 'Speakers', 'Sponsors', 'Exhibitors', 'Volunteers', 'Reviewers', 'Track Chairs'];
 
@@ -64,12 +71,31 @@ export default function InvitationsPage() {
   };
 
   const handleSendInvitation = () => {
-    console.log('Send new invitation');
+    setShowInviteModal(true);
+    setInviteForm({ role: '', session: '', name: '', email: '' });
+  };
+
+  const handleInviteFormSubmit = () => {
+    if (!inviteForm.role || !inviteForm.name || !inviteForm.email) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    if (inviteForm.role === 'Speaker' && !inviteForm.session) {
+      alert('Please select a session for Speaker role');
+      return;
+    }
+    console.log('Send invitation:', inviteForm);
+    setShowInviteModal(false);
+    setInviteForm({ role: '', session: '', name: '', email: '' });
+  };
+
+  const handleInviteFormChange = (field, value) => {
+    setInviteForm(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <div className="  bg-gray-50">
-      <div className=" ">
+    <div className="bg-gray-50 min-h-screen p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -86,9 +112,8 @@ export default function InvitationsPage() {
         </div>
 
         {/* Tabs */}
-        
-        <div className="bg-white rounded-lg shadow-sm mb-4">
-          <div className="flex border-b overflow-x-auto">
+        <div className="bg-white rounded-lg mb-4">
+          <div className="flex overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab}
@@ -98,8 +123,8 @@ export default function InvitationsPage() {
                 }}
                 className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab
-                    ? 'text-teal-600 border-b-2 border-teal-600'
-                    : 'text-gray-600 hover:text-gray-800'
+                    ? 'text-white rounded ml-2 bg-[#32A69A]'
+                    : 'text-gray-600 border ml-2 border-gray-300 hover:text-gray-800'
                 }`}
               >
                 {tab}
@@ -342,6 +367,105 @@ export default function InvitationsPage() {
                 className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
               >
                 Resend Invitation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Send Invitation Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-lg font-semibold text-gray-800">Send Invitation</h2>
+              <button 
+                onClick={() => setShowInviteModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Role Dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role
+                </label>
+                <select
+                  value={inviteForm.role}
+                  onChange={(e) => handleInviteFormChange('role', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  <option value="">Select role</option>
+                  <option value="Speaker">Speaker</option>
+                  <option value="Sponsors">Sponsors</option>
+                  <option value="Exhibitors">Exhibitors</option>
+                  <option value="Volunteers">Volunteers</option>
+                  <option value="Reviewers">Reviewers</option>
+                  <option value="Track Chairs">Track Chairs</option>
+                </select>
+              </div>
+
+              {/* Session Dropdown - Only show for Speaker */}
+              {inviteForm.role === 'Speaker' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Session
+                  </label>
+                  <select
+                    value={inviteForm.session}
+                    onChange={(e) => handleInviteFormChange('session', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="">Select session</option>
+                    <option value="Session 1">Session 1</option>
+                    <option value="Session 2">Session 2</option>
+                    <option value="Session 3">Session 3</option>
+                    <option value="Session 4">Session 4</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Name Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter name"
+                  value={inviteForm.name}
+                  onChange={(e) => handleInviteFormChange('name', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+
+              {/* Email Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  placeholder="Enter email"
+                  value={inviteForm.email}
+                  onChange={(e) => handleInviteFormChange('email', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 pt-0">
+              <button
+                onClick={handleInviteFormSubmit}
+                className="w-full py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+              >
+                Send Invitation
               </button>
             </div>
           </div>

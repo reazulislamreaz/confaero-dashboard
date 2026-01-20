@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Check, X, Download, Globe, Mail, ChevronRight, Building2, Clock, Tag, FileText } from 'lucide-react';
+import { LayoutGrid, Check, X, Download, Globe, Mail, ChevronRight, Building2, Clock, Tag, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { FaCheck } from 'react-icons/fa6';
+import { RxCross2 } from 'react-icons/rx';
 
 export default function ExhibitorsSponsors() {
   const [activeTab, setActiveTab] = useState('Exhibitors');
@@ -41,7 +43,7 @@ export default function ExhibitorsSponsors() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-gray-900 mb-1">Exhibitors & Sponsors</h1>
@@ -80,69 +82,91 @@ export default function ExhibitorsSponsors() {
         </div>
 
         {/* Exhibitors Grid */}
-        {activeTab === 'Exhibitors' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {exhibitors.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200 relative">
-                {/* Full Width Background Image */}
-                <div className="absolute inset-0 z-0">
-                  <img 
-                    src="/public/image/exi.jpg" 
-                    alt="Office" 
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Overlay for content visibility */}
-                  {/* <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/85 to-white/60"></div> */}
-                </div>
+{activeTab === 'Exhibitors' && (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    {exhibitors.map((item) => (
+      <div
+        key={item.id}
+        className="bg-white rounded-xl overflow-hidden flex flex-col"
+      >
+        {/* Full Background Image with Overlay */}
+        <div className="relative h-32 w-full">
+          <img
+            src="/public/image/exi.jpg"
+            alt="Office"
+            className="w-full h-full object-cover"
+          />
+          {/* Semi-transparent overlay for text readability */}
+          <div className="absolute inset-0 bg-black/10"></div>
 
-                {/* Status Badge - Top Right */}
-                <div className="absolute top-3 right-3 z-20">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium shadow-md ${
-                    item.status === 'Approved' 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-yellow-400 text-gray-800'
-                  }`}>
-                    {item.status}
-                  </span>
-                </div>
-
-                {/* Card Content */}
-                <div className="relative z-10 p-4">
-                  <div className="mb-3">
-                    <h3 className="font-semibold text-gray-900 text-base mb-1">{item.name}</h3>
-                    <p className="text-sm text-gray-700">{item.subtitle}</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-gray-800 mb-16">
-                    <Building2 className="w-4 h-4" />
-                    <span className="text-sm font-medium">{item.booth}</span>
-                  </div>
-                </div>
-
-                {/* Special Offer Section */}
-                <div className="relative z-10 bg-teal-50/95 backdrop-blur-sm px-4 py-3 border-t border-teal-100">
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-teal-600 flex-shrink-0" />
-                    <div>
-                      <div className="text-[10px] text-teal-600 font-bold">SPECIAL OFFER</div>
-                      <div className="text-sm font-semibold text-gray-900">{item.offer}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* View Details Button */}
-                <div className="relative z-10 px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-gray-100">
-                  <button
-                    onClick={() => handleViewDetails(item)}
-                    className="w-full text-center text-sm font-medium text-gray-700 hover:text-gray-900 py-1"
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-            ))}
+          {/* Status Badge - Top Right */}
+          <div className="absolute top-3 right-3 z-10">
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${
+                item.status === 'Approved'
+                  ? 'bg-green-500 text-white'
+                  : item.status === 'Pending'
+                  ? 'bg-yellow-400 text-gray-800'
+                  : 'bg-red-400 text-gray-800'
+              }`}
+            >
+              {item.status}
+            </span>
           </div>
-        )}
+
+          {/* Text Content Over Image */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+            <h3 className="font-semibold text-base mb-1">{item.name}</h3>
+            <p className="text-sm mb-2">{item.subtitle}</p>
+            <div className="flex items-center gap-2 text-sm">
+              <Building2 className="w-4 h-4" />
+              <span>{item.booth || '—'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Special Offer Section (White Background Below Image) */}
+        <div className="px-4 py-3 bg-[#EBF6F5] mt-3 border border-[#D2D2D2] rounded">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-teal-600 flex-shrink-0" />
+            <div>
+              <div className="text-[10px] text-teal-600 font-bold uppercase">SPECIAL OFFER</div>
+              <div className="text-sm font-semibold text-gray-900">{item.offer}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Action Bar: View Details + Approve/Reject */}
+        <div className=" py-2 bg-white border-t  border-gray-200 flex items-center justify-between gap-2">
+          <button
+            onClick={() => handleViewDetails(item)}
+            className="flex-1 py-2 text-center cursor-pointer border border-[#D2D2D2] rounded text-sm font-medium text-gray-700 hover:text-gray-900  transition-colors"
+          >
+            View Details
+          </button>
+
+          {/* Show Approve/Reject Buttons Only if Pending */}
+          {item.status === 'Pending' && (
+            <>
+              <button
+                onClick={() => handleApprove(item.id)}
+                className="p-1.5 hover:bg-green-100 border cursor-pointer border-[#D2D2D2] rounded"
+              >
+                <FaCheck className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => handleReject(item.id)}
+                className="p-1.5 text-red-600 hover:bg-red-100 border cursor-pointer border-[#D2D2D2] rounded"
+              >
+               <RxCross2 className="w-5 h-5" />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
 
         {/* Sponsors Grid */}
         {activeTab === 'Sponsors' && (
@@ -171,19 +195,19 @@ export default function ExhibitorsSponsors() {
                   <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                     <button
                       onClick={() => handleViewDetails(item)}
-                      className="flex-1 text-sm font-medium text-gray-700 hover:text-gray-900 py-1.5"
+                      className="flex-1 text-sm border border-[#D2D2D2] rounded font-medium text-gray-700 hover:text-gray-900 py-1.5"
                     >
                       View Details
                     </button>
                     <button
                       onClick={() => handleApprove(item)}
-                      className="w-9 h-9 flex items-center justify-center text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      className="w-9 h-9 flex items-center border border-[#D2D2D2] rounded justify-center text-green-600 hover:bg-green-50  transition-colors"
                     >
                       <Check className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleReject(item)}
-                      className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 border border-[#D2D2D2] rounded transition-colors"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -197,7 +221,7 @@ export default function ExhibitorsSponsors() {
 
       {/* Details Modal */}
       {showDetailsModal && selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header with Image */}
             <div className="relative">
