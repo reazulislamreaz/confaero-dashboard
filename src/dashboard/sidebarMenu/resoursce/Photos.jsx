@@ -1,16 +1,21 @@
 import { useState } from 'react';
-import { Upload, X, Image as ImageIcon, Folder, Camera } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Folder, Camera, Cross, Edit } from 'lucide-react';
+import { BiCross } from 'react-icons/bi';
+import { FaCross } from 'react-icons/fa6';
+import { RxCross2 } from 'react-icons/rx';
 
 export default function Photos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [photos, setPhotos] = useState([
-    { id: 1, src: 'https://placehold.co/600x400/3b82f6/ffffff?text=Events', category: 'event', title: 'Events' },
-    { id: 2, src: 'https://placehold.co/600x400/10b981/ffffff?text=Events', category: 'event', title: 'Events' },
-    { id: 3, src: 'https://placehold.co/600x400/f59e0b/ffffff?text=Events', category: 'event', title: 'Events' },
-    { id: 4, src: 'https://placehold.co/600x400/8b5cf6/ffffff?text=Events', category: 'event', title: 'Events' },
-    { id: 5, src: 'https://placehold.co/600x400/ef4444/ffffff?text=Events', category: 'event', title: 'Events' },
-    { id: 6, src: 'https://placehold.co/600x400/059669/ffffff?text=Events', category: 'event', title: 'Events' }
+    { id: 1, src: '/public/image/photo.png', category: 'event', title: 'Events' },
+    { id: 2, src: '/public/image/photo.png', category: 'event', title: 'Events' },
+    { id: 3, src: '/public/image/photo.png', category: 'booth', title: 'Events' },
+    { id: 4, src: '/public/image/photo.png', category: 'other', title: 'Events' },
+    { id: 4, src: '/public/image/photo.png', category: 'floor', title: 'Events' },
+    { id: 4, src: '/public/image/photo.png', category: 'campaign', title: 'Events' },
+    { id: 4, src: '/public/image/photo.png', category: 'other', title: 'Events' },
+ 
   ]);
 
   const categories = [
@@ -36,8 +41,8 @@ export default function Photos() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-white shadow-sm">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-xl font-semibold text-gray-900">Photo</h1>
@@ -55,13 +60,13 @@ export default function Photos() {
       </header>
 
       {/* Category Filter */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className=" px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex flex-wrap gap-2">
           {categories.map(category => (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium border cursor-pointer border-[#D2D2D2] transition-colors ${
                 selectedCategory === category.id
                   ? 'bg-teal-500 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -74,8 +79,8 @@ export default function Photos() {
       </div>
 
       {/* Photo Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="  px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPhotos.map(photo => (
             <div key={photo.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative">
@@ -86,10 +91,10 @@ export default function Photos() {
                 />
                 <div className="absolute top-2 right-2 flex gap-1">
                   <button className="bg-white/80 hover:bg-white p-1 rounded-full">
-                    <ImageIcon size={16} className="text-gray-600" />
+                    <Edit size={16} className="text-gray-600" />
                   </button>
                   <button className="bg-white/80 hover:bg-white p-1 rounded-full">
-                    <X size={16} className="text-gray-600" />
+                    <RxCross2 size={16} className="text-gray-600" />
                   </button>
                 </div>
               </div>
@@ -132,7 +137,7 @@ export default function Photos() {
 
       {/* Add Photo Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Add Photo</h2>

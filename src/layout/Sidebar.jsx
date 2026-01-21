@@ -370,7 +370,7 @@ const Sidebar = () => {
                       to={item.path}
                       className={({ isActive }) =>
                         isActive
-                          ? "flex items-center text-sm font-medium p-[8px] bg-teal-400 text-teal-800 rounded-md"
+                          ? "flex items-center text-sm font-medium p-[8px] bg-[#BFE3E0] text-teal-800 rounded-md"
                           : "flex items-center text-sm font-medium p-[8px] text-gray-700 hover:bg-gray-100 rounded-md"
                       }
                     >
@@ -383,7 +383,7 @@ const Sidebar = () => {
 
             {/* Announcements */}
             <NavLink
-              to="announcements"
+              to="notice-announcements"
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"

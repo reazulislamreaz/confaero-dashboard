@@ -28,6 +28,11 @@ import ExhibitorsSponsors from "../dashboard/sidebarMenu/ExhibitorsSponsors";
 import VolunteerManagementPage from "../dashboard/sidebarMenu/Volunteers";
 import DocumentManagement from "../dashboard/sidebarMenu/resoursce/Documents";
 import Photos from "../dashboard/sidebarMenu/resoursce/Photos";
+import JobPostManagement from "../dashboard/sidebarMenu/resoursce/JobPost"; 
+import CreateJobPost from "../dashboard/sidebarMenu/resoursce/CreateJobPost";
+import EditJobPost from "../dashboard/sidebarMenu/resoursce/EditJobPost";
+import QAPolls from "../dashboard/sidebarMenu/resoursce/QaPollSurvey";
+import NoticeAnnouncements from "../dashboard/sidebarMenu/NoticeAnnouncements";
  
  
 
@@ -97,13 +102,25 @@ export const router = createBrowserRouter([
             },
             {
                 path: "resources/job-posts",
-                element: <DocumentManagement />
+                element: <JobPostManagement />
+            },
+            {
+                path: "resources/job-posts/create-job",
+                element: <CreateJobPost />
+            },
+            {
+                path: "resources/job-posts/editjob",
+                element: <EditJobPost />
             },
             {
                 path: "resources/qa-polls-survey",
-                element: <DocumentManagement />
+                element: <QAPolls />
             },
 
+            {
+                path: 'notice-announcements',
+                element:<NoticeAnnouncements />
+            },
             {
                 path: 'settings',
                 element:<Settings />
