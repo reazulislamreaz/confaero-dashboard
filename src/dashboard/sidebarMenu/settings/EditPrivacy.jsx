@@ -1,10 +1,10 @@
-import React, { useState, useRef, useMemo, useEffect } from "react";
 import JoditEditor from "jodit-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useRef, useState } from "react";
 import { FaCircleArrowLeft } from "react-icons/fa6";
+import { Link, useNavigate } from "react-router-dom";
  
-import { Button, Form, notification } from "antd";
-import '../../../index.css'
+import { Button, Form } from "antd";
+import '../../../index.css';
  
 // import toast, { Toaster } from "react-hot-toast";
  
@@ -72,7 +72,7 @@ const [content, setContent] = useState("");
     <div className="mt-8 mx-6">
   
         <Link to ='/dashboard/settings/privacypolicy' className="flex items-center gap-2">
-      <FaCircleArrowLeft className=" !text-[#04D9FF] w-8 h-8" />
+      <FaCircleArrowLeft className=" !text-[#0FC3C2] w-8 h-8" />
         <p className=" font-semibold text-[30px]">Edit Privacy Policy</p>
       </Link>
       <Form
@@ -99,7 +99,7 @@ const [content, setContent] = useState("");
           <Form.Item>
             <Button 
               htmlType="submit"
-              className="h-[44px] w-[260px] !bg-[#04D9FF] rounded-[8px]"
+             className="!h-[44px] w-[260px] !bg-[#0FC3C2] !text-white rounded-[8px]"
             >
               Update Privacy
             </Button>

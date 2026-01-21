@@ -1,11 +1,10 @@
 import { Button, Form, Input, Upload } from "antd";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import PhoneInput from "react-phone-number-input";
-import { MdOutlineKeyboardArrowLeft } from "react-icons/md";
+import { useState } from "react";
 import { LuImagePlus } from "react-icons/lu";
+import { MdOutlineKeyboardArrowLeft } from "react-icons/md";
+import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import defaultUserImage from "../../../../public/image/randomuser.jpg";
+import { useNavigate } from "react-router-dom";
  
  
  
@@ -180,7 +179,7 @@ const EditProfiel = () => {
 
           <Button
             htmlType="submit"
-            className="w-full mt-12 h-14 !bg-[#04D9FF] rounded-lg text-lg font-medium"
+            className="w-full mt-12 h-14 !bg-[#0FC3C2] rounded-lg text-lg font-medium"
           >
             Update Profile
           </Button>

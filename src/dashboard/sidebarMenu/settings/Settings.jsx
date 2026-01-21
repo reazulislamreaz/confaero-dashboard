@@ -19,7 +19,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="mt-8 mx-6 ">
+    <div className=" mx-6 ">
       <h1 className="font-semibold text-[30px]">Settings</h1>
       <div>
         <div onClick={openModal} className="mt-8 cursor-pointer flex justify-between border rounded items-center w-full h-[75px]">
@@ -141,6 +141,13 @@ const Settings = () => {
         {/* Privacy policy */}
         <div onClick={() => navigate("/dashboard/settings/profile")} className="mt-8 cursor-pointer flex justify-between bg-[#F7F7F7] rounded items-center w-full h-[75px]">
           <p className="text-[18px] text-[#616161] ml-8 font-medium">Personal Information</p>
+          <Link to="/dashboard/settings/privacypolicy" className="mr-8 text-[#616161] px-2 py-1 rounded cursor-pointer">
+            <IoIosArrowForward />
+          </Link>
+        </div>
+
+        <div onClick={() => navigate("/dashboard/settings/organizer-guideline")} className="mt-8 cursor-pointer flex justify-between bg-[#F7F7F7] rounded items-center w-full h-[75px]">
+          <p className="text-[18px] text-[#616161] ml-8 font-medium">Organizer Guideline</p>
           <Link to="/dashboard/settings/privacypolicy" className="mr-8 text-[#616161] px-2 py-1 rounded cursor-pointer">
             <IoIosArrowForward />
           </Link>

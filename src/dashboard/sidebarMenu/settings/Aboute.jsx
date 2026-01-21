@@ -31,7 +31,7 @@ const About = () => {
     
     <div className=" mt-8 mx-6">
       <Link to="/dashboard/settings" className="flex items-center gap-2">
-        <FaCircleArrowLeft className=" !text-[#04D9FF] w-8 h-8" />
+        <FaCircleArrowLeft className=" !text-[#0FC3C2] w-8 h-8" />
         <p className=" font-semibold text-[30px]">About Us</p>
       </Link>
       <div className='mt-4'>
@@ -42,7 +42,7 @@ const About = () => {
       </div>
       <div className=" text-right mt-16">
         <Button  onClick={() => navigate(`/dashboard/settings/editabout`)} 
-        className="h-[44px] w-[260px] !bg-[#04D9FF] rounded-[8px]"
+        className="!h-[44px] w-[260px] !bg-[#0FC3C2] !text-white rounded-[8px]"
          >
           Edit</Button>
       </div>

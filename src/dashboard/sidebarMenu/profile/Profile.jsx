@@ -17,13 +17,13 @@
 //         <h1 className="text-2xl md:text-3xl font-medium">
 //           <Link to = "/dashboard/settings">
           
-//           <FaCircleArrowLeft className="!text-[#04D9FF] w-8 h-8 cursor-pointer"/>
+//           <FaCircleArrowLeft className="!text-[#0FC3C2] w-8 h-8 cursor-pointer"/>
 //           </Link>
 //           Profile Information
 //           </h1>
 //         <div
 //           onClick={() => navigate(`/dashboard/settings/editprofile`)}
-//           className="flex gap-2 items-center py-3 px-6 rounded-lg cursor-pointer bg-[#04D9FF]"
+//           className="flex gap-2 items-center py-3 px-6 rounded-lg cursor-pointer bg-[#0FC3C2]"
 //         >
 //           <FaEdit size={17} />
 //           <p>Edit Profile</p>
@@ -97,7 +97,6 @@
 // export default Profile;
 
 
-import React from 'react';
 import { ArrowLeft, Edit3 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -114,7 +113,7 @@ const Profile = () => {
             <button className="p-3 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
               <Link to ="/dashboard/settings">
               
-              <ArrowLeft className="w-6 h-6 text-[#04D9FF]" />
+              <ArrowLeft className="w-6 h-6 text-[#0FC3C2]" />
               </Link>
             </button>
             <h1 className="text-3xl md:text-4xl font-semibold text-gray-800">
@@ -124,7 +123,7 @@ const Profile = () => {
           
           <button
            onClick={() => navigate(`/dashboard/settings/editprofile`)}
-            className="flex items-center gap-3 py-4 px-8 rounded-xl cursor-pointer bg-gradient-to-r from-[#04D9FF] to-[#0BC5EA] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium"
+            className="flex items-center gap-3 py-4 px-8 rounded-xl cursor-pointer bg-gradient-to-r from-[#0FC3C2] to-[#0BC5EA] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium"
           >
             <Edit3 size={18} />
             <span>Edit Profile</span>
@@ -146,7 +145,7 @@ const Profile = () => {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>
-                  <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-r from-[#04D9FF] to-[#0BC5EA] rounded-full flex items-center justify-center shadow-lg">
+                  <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-r from-[#0FC3C2] to-[#0BC5EA] rounded-full flex items-center justify-center shadow-lg">
                     <div className="w-3 h-3 bg-white rounded-full"></div>
                   </div>
                 </div>
@@ -159,7 +158,7 @@ const Profile = () => {
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-800">
                     absayed
                   </h2>
-                  <div className="h-1 w-16 bg-gradient-to-r from-[#04D9FF] to-[#0BC5EA] rounded-full"></div>
+                  <div className="h-1 w-16 bg-gradient-to-r from-[#0FC3C2] to-[#0BC5EA] rounded-full"></div>
                 </div>
               </div>
             </div>
@@ -177,7 +176,7 @@ const Profile = () => {
                       type="text"
                       value="absayed"
                       placeholder="First name"
-                      className="w-full p-5 text-xl bg-gradient-to-r from-gray-50 to-blue-50 text-gray-800 rounded-xl border-2 border-transparent focus:border-[#04D9FF] focus:bg-white hover:from-[#e1f1f1] hover:to-[#ebf5f5] transition-all duration-300 outline-none font-medium"
+                      className="w-full p-5 text-xl bg-gradient-to-r from-gray-50 to-blue-50 text-gray-800 rounded-xl border-2 border-transparent focus:border-[#0FC3C2] focus:bg-white hover:from-[#e1f1f1] hover:to-[#ebf5f5] transition-all duration-300 outline-none font-medium"
                       readOnly
                     />
                   </div>
@@ -193,7 +192,7 @@ const Profile = () => {
                       type="email"
                       value="ab@gmail.com"
                       placeholder="Email"
-                      className="w-full p-5 text-xl bg-gradient-to-r from-gray-50 to-blue-50 text-gray-800 rounded-xl border-2 border-transparent focus:border-[#04D9FF] focus:bg-white hover:from-[#e1f1f1] hover:to-[#ebf5f5] transition-all duration-300 outline-none font-medium"
+                      className="w-full p-5 text-xl bg-gradient-to-r from-gray-50 to-blue-50 text-gray-800 rounded-xl border-2 border-transparent focus:border-[#0FC3C2] focus:bg-white hover:from-[#e1f1f1] hover:to-[#ebf5f5] transition-all duration-300 outline-none font-medium"
                       readOnly
                     />
                   </div>
@@ -209,7 +208,7 @@ const Profile = () => {
                       type="tel"
                       value="454565465"
                       placeholder="Phone"
-                      className="w-full p-5 text-xl bg-gradient-to-r from-gray-50 to-blue-50 text-gray-800 rounded-xl border-2 border-transparent focus:border-[#04D9FF] focus:bg-white hover:from-[#e1f1f1] hover:to-[#ebf5f5] transition-all duration-300 outline-none font-medium"
+                      className="w-full p-5 text-xl bg-gradient-to-r from-gray-50 to-blue-50 text-gray-800 rounded-xl border-2 border-transparent focus:border-[#0FC3C2] focus:bg-white hover:from-[#e1f1f1] hover:to-[#ebf5f5] transition-all duration-300 outline-none font-medium"
                       readOnly
                     />
                   </div>

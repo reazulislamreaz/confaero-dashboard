@@ -1,9 +1,9 @@
 
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import { Button, Form } from "antd";
 import JoditEditor from "jodit-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useRef, useState } from "react";
 import { FaCircleArrowLeft } from "react-icons/fa6";
-import { Button, Form, notification } from "antd";
+import { Link, useNavigate } from "react-router-dom";
  
 // import Swal from "sweetalert2";
 // const decodeHtml = (html) => {
@@ -54,7 +54,7 @@ const EditTermCondition = () => {
     <div className="mt-8 mx-6">
       {/* <Toaster position="top-center" reverseOrder= {false} /> */}
         <Link to ='/dashboard/settings/termcondition' className="flex items-center gap-2">
-      <FaCircleArrowLeft className=" !text-[#04D9FF] w-8 h-8" />
+      <FaCircleArrowLeft className=" !text-[#0FC3C2] w-8 h-8" />
         <p className=" font-semibold text-[30px]">Edit Term&Condition</p>
       </Link>
       <Form
@@ -80,7 +80,7 @@ const EditTermCondition = () => {
           <Form.Item>
             <Button 
               htmlType="submit"
-             className="h-[44px] w-[260px] !bg-[#04D9FF] rounded-[8px]"
+            className="!h-[44px] w-[260px] !bg-[#0FC3C2] !text-white rounded-[8px]"
             >
               Update termCondition
             </Button>
