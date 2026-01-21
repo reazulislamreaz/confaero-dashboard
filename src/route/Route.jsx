@@ -33,6 +33,7 @@ import CreateJobPost from "../dashboard/sidebarMenu/resoursce/CreateJobPost";
 import EditJobPost from "../dashboard/sidebarMenu/resoursce/EditJobPost";
 import QAPolls from "../dashboard/sidebarMenu/resoursce/QaPollSurvey";
 import NoticeAnnouncements from "../dashboard/sidebarMenu/NoticeAnnouncements";
+import Messages from "../dashboard/sidebarMenu/Messages";
  
  
 
@@ -120,6 +121,10 @@ export const router = createBrowserRouter([
             {
                 path: 'notice-announcements',
                 element:<NoticeAnnouncements />
+            },
+            {
+                path: 'messages',
+                element:<Messages />
             },
             {
                 path: 'settings',

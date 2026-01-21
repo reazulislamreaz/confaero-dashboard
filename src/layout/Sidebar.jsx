@@ -196,6 +196,7 @@ import { FaUserAlt, FaUserFriends } from "react-icons/fa";
 import { TbTestPipe2 } from "react-icons/tb";
 import { GoMail } from "react-icons/go";
 import { ImCoinDollar } from "react-icons/im";
+import { GrAnnounce } from 'react-icons/gr';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -390,7 +391,7 @@ const Sidebar = () => {
                   : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <AiOutlineSafetyCertificate className="h-7 w-7 lg:h-5 lg:w-5" />
+              <GrAnnounce className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Announcements</span>
             </NavLink>
 

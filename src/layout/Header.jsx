@@ -10,6 +10,7 @@ import { IoIosNotificationsOutline } from "react-icons/io";
 import './header.css' 
 import Swal from "sweetalert2";
 import { useState } from "react";
+import { MessageCircle, MessageCircleCodeIcon, MessageSquareMore } from "lucide-react";
   
  
  
@@ -100,9 +101,14 @@ const handleMenuVisibility = (visible) => {
           <Badge style={{ backgroundColor: "red", marginTop:'10px', marginRight:'5px' }} count={2}>
             <IoIosNotificationsOutline
               style={{ cursor: "pointer" }}
-              className={` bg-primary w-[52px] h-[52px] border-2 border-[#e7e0e0] rounded-full p-2 `}
+              className={` bg-primary w-[52px] h-[52px] rounded-full p-2 `}
             />
           </Badge>
+        </div>
+        <div className=" cursor-pointer" 
+         onClick={() => navigate("/dashboard/messages")}
+        >
+          <MessageSquareMore />
         </div>
         {/* </Dropdown> */}
         {/* <div
