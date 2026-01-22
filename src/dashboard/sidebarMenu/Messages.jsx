@@ -184,10 +184,10 @@ export default function MessagingSystem() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h bg-gray-50">
       <div className="">
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        {/* <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-600">Total Member</span>
@@ -214,13 +214,13 @@ export default function MessagingSystem() {
             </div>
             <div className="text-3xl font-bold text-white">7</div>
           </div>
-        </div>
+        </div> */}
 
         {/* Main Content */}
         <div className="grid grid-cols-12 gap-6">
           {/* Conversations List */}
           <div className="col-span-3 bg-white rounded-lg shadow-sm">
-            <div className="p-4 border-b">
+            <div className="p-4">
               <div className="relative">
                 <input
                   type="text"
@@ -288,7 +288,7 @@ export default function MessagingSystem() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 p-4 overflow-y-auto max-h-[450px]">
+                <div className="flex-1 p-4 overflow-y-auto max-h-[600px]">
                   <div className="space-y-4">
                     {messages.map((msg, index) => (
                       <div key={msg.id}>

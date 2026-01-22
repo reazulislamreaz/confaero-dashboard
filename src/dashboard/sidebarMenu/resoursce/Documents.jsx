@@ -212,7 +212,7 @@ export default function DocumentManagement() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50">
       <div className="">
         {/* Header */}
         <div className="mb-6">
@@ -242,7 +242,7 @@ export default function DocumentManagement() {
               onClick={() => setShowUploadModal(true)} // 👈 Open Modal
               className="flex items-center gap-2 px-6 py-2 bg-[#5BB8AE] text-white rounded-lg hover:bg-teal-700 transition-colors"
             >
-              <Upload className="w-4 h-4" />
+              <Upload className="w-4 h-4"/>
               Upload Document
             </button>
           </div>
