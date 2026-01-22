@@ -34,6 +34,9 @@ import EditJobPost from "../dashboard/sidebarMenu/resoursce/EditJobPost";
 import QAPolls from "../dashboard/sidebarMenu/resoursce/QaPollSurvey";
 import NoticeAnnouncements from "../dashboard/sidebarMenu/NoticeAnnouncements";
 import Messages from "../dashboard/sidebarMenu/Messages";
+import OrganizerGuideline from "../dashboard/sidebarMenu/settings/OrganizerGuideline";
+import UpdateOrganizerGuideline from "../dashboard/sidebarMenu/settings/UpdateOrganizerGuideline";
+ 
  
  
 
@@ -134,6 +137,15 @@ export const router = createBrowserRouter([
                 path:'settings/privacypolicy',
                 element:<PrivacyPolicy />
             },
+            {
+                path:'settings/organizer-guideline',
+                element:<OrganizerGuideline />
+            },
+            {
+                path:'settings/update-organizerg-uideline',
+                element:<UpdateOrganizerGuideline />
+            },
+
             {
                 path:'settings/editprivacypolicy',
                 element: <EditPrivacy />

@@ -94,8 +94,8 @@ export default function RegistrationTrendChart() {
             <AreaChart data={getData()} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorRegistrations" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#5eead4" stopOpacity={0.6}/>
-                  <stop offset="95%" stopColor="#5eead4" stopOpacity={0.1}/>
+                  <stop offset="49%" stopColor="#32A69A" stopOpacity={0.6}/>
+                  <stop offset="100%" stopColor="#32A69A" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="0" stroke="#f3f4f6" vertical={false} />
@@ -119,7 +119,7 @@ export default function RegistrationTrendChart() {
                 dataKey="registrations" 
                 stroke="#5eead4" 
                 strokeWidth={2}
-                fill="url(#colorRegistrations)" 
+                fill="url(#colorRegistrations)"
               />
             </AreaChart>
           </ResponsiveContainer>

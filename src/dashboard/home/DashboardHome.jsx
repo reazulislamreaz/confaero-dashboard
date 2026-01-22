@@ -1,21 +1,26 @@
 import React from 'react';
- 
+
 import OverviewChart from './OverviewChart';
-import RejectedProductsPage from './RecentUser'; 
+import RejectedProductsPage from './RecentUser';
 import Cardd from './Card';
- 
- 
- 
+import AdminOverview from './AdminOverview';
+
+const admin = true;
 
 const DashboardHome = () => {
- 
-    return (
-        <div>
-             <Cardd />
-             <OverviewChart />
-             <RejectedProductsPage />
-        </div>
-    );
+  return (
+    <div>
+      {admin ? (
+        <AdminOverview />
+      ) : (
+        <>
+          <Cardd />
+          <OverviewChart />
+          <RejectedProductsPage />
+        </>
+      )}
+    </div>
+  );
 };
 
 export default DashboardHome;
