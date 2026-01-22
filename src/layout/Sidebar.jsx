@@ -63,7 +63,7 @@
 //               className={({ isActive }) =>
 //                 isActive
 //                   ? "flex cursor-pointer items-center text-[18px] font-medium p-[10px] bg-[#32A69A] text-[#F6F6F6] m-[6px] rounded-lg"
-//                   : "flex text-[#252525] cursor-pointer items-center text-[18px] font-medium p-[10px] m-[6px] rounded-lg"
+//                   : "flex text-[#252525] bg-[#F6F6F6] cursor-pointer items-center text-[18px] font-medium p-[10px] m-[6px] rounded-lg"
 //               }
 //             >
 //               <BiSolidDashboard className="h-7 w-7 lg:h-5 lg:w-5"/>
@@ -75,7 +75,7 @@
 //               className={({ isActive }) =>
 //                 isActive
 //                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-//                   : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+//                   : "flex text-[#252525] bg-[#f7f1f1] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
 //               }
 //             >
 //               <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -87,7 +87,7 @@
 //               className={({ isActive }) =>
 //                 isActive
 //                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-//                   : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+//                   : "flex text-[#252525] bg-[#f7f1f1] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
 //               }
 //             >
 //               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -99,7 +99,7 @@
 //               className={({ isActive }) =>
 //                 isActive
 //                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-//                   : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+//                   : "flex text-[#252525] bg-[#f7f1f1] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
 //               }
 //             >
 //               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -111,7 +111,7 @@
 //               className={({ isActive }) =>
 //                 isActive
 //                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-//                   : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+//                   : "flex text-[#252525] bg-[#f7f1f1] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
 //               }
 //             >
 //               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -123,7 +123,7 @@
 //               className={({ isActive }) =>
 //                 isActive
 //                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-//                   : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+//                   : "flex text-[#252525] bg-[#f7f1f1] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
 //               }
 //             >
 //               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -135,7 +135,7 @@
 //               className={({ isActive }) =>
 //                 isActive
 //                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-//                   : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
+//                   : "flex text-[#252525] bg-[#f7f1f1] p-[10px] m-[6px] cursor-pointer items-center font-medium  rounded-lg"
 //               }
 //             >
 //               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -150,7 +150,7 @@
 //               className={({ isActive }) =>
 //                 isActive
 //                   ? "flex p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-//                   : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium   rounded-lg"
+//                   : "flex text-[#252525] bg-[#f7f1f1] p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium   rounded-lg"
 //               }
 //             >
 //               <CiSettings className="h-8 w-8 lg:h-5 lg:w-5" />
@@ -175,6 +175,7 @@
 // };
 
 // export default Sidebar;
+
 
 
 
@@ -239,7 +240,7 @@ const Sidebar = () => {
           <img className="h-16 rounded-lg justify-self-center" src={logo} alt="Logo" />
         </div>
 
-        <div className="ml-5 mt-8">
+        <div className="ml-5">
           <ul>
             {/* Dashboard */}
             <NavLink
@@ -247,7 +248,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex cursor-pointer items-center text-[18px] font-medium p-[10px] bg-[#32A69A] text-[#F6F6F6] m-[6px] rounded-lg"
-                  : "flex text-[#252525] cursor-pointer items-center text-[18px] font-medium p-[10px] m-[6px] rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] cursor-pointer items-center text-[18px] font-medium p-[10px] m-[6px] rounded-lg"
               }
             >
               <BiSolidDashboard className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -260,7 +261,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
               <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -273,7 +274,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -286,7 +287,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -299,7 +300,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -312,7 +313,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -325,7 +326,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
               <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -339,7 +340,7 @@ const Sidebar = () => {
                 className={`flex w-full items-center text-[18px] font-medium p-[10px] rounded-lg ${
                   isResourcesOpen
                     ? "bg-[#32A69A] text-[#F6F6F6]"
-                    : "text-[#252525] hover:bg-gray-100"
+                    : "text-[#252525] bg-[#F6F6F6] hover:bg-gray-100"
                 }`}
               >
                 <TbTestPipe2 className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -388,7 +389,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
               <GrAnnounce className="h-7 w-7 lg:h-5 lg:w-5" />
@@ -401,7 +402,7 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 isActive
                   ? "flex p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                  : "flex text-[#252525] p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center text-[18px] font-medium rounded-lg"
               }
             >
               <CiSettings className="h-8 w-8 lg:h-5 lg:w-5" />
