@@ -192,7 +192,7 @@ import { RiAdminLine, RiSecurePaymentFill } from "react-icons/ri";
 import { CiSettings } from "react-icons/ci";
 import Swal from "sweetalert2";
 import { SiMagento } from "react-icons/si";
-import { BsExclude } from "react-icons/bs";
+import { BsCalendarEventFill, BsExclude } from "react-icons/bs";
 import { FaUserAlt, FaUserFriends } from "react-icons/fa";
 import { TbTestPipe2 } from "react-icons/tb";
 import { GoMail } from "react-icons/go";
@@ -239,6 +239,7 @@ const Sidebar = () => {
     <div className="lg:w-[250px] xl:w-[300px] md:w-[200px] sm:w-[120px] border-r-2 !bg-white border-[#32A69A] w-[120px] flex flex-col justify-between h-full min-h-screen rounded-md">
       <div>
         <div className="p-[10px] grid justify-items-stretch sm:p-[16px]">
+          
           <img className="h-16 rounded-lg justify-self-center" src={logo} alt="Logo" />
         </div>
 
@@ -257,9 +258,12 @@ const Sidebar = () => {
               <span className="hidden ml-2 sm:block">Dashboard</span>
             </NavLink>
 
+
             {/* Registration User, admin Users*/}
             {
               isAdmin ? (
+                <div>
+
                   <NavLink
               to="user-management"
               className={({ isActive }) =>
@@ -271,6 +275,21 @@ const Sidebar = () => {
               <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">User Management</span>
             </NavLink>
+
+                  <NavLink
+              to="admin-events"
+              className={({ isActive }) =>
+                isActive
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+              }
+            >
+             <BsCalendarEventFill className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">Events Management</span>
+            </NavLink> 
+           
+                </div>
+            
               ): (
                    <NavLink
               to="users"
