@@ -36,6 +36,7 @@ import NoticeAnnouncements from "../dashboard/sidebarMenu/NoticeAnnouncements";
 import Messages from "../dashboard/sidebarMenu/Messages";
 import OrganizerGuideline from "../dashboard/sidebarMenu/settings/OrganizerGuideline";
 import UpdateOrganizerGuideline from "../dashboard/sidebarMenu/settings/UpdateOrganizerGuideline";
+import AdminUserList from "../dashboard/sidebarMenu/AdminUserList";
  
  
  
@@ -72,8 +73,17 @@ export const router = createBrowserRouter([
                 path: "users",
                 element: <UserListsPage />
             },
+
+            {
+                path: "user-management",
+                element: <AdminUserList />
+            },
             {
                 path: "users/details",
+                element: <UserDetailsPage />
+            },
+            {
+                path: "user-management/details",
                 element: <UserDetailsPage />
             },
             {

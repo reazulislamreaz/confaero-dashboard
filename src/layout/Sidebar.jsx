@@ -199,6 +199,8 @@ import { GoMail } from "react-icons/go";
 import { ImCoinDollar } from "react-icons/im";
 import { GrAnnounce } from 'react-icons/gr';
 
+const isAdmin = true;
+
 const Sidebar = () => {
   const navigate = useNavigate();
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
@@ -255,8 +257,22 @@ const Sidebar = () => {
               <span className="hidden ml-2 sm:block">Dashboard</span>
             </NavLink>
 
-            {/* Registration */}
-            <NavLink
+            {/* Registration User, admin Users*/}
+            {
+              isAdmin ? (
+                  <NavLink
+              to="user-management"
+              className={({ isActive }) =>
+                isActive
+                  ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                  : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+              }
+            >
+              <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
+              <span className="hidden ml-2 sm:block">User Management</span>
+            </NavLink>
+              ): (
+                   <NavLink
               to="users"
               className={({ isActive }) =>
                 isActive
@@ -267,6 +283,11 @@ const Sidebar = () => {
               <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Registration</span>
             </NavLink>
+              )
+            }
+         
+
+          
 
             {/* Invitations */}
             <NavLink
