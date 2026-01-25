@@ -1,5 +1,5 @@
 
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, useOutletContext } from "react-router-dom";
 import Home from "../Home";
 import ErrorPage from "./ErrorPage";
 import ForgotPassword from "../auth/ForgotPassword";
@@ -18,7 +18,7 @@ import Notification from "../dashboard/sidebarMenu/profile/Notification";
 import Profile from "../dashboard/sidebarMenu/profile/Profile";
 import EditProfiel from "../dashboard/sidebarMenu/profile/EditProfile";
 import UserListsPage from "../dashboard/sidebarMenu/Users";
- 
+
 import UserManagement from "../dashboard/sidebarMenu/Users";
 import UserDetailsPage from "../dashboard/sidebarMenu/UserDetailsPage";
 import EventAgendaBuilder from "../dashboard/sidebarMenu/EventManagement";
@@ -28,7 +28,7 @@ import ExhibitorsSponsors from "../dashboard/sidebarMenu/ExhibitorsSponsors";
 import VolunteerManagementPage from "../dashboard/sidebarMenu/Volunteers";
 import DocumentManagement from "../dashboard/sidebarMenu/resoursce/Documents";
 import Photos from "../dashboard/sidebarMenu/resoursce/Photos";
-import JobPostManagement from "../dashboard/sidebarMenu/resoursce/JobPost"; 
+import JobPostManagement from "../dashboard/sidebarMenu/resoursce/JobPost";
 import CreateJobPost from "../dashboard/sidebarMenu/resoursce/CreateJobPost";
 import EditJobPost from "../dashboard/sidebarMenu/resoursce/EditJobPost";
 import QAPolls from "../dashboard/sidebarMenu/resoursce/QaPollSurvey";
@@ -39,10 +39,12 @@ import UpdateOrganizerGuideline from "../dashboard/sidebarMenu/settings/UpdateOr
 import AdminUserList from "../dashboard/sidebarMenu/AdminUserList";
 import AdminEventManagement from "../dashboard/sidebarMenu/AdminEventsManagement";
 import DashboardOverview from "../dashboard/home/AdminOverview";
- 
- 
- 
 
+// Wrapper component to pass context to AdminEventManagement
+function AdminEventsWrapper() {
+  const { handleEventSelect } = useOutletContext();
+  return <AdminEventManagement onEventSelect={handleEventSelect} />;
+}
 
 export const router = createBrowserRouter([
     {
@@ -94,7 +96,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "admin-events",
-                element: <AdminEventManagement />
+                element: <AdminEventsWrapper />
             },
             {
                 path: "invitaitons",
@@ -206,8 +208,8 @@ export const router = createBrowserRouter([
                 path: "dashboard/editprofile",
                 element: <EditProfiel />
             },
-            
-            
+
+
         ]
     }
 ])

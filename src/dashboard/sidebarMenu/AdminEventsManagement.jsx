@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search, Calendar, MapPin, ExternalLink, Plus, Edit2, Trash2, Heart, X } from 'lucide-react';
 import { TiPinOutline } from 'react-icons/ti';
 
-export default function AdminEventManagement() {
+export default function AdminEventManagement({ onEventSelect }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('Recently');
   const [eventDate, setEventDate] = useState('Recently');
@@ -20,6 +20,7 @@ export default function AdminEventManagement() {
     boothSlot: '',
     details: ''
   });
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const events = [
     {
@@ -57,6 +58,13 @@ export default function AdminEventManagement() {
     }
   ];
 
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    if (onEventSelect) {
+      onEventSelect(event);
+    }
+  };
+
   const addOrganizerEmail = () => {
     setOrganizerEmails([...organizerEmails, '']);
   };
@@ -84,6 +92,7 @@ export default function AdminEventManagement() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
+  
       <div className="">
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
@@ -161,7 +170,15 @@ export default function AdminEventManagement() {
         {/* Event Cards */}
         <div className="space-y-4">
           {events.map((event, index) => (
-            <div key={index} className="bg-white rounded-lg border border-[#32A69A] h-48 shadow-sm overflow-hidden">
+            <div
+              key={index}
+              className={`bg-white rounded-lg border ${
+                selectedEvent && selectedEvent.id === event.id
+                  ? 'border-teal-500 ring-2 ring-teal-300'
+                  : 'border-[#32A69A]'
+              } h-48 shadow-sm overflow-hidden cursor-pointer`}
+              onClick={() => handleEventClick(event)}
+            >
               <div className="flex items-start gap-4 p-5">
                 {/* Event Image */}
                 <div className="flex-shrink-0">
@@ -197,7 +214,7 @@ export default function AdminEventManagement() {
                         </div>
                       </div>
                     </div>
-                  
+
                   </div>
 
                   {/* Stats */}
@@ -247,7 +264,7 @@ export default function AdminEventManagement() {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-800">Create Event</h2>
-                <button 
+                <button
                   onClick={() => setShowCreateModal(false)}
                   className="text-gray-400 hover:text-gray-600"
                 >
@@ -285,7 +302,7 @@ export default function AdminEventManagement() {
                       <div key={index} className="flex items-center gap-2">
                         <div className="flex-1 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded text-sm text-gray-700 flex items-center justify-between">
                           <span>{email || 'example@email.com'}</span>
-                          <button 
+                          <button
                             onClick={() => removeOrganizerEmail(index)}
                             className="text-gray-400 hover:text-gray-600 ml-2"
                           >
@@ -299,7 +316,7 @@ export default function AdminEventManagement() {
                       placeholder="Enter organizer mail"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
-                    <button 
+                    <button
                       onClick={addOrganizerEmail}
                       className="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1"
                     >
@@ -386,7 +403,7 @@ export default function AdminEventManagement() {
                   />
                 </div>
 
-                <button 
+                <button
                   onClick={handleCreateEvent}
                   className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 rounded-lg transition-colors"
                 >
