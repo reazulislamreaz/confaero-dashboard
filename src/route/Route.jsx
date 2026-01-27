@@ -43,8 +43,8 @@ import EventOverview from "../dashboard/home/EventOverview";
 
 // Wrapper component to pass context to AdminEventManagement
 function AdminEventsWrapper() {
-  const { handleEventSelect } = useOutletContext();
-  return <AdminEventManagement onEventSelect={handleEventSelect} />;
+  const { handleEventSelect, resetEventSelection } = useOutletContext();
+  return <AdminEventManagement onEventSelect={handleEventSelect} resetEventSelection={resetEventSelection} />;
 }
 
 export const router = createBrowserRouter([

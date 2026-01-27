@@ -175,7 +175,7 @@ export default function AdminEventManagement({ onEventSelect }) {
           {events.map((event, index) => (
             <div
               key={index}
-              className={`bg-white rounded-lg border ${
+              className={`bg-white rounded-lg ${
                 selectedEvent && selectedEvent.id === event.id
                   ? 'border-teal-500 ring-2 ring-teal-300'
                   : 'border-[#32A69A]'
@@ -238,10 +238,20 @@ export default function AdminEventManagement({ onEventSelect }) {
                 </div>
 
                 {/* Action Buttons */}
+
                 <div className="flex flex-col gap-2 ml-4">
-                      <button className="text-gray-400 hover:text-red-500 flex justify-end transition-colors">
-                     <TiPinOutline className="w-6 h-6 cursor-pointer" />
+                  {
+                    selectedEvent && selectedEvent.id === event.id ? (
+                      <button className=" hover:text-red-500 flex justify-end transition-colors">
+                     <TiPinOutline className="w-6 h-6 text-gray-400 cursor-pointer" />
                     </button>
+                    ) : (
+                      <button className=" hover:text-red-500 flex justify-end transition-colors">
+                     <TiPinOutline className="w-6 h-6 text-black cursor-pointer" />
+                    </button>
+                    )
+                  }
+                      
                   <button 
                   onClick={() => navigate("/dashboard/admin-events/event-overview")}
                    className="w-full py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap">

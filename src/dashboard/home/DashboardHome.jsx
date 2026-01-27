@@ -5,7 +5,7 @@ import RejectedProductsPage from './RecentUser';
 import Cardd from './Card';
 import AdminOverview from './AdminOverview';
 
-const admin = false;
+const admin = true;
 
 const DashboardHome = () => {
   return (
