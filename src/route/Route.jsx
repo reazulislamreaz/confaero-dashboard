@@ -39,6 +39,7 @@ import UpdateOrganizerGuideline from "../dashboard/sidebarMenu/settings/UpdateOr
 import AdminUserList from "../dashboard/sidebarMenu/AdminUserList";
 import AdminEventManagement from "../dashboard/sidebarMenu/AdminEventsManagement";
 import DashboardOverview from "../dashboard/home/AdminOverview";
+import EventOverview from "../dashboard/home/EventOverview";
 
 // Wrapper component to pass context to AdminEventManagement
 function AdminEventsWrapper() {
@@ -76,6 +77,10 @@ export const router = createBrowserRouter([
             {
                 path: "admin-home",
                 element: <DashboardOverview />
+            },
+            {
+                path: "admin-events/event-overview",
+                element: <EventOverview />
             },
             {
                 path: "users",

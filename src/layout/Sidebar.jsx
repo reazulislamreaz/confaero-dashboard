@@ -2,22 +2,23 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from "react-router-dom";
 import logo from '../../public/image/logo.png';
-import { FaDollarSign, FaPersonRunning, FaSackDollar, FaUser, FaUsers, FaUsersLine } from "react-icons/fa6";
-import { MdCategory, MdOutlineMedicalServices, MdSubscriptions } from "react-icons/md";
+import { FaDollarSign, FaPersonRunning, FaRegUser, FaSackDollar, FaUser, FaUserCheck, FaUsers, FaUsersLine } from "react-icons/fa6";
+import { MdCategory, MdOutlineInsertInvitation, MdOutlineMedicalServices, MdSubscriptions } from "react-icons/md";
 import { BiMenu, BiSolidDashboard } from "react-icons/bi";
-import { HiLogout } from "react-icons/hi";
+import { HiLogout, HiUsers } from "react-icons/hi";
 import { AiOutlineSafetyCertificate } from "react-icons/ai";
 import { PiGitPullRequestDuotone } from "react-icons/pi";
 import { RiAdminLine, RiSecurePaymentFill } from "react-icons/ri";
-import { CiSettings } from "react-icons/ci";
+import { CiBullhorn, CiSettings } from "react-icons/ci";
 import Swal from "sweetalert2";
 import { SiMagento } from "react-icons/si";
 import { BsCalendarEventFill, BsExclude } from "react-icons/bs";
 import { FaUserAlt, FaUserFriends } from "react-icons/fa";
-import { TbTestPipe2 } from "react-icons/tb";
+import { TbTestPipe2, TbUsers, TbUsersGroup } from "react-icons/tb";
 import { GoMail } from "react-icons/go";
 import { ImCoinDollar } from "react-icons/im";
 import { GrAnnounce } from 'react-icons/gr';
+import { FiSend, FiUserCheck, FiUserPlus } from 'react-icons/fi';
 
 const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
   const navigate = useNavigate();
@@ -75,7 +76,9 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
               <BiSolidDashboard className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Dashboard</span>
             </NavLink>
-               <NavLink
+            {
+              isAdmin ? (
+                <NavLink
                   to="user-management"
                   className={({ isActive }) =>
                     isActive
@@ -83,9 +86,14 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                       : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
                   }
                 >
-                  <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
+                  <FaRegUser className="h-7 w-7 lg:h-5 lg:w-5" />
                   <span className="hidden ml-2 sm:block">User Management</span>
                 </NavLink>
+              ): (
+                ""
+              )
+            }
+               
 
             {/* Registration User, admin Users*/}
             {
@@ -262,7 +270,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                   : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <FaUsers className="h-7 w-7 lg:h-5 lg:w-5" />
+              <FaRegUser className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Registration</span>
             </NavLink>
 
@@ -275,7 +283,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                   : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+             <FiSend className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Invitations</span>
             </NavLink>
 
@@ -288,7 +296,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                   : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <MdOutlineInsertInvitation className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Event Details & Agenda</span>
             </NavLink>
 
@@ -301,7 +309,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                   : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+             <FiUserCheck className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Reviewer Management</span>
             </NavLink>
 
@@ -314,7 +322,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                   : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+              <TbUsers className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Exhibitors & Sponsors</span>
             </NavLink>
 
@@ -327,7 +335,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                   : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <ImCoinDollar className="h-7 w-7 lg:h-5 lg:w-5" />
+             <FiUserPlus className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Volunteers</span>
             </NavLink>
 
@@ -341,7 +349,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                     : "text-[#252525] bg-[#F6F6F6] hover:bg-gray-100"
                 }`}
               >
-                <TbTestPipe2 className="h-7 w-7 lg:h-5 lg:w-5" />
+                <TbUsersGroup className="h-7 w-7 lg:h-5 lg:w-5" />
                 <span className="hidden ml-2 sm:block">Resources</span>
                 <span className="ml-auto">
                   {isResourcesOpen ? (
@@ -390,7 +398,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                   : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
               }
             >
-              <GrAnnounce className="h-7 w-7 lg:h-5 lg:w-5" />
+              <CiBullhorn className="h-7 w-7 lg:h-5 lg:w-5" />
               <span className="hidden ml-2 sm:block">Announcements</span>
             </NavLink>
 

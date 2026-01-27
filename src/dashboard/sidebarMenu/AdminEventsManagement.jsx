@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Search, Calendar, MapPin, ExternalLink, Plus, Edit2, Trash2, Heart, X } from 'lucide-react';
 import { TiPinOutline } from 'react-icons/ti';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminEventManagement({ onEventSelect }) {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('Recently');
   const [eventDate, setEventDate] = useState('Recently');
@@ -24,7 +26,7 @@ export default function AdminEventManagement({ onEventSelect }) {
 
   const events = [
     {
-      id: 28,
+      id: 2,
       title: 'The 23rd International Meeting on Lithium Batteries (IMLB 2026)',
       date: 'Jun 22-25, 2026',
       location: 'Las Vegas, USA',
@@ -35,7 +37,7 @@ export default function AdminEventManagement({ onEventSelect }) {
       image: '/public/image/event.png'
     },
     {
-      id: 28,
+      id: 3,
       title: 'The 23rd International Meeting on Lithium Batteries (IMLB 2026)',
       date: 'Jun 22-25, 2026',
       location: 'Las Vegas, USA',
@@ -46,7 +48,7 @@ export default function AdminEventManagement({ onEventSelect }) {
       image: '/public/image/event.png'
     },
     {
-      id: 28,
+      id: 4,
       title: 'The 23rd International Meeting on Lithium Batteries (IMLB 2026)',
       date: 'Jun 22-25, 2026',
       location: 'Las Vegas, USA',
@@ -59,6 +61,7 @@ export default function AdminEventManagement({ onEventSelect }) {
   ];
 
   const handleEventClick = (event) => {
+    console.log(event)
     setSelectedEvent(event);
     if (onEventSelect) {
       onEventSelect(event);
@@ -239,7 +242,9 @@ export default function AdminEventManagement({ onEventSelect }) {
                       <button className="text-gray-400 hover:text-red-500 flex justify-end transition-colors">
                      <TiPinOutline className="w-6 h-6 cursor-pointer" />
                     </button>
-                  <button className="w-full py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap">
+                  <button 
+                  onClick={() => navigate("/dashboard/admin-events/event-overview")}
+                   className="w-full py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap">
                     View Overview
                   </button>
                   <div className="flex gap-2 mt-6">
