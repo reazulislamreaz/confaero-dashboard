@@ -5,8 +5,8 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 
 // Mock function to determine if user is admin - in a real app, this would come from auth context
-const isAdmin = true; // This should be replaced with actual user role check
-
+// const isAdmin = true;  
+const isAdmin = false;
 const Main = () => {
   const [hasSelectedEvent, setHasSelectedEvent] = useState(false);
   const location = useLocation();
