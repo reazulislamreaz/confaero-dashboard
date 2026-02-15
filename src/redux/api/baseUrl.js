@@ -1,3 +1,3 @@
 
-// const url = "http://192.168.10.169:8083"
-// export default url
+const url = "https://reaz8080.syedbipul.me"
+export default url

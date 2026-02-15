@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAdminLoginMutation } from '../redux/features/authSlice/authSlice';
+import toast, { Toaster } from 'react-hot-toast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +16,8 @@ const Login = () => {
     return emailRegex.test(email);
   };
 
-  const handleSubmit = () => {
+  const [login, { isLoading }] = useAdminLoginMutation();
+  const handleSubmit = async () => {
     const newErrors = {};
 
     if (!email) {
@@ -32,13 +35,29 @@ const Login = () => {
       return;
     }
 
-    // Handle login logic here
-    console.log('Login submitted:', { email, password, rememberMe });
-     navigate('/dashboard/home');
+    const data = {
+     email:email,
+      password:password
+    }
+    console.log(data);
+
+    try {
+      const response = await login(data).unwrap();
+      console.log('Login response:', response);
+      if(response.success === true){
+        localStorage.setItem('token', response.data.accessToken);
+        toast.success(response.message)
+      }
+      navigate('/dashboard/home');
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ general: 'Invalid email or password' });
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="w-full max-w-7xl bg-white rounded-2xl overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left Side - Logo and Branding */}
