@@ -57,7 +57,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Toaster position="top-right" reverseOrder={false} />
+      {/* <Toaster position="top-right" reverseOrder={false} /> */}
       <div className="w-full max-w-7xl bg-white rounded-2xl overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left Side - Logo and Branding */}

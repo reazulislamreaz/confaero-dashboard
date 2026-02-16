@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from "react-router-dom";
 import logo from '../../public/image/logo.png';
 import { FaDollarSign, FaPersonRunning, FaRegUser, FaSackDollar, FaUser, FaUserCheck, FaUsers, FaUsersLine } from "react-icons/fa6";
@@ -22,7 +22,12 @@ import { FiSend, FiUserCheck, FiUserPlus } from 'react-icons/fi';
 
 const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
   const navigate = useNavigate();
-  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
+
+  // Initialize state from localStorage to persist across route changes
+  const [isResourcesOpen, setIsResourcesOpen] = useState(() => {
+    const savedState = localStorage.getItem('isResourcesOpen');
+    return savedState ? JSON.parse(savedState) : false;
+  });
 
   const handleLogOut = () => {
     Swal.fire({
@@ -53,6 +58,11 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
   const toggleResources = () => {
     setIsResourcesOpen(!isResourcesOpen);
   };
+
+  // Save state to localStorage whenever isResourcesOpen changes
+  useEffect(() => {
+    localStorage.setItem('isResourcesOpen', JSON.stringify(isResourcesOpen));
+  }, [isResourcesOpen]);
 
   return (
     <div className="lg:w-[250px] xl:w-[300px] md:w-[200px] sm:w-[120px] border-r-2 !bg-white border-[#32A69A] w-[120px] flex flex-col justify-between h-full min-h-screen rounded-md">
@@ -93,7 +103,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                 ""
               )
             }
-               
+
 
             {/* Registration User, admin Users*/}
             {
@@ -180,7 +190,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
             </NavLink>
 
             {/* Resources (Dropdown) */}
-            
+
             <li className="mb-[6px]">
               <button
                 onClick={toggleResources}
@@ -243,12 +253,12 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
               <CiBullhorn className="h-7 w-7 lg:h-5 lg:w-5" />
 
               <span className="hidden ml-2 sm:block">Announcements</span>
-            </NavLink>    
+            </NavLink>
                   </div>
                 ) : (
                   // Show full admin menu when no event is selected
                   <div>
-                   
+
 
                     <NavLink
                   to="admin-events"
