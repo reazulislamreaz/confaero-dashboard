@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Upload, Edit, Trash2, Eye, X, MapPin, User, Calendar, Clock } from 'lucide-react';
+import { useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
+import { useSelectedEvent } from '../../hooks/useSelectedEvent';
+ 
 
 export default function EventAgendaBuilder() {
   const [activeTab, setActiveTab] = useState('Event Info');
@@ -7,6 +10,13 @@ export default function EventAgendaBuilder() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [editingSession, setEditingSession] = useState(null);
+
+    const { eventId } = useSelectedEvent();
+
+const {data: event, } = useGetEventQuery();
+
+console.log(eventId)
+
   const [floorMaps, setFloorMaps] = useState([
     { id: 1, name: 'Main Hall', image: null },
     { id: 2, name: 'Main Hall', image: null },
