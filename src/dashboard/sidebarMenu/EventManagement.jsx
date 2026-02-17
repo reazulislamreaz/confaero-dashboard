@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Upload, Edit, Trash2, Eye, X, MapPin, User, Calendar, Clock } from 'lucide-react';
 import { useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
- 
+
 
 export default function EventAgendaBuilder() {
   const [activeTab, setActiveTab] = useState('Event Info');
@@ -11,11 +11,19 @@ export default function EventAgendaBuilder() {
   const [selectedSession, setSelectedSession] = useState(null);
   const [editingSession, setEditingSession] = useState(null);
 
-    const { eventId } = useSelectedEvent();
+  const { eventId, setEvent } = useSelectedEvent();
+  const { data: eventResponse } = useGetEventQuery();
+ console.log(eventId);
+  // Extract the first event from the API response
+  const event = eventResponse?.data?.[0];
 
-const {data: event, } = useGetEventQuery();
+  // Set the selected event when data is loaded
+  React.useEffect(() => {
+    if (event && !eventId) {
+      setEvent(event);
+    }
+  }, [event, eventId, setEvent]);
 
-console.log(eventId)
 
   const [floorMaps, setFloorMaps] = useState([
     { id: 1, name: 'Main Hall', image: null },
@@ -166,16 +174,16 @@ console.log(eventId)
   const renderEventInfo = () => (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-6">Event Details</h2>
-      
+
       {/* Banner Image */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Banner Image</label>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 relative">
           {eventData.bannerImagePreview ? (
             <div className="relative">
-              <img 
-                src={eventData.bannerImagePreview} 
-                alt="Banner preview" 
+              <img
+                src={eventData.bannerImagePreview}
+                alt="Banner preview"
                 className="max-h-48 mx-auto rounded"
               />
               <button
@@ -322,9 +330,9 @@ console.log(eventId)
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 relative">
           {floorMapData.bannerImagePreview ? (
             <div className="relative">
-              <img 
-                src={floorMapData.bannerImagePreview} 
-                alt="Floor map preview" 
+              <img
+                src={floorMapData.bannerImagePreview}
+                alt="Floor map preview"
                 className="max-h-48 mx-auto rounded"
               />
               <button
@@ -494,8 +502,8 @@ console.log(eventId)
                 </button>
               ))}
             </div>
-           
-           
+
+
           </div>
         </div>
 
@@ -512,7 +520,7 @@ console.log(eventId)
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
               <h2 className="text-xl font-semibold text-gray-800">Session Details</h2>
-              <button 
+              <button
                 onClick={() => setShowDetailsModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -551,8 +559,8 @@ console.log(eventId)
               </div>
 
               </div>
- 
- 
+
+
             </div>
 
             {/* Modal Footer */}
@@ -586,7 +594,7 @@ console.log(eventId)
               <h2 className="text-xl font-semibold text-gray-800">
                 {editingSession.id ? editingSession.title : 'Unlocking higher energy density in LFP cells'}
               </h2>
-              <button 
+              <button
                 onClick={() => setShowEditModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -597,7 +605,7 @@ console.log(eventId)
             {/* Modal Body */}
             <div className="p-6">
               {/* Session Date & Hours Cards */}
-            
+
 
               {/* Form Fields */}
               <div className="space-y-4">

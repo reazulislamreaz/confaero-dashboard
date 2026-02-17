@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Filter, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -9,7 +9,10 @@ export default function UserManagement() {
   const [selectedRole, setSelectedRole] = useState('');
  const navigate = useNavigate();
 
- 
+  const { eventId } = useSelectedEvent();
+
+  console.log(eventId);
+
   // Sample user data
   const users = Array(50).fill(null).map((_, index) => ({
     id: `#01`,
