@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
-import { Plus, Upload, Edit, Trash2, Eye, X, MapPin, User, Calendar, Clock } from 'lucide-react';
+import { Plus, Upload, Edit, Trash2, Eye, X, MapPin, Calendar } from 'lucide-react';
 import { useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const formatDate = (iso) => {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
+};
+
+const formatDateTimeLocal = (iso) => {
+  if (!iso) return '';
+  return new Date(iso).toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+};
 
 export default function EventAgendaBuilder() {
   const [activeTab, setActiveTab] = useState('Event Info');
@@ -12,165 +24,147 @@ export default function EventAgendaBuilder() {
   const [editingSession, setEditingSession] = useState(null);
 
   const { eventId, setEvent } = useSelectedEvent();
-  const { data: eventResponse } = useGetEventQuery();
- console.log(eventId);
-  // Extract the first event from the API response
+  const { data: eventResponse, isLoading, isError } = useGetEventQuery();
+
+  // ── Extract event from API response ────────────────────────────────────────
   const event = eventResponse?.data?.[0];
 
-  // Set the selected event when data is loaded
+  // ── Sync eventId into context once loaded ──────────────────────────────────
   React.useEffect(() => {
     if (event && !eventId) {
       setEvent(event);
     }
   }, [event, eventId, setEvent]);
 
+  // ── Editable Event Info state — seeded from API ────────────────────────────
+  const [eventData, setEventData] = useState(null);
 
-  const [floorMaps, setFloorMaps] = useState([
-    { id: 1, name: 'Main Hall', image: null },
-    { id: 2, name: 'Main Hall', image: null },
-    { id: 3, name: 'Main Hall', image: null }
-  ]);
+  React.useEffect(() => {
+    if (event && !eventData) {
+      setEventData({
+        bannerImage: null,
+        bannerImagePreview: event.bannerImageUrl || null,
+        title: event.title || '',
+        startDate: formatDateTimeLocal(event.startDate),
+        endDate: formatDateTimeLocal(event.endDate),
+        location: event.location || '',
+        mapLink: event.googleMapLink || '',
+        description: event.details || '',
+        website: event.website || '',
+      });
+    }
+  }, [event, eventData]);
 
-  const [eventData, setEventData] = useState({
-    bannerImage: null,
-    bannerImagePreview: null,
-    title: '18th Lithium Supply & Battery Conference',
-    startDate: 'Jun 22-25, 2026',
-    endDate: '',
-    location: 'Las Vegas, USA',
-    mapLink: 'https://maps.app.goo.gl/6qv1H5UMsY5gUAg8',
-    description: 'For 18 years, the Fastmarkets Lithium Supply and Battery Raw Materials Conference has been the definitive meeting place for the sector. More than 1,300 delegates rely on this platform to negotiate offtake agreements, secure financing, assess market fundamentals and build partnerships across the supply chain.'
-  });
+  // ── Floor maps state — seeded from API ────────────────────────────────────
+  const [floorMaps, setFloorMaps] = useState(null);
+
+  React.useEffect(() => {
+    if (event?.floorMaps && !floorMaps) {
+      setFloorMaps(
+        event.floorMaps.map((fm) => ({
+          id: fm._id,
+          name: fm.title,
+          image: fm.imageUrl,
+        }))
+      );
+    }
+  }, [event, floorMaps]);
 
   const [floorMapData, setFloorMapData] = useState({
     title: '',
     bannerImage: null,
-    bannerImagePreview: null
+    bannerImagePreview: null,
   });
 
-  const sessions = [
-    {
-      id: 1,
-      name: 'Session 1',
-      time: '08:30 - 09:00',
-      title: 'Registration & Welcome Coffee',
-      venue: 'Main Hall',
-      type: 'Break'
-    },
-    {
-      id: 2,
-      name: 'Session 2',
-      time: '09:00 - 10:30',
-      title: 'Keynote: Future of Battery Technology',
-      venue: 'Main Hall',
-      type: 'Keynote'
-    },
-    {
-      id: 3,
-      name: 'Session 3',
-      time: '10:30 - 11:00',
-      title: 'Coffee Break / Posters & Exhibit',
-      venue: 'Exhibit Area',
-      type: 'Break'
-    },
-    {
-      id: 4,
-      name: 'Session 4',
-      time: '11:00 - 11:30',
-      title: 'Unlocking higher energy density in LFP cells',
-      venue: 'Main Hall',
-      type: 'Session'
-    }
-  ];
+  // ── Sessions from API agenda ───────────────────────────────────────────────
+  const sessions = event?.agenda?.sessions || [];
 
+  // ── Type color helper ─────────────────────────────────────────────────────
   const getTypeColor = (type) => {
     switch (type) {
-      case 'Break': return 'text-teal-600';
+      case 'Break':   return 'text-teal-600';
       case 'Keynote': return 'text-blue-600';
       case 'Session': return 'text-purple-600';
-      default: return 'text-gray-600';
+      default:        return 'text-gray-600';
     }
   };
 
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleViewDetails = (session) => {
     setSelectedSession(session);
     setShowDetailsModal(true);
   };
 
   const handleAddSession = () => {
-    setEditingSession({
-      id: null,
-      name: '',
-      time: '',
-      title: '',
-      venue: '',
-      type: 'Session',
-      sessionDate: '',
-      sessionHours: ''
-    });
+    setEditingSession({ id: null, name: '', time: '', title: '', venue: '', type: 'Session' });
     setShowEditModal(true);
   };
 
-  const handleUploadCSV = () => {
-    console.log('Upload CSV');
-  };
-
   const handleEdit = (session) => {
-    setEditingSession({
-      ...session,
-      sessionDate: 'Jun 22-25, 2026',
-      sessionHours: '08:30AM - 9:00AM'
-    });
+    setEditingSession({ ...session });
     setShowEditModal(true);
   };
 
   const handleDelete = (session) => {
     console.log('Delete session:', session);
+    // TODO: dispatch delete mutation
   };
 
   const handleSaveChanges = () => {
-    console.log('Save all changes');
+    console.log('Save event data:', eventData);
+    // TODO: dispatch update mutation
   };
 
   const handleRemoveFloorMap = (id) => {
-    setFloorMaps(floorMaps.filter(map => map.id !== id));
+    setFloorMaps((prev) => prev.filter((m) => m.id !== id));
   };
 
   const handleAddFloorMap = () => {
-    const newId = Math.max(...floorMaps.map(m => m.id), 0) + 1;
-    setFloorMaps([...floorMaps, { id: newId, name: 'Main Hall', image: null }]);
+    if (!floorMapData.title) return;
+    const newId = `new_${Date.now()}`;
+    setFloorMaps((prev) => [
+      ...prev,
+      { id: newId, name: floorMapData.title, image: floorMapData.bannerImagePreview },
+    ]);
+    setFloorMapData({ title: '', bannerImage: null, bannerImagePreview: null });
   };
 
   const handleEventBannerUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEventData({
-          ...eventData,
-          bannerImage: file,
-          bannerImagePreview: reader.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () =>
+      setEventData((prev) => ({ ...prev, bannerImage: file, bannerImagePreview: reader.result }));
+    reader.readAsDataURL(file);
   };
 
   const handleFloorMapUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFloorMapData({
-          ...floorMapData,
-          bannerImage: file,
-          bannerImagePreview: reader.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () =>
+      setFloorMapData((prev) => ({ ...prev, bannerImage: file, bannerImagePreview: reader.result }));
+    reader.readAsDataURL(file);
   };
 
+  // ── Loading / Error ───────────────────────────────────────────────────────
+  if (isLoading || !eventData || !floorMaps) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading event data...</p>
+      </div>
+    );
+  }
+
+  if (isError || !event) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-red-400 text-sm">Failed to load event. Please try again.</p>
+      </div>
+    );
+  }
+
+  // ── Tab: Event Info ───────────────────────────────────────────────────────
   const renderEventInfo = () => (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-6">Event Details</h2>
@@ -178,16 +172,16 @@ export default function EventAgendaBuilder() {
       {/* Banner Image */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Banner Image</label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 relative">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 relative overflow-hidden">
           {eventData.bannerImagePreview ? (
             <div className="relative">
               <img
                 src={eventData.bannerImagePreview}
                 alt="Banner preview"
-                className="max-h-48 mx-auto rounded"
+                className="max-h-48 mx-auto rounded object-cover"
               />
               <button
-                onClick={() => setEventData({...eventData, bannerImage: null, bannerImagePreview: null})}
+                onClick={() => setEventData((p) => ({ ...p, bannerImage: null, bannerImagePreview: null }))}
                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
               >
                 <X className="w-4 h-4" />
@@ -197,7 +191,7 @@ export default function EventAgendaBuilder() {
             <div className="flex flex-col items-center">
               <Upload className="w-12 h-12 text-gray-400 mb-2" />
               <p className="text-sm text-gray-600 mb-1">Browse photo or drop here</p>
-              <p className="text-xs text-gray-400">Banner images option dimension 1920x600 Max photo size 10 MB</p>
+              <p className="text-xs text-gray-400">1920×600 recommended · Max 10 MB</p>
               <input
                 type="file"
                 accept="image/*"
@@ -209,75 +203,90 @@ export default function EventAgendaBuilder() {
         </div>
       </div>
 
-      {/* Event Title */}
+      {/* Title */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Event Title</label>
         <input
           type="text"
           value={eventData.title}
-          onChange={(e) => setEventData({...eventData, title: e.target.value})}
+          onChange={(e) => setEventData((p) => ({ ...p, title: e.target.value }))}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
         />
       </div>
 
-      {/* Date & Time */}
+      {/* Dates */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Start Date & Time</label>
           <input
-            type="text"
+            type="datetime-local"
             value={eventData.startDate}
-            onChange={(e) => setEventData({...eventData, startDate: e.target.value})}
-            placeholder="mm/dd/yyyy - Jun 22-25, 2026"
+            onChange={(e) => setEventData((p) => ({ ...p, startDate: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">End Date & Time</label>
           <input
-            type="text"
+            type="datetime-local"
             value={eventData.endDate}
-            onChange={(e) => setEventData({...eventData, endDate: e.target.value})}
-            placeholder="mm/dd/yyyy --:-- --"
+            onChange={(e) => setEventData((p) => ({ ...p, endDate: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
       </div>
 
-      {/* Location & Map Link */}
+      {/* Location & Map */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Location/Venue</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Location / Venue</label>
           <input
             type="text"
             value={eventData.location}
-            onChange={(e) => setEventData({...eventData, location: e.target.value})}
+            onChange={(e) => setEventData((p) => ({ ...p, location: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Google map link</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Google Map Link</label>
           <input
             type="text"
             value={eventData.mapLink}
-            onChange={(e) => setEventData({...eventData, mapLink: e.target.value})}
+            onChange={(e) => setEventData((p) => ({ ...p, mapLink: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
       </div>
 
-      {/* Event Description */}
+      {/* Website */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+        <input
+          type="text"
+          value={eventData.website}
+          onChange={(e) => setEventData((p) => ({ ...p, website: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+        />
+      </div>
+
+      {/* Description */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Event Description</label>
         <textarea
           value={eventData.description}
-          onChange={(e) => setEventData({...eventData, description: e.target.value})}
-          rows="4"
+          onChange={(e) => setEventData((p) => ({ ...p, description: e.target.value }))}
+          rows={4}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
         />
       </div>
 
-      {/* Footer Actions */}
+      {/* Quick Info Pills */}
+      <div className="flex flex-wrap gap-3 mb-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+        <span>🎟 Expected Attendees: <strong>{event.expectedAttendee?.toLocaleString() || '—'}</strong></span>
+        <span>🏢 Booth Slots: <strong>{event.boothSlot || '—'}</strong></span>
+        <span>👥 Organizers: <strong>{event.organizerEmails?.join(', ') || '—'}</strong></span>
+      </div>
+
       <div className="flex justify-end gap-3 pt-6 border-t">
         <button className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
           Cancel
@@ -292,51 +301,53 @@ export default function EventAgendaBuilder() {
     </div>
   );
 
+  // ── Tab: Floor Map ────────────────────────────────────────────────────────
   const renderFloorMap = () => (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      {/* Floor Map Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {floorMaps.map((map) => (
-          <div key={map.id} className="relative border border-gray-200 rounded-lg p-3">
-            <button
-              onClick={() => handleRemoveFloorMap(map.id)}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-900"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-gray-300 rounded"></div>
-              <span className="text-sm font-medium text-gray-800">{map.name}</span>
+      {/* Existing Floor Map Cards */}
+      {floorMaps.length > 0 && (
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {floorMaps.map((map) => (
+            <div key={map.id} className="relative border border-gray-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => handleRemoveFloorMap(map.id)}
+                className="absolute top-2 right-2 z-10 w-6 h-6 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-900"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              {map.image ? (
+                <img src={map.image} alt={map.name} className="w-full h-32 object-cover" />
+              ) : (
+                <div className="w-full h-32 bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                  No image
+                </div>
+              )}
+              <div className="p-2 text-sm font-medium text-gray-800 truncate">{map.name}</div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* Floor Map Title */}
+      {/* Add New Floor Map */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Floor Map Title</label>
         <input
           type="text"
           value={floorMapData.title}
-          onChange={(e) => setFloorMapData({...floorMapData, title: e.target.value})}
+          onChange={(e) => setFloorMapData((p) => ({ ...p, title: e.target.value }))}
           placeholder="e.g. Main Hall"
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
         />
       </div>
 
-      {/* Banner Image Upload */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Banner Image</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Floor Map Image</label>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 relative">
           {floorMapData.bannerImagePreview ? (
             <div className="relative">
-              <img
-                src={floorMapData.bannerImagePreview}
-                alt="Floor map preview"
-                className="max-h-48 mx-auto rounded"
-              />
+              <img src={floorMapData.bannerImagePreview} alt="Floor map" className="max-h-48 mx-auto rounded" />
               <button
-                onClick={() => setFloorMapData({...floorMapData, bannerImage: null, bannerImagePreview: null})}
+                onClick={() => setFloorMapData((p) => ({ ...p, bannerImage: null, bannerImagePreview: null }))}
                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
               >
                 <X className="w-4 h-4" />
@@ -357,17 +368,13 @@ export default function EventAgendaBuilder() {
         </div>
       </div>
 
-      {/* Add More Button */}
-      <div className="mb-6">
-        <button
-          onClick={handleAddFloorMap}
-          className="w-full py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-        >
-          Add More
-        </button>
-      </div>
+      <button
+        onClick={handleAddFloorMap}
+        className="w-full py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors mb-6"
+      >
+        Add Floor Map
+      </button>
 
-      {/* Footer Actions */}
       <div className="flex justify-center pt-6 border-t">
         <button
           onClick={handleSaveChanges}
@@ -379,9 +386,9 @@ export default function EventAgendaBuilder() {
     </div>
   );
 
+  // ── Tab: Agenda Builder ───────────────────────────────────────────────────
   const renderAgendaBuilder = () => (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      {/* Header with Actions */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-800">Session Schedule</h2>
         <div className="flex gap-3">
@@ -389,193 +396,148 @@ export default function EventAgendaBuilder() {
             onClick={handleAddSession}
             className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm"
           >
-            <Plus className="w-4 h-4" />
-            Add Session
+            <Plus className="w-4 h-4" /> Add Session
           </button>
-          <button
-            onClick={handleUploadCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm"
-          >
-            <Upload className="w-4 h-4" />
-            Upload CSV
+          <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm">
+            <Upload className="w-4 h-4" /> Upload CSV
           </button>
         </div>
       </div>
 
-      {/* Sessions List */}
-      <div className="space-y-3">
-        {sessions.map((session) => (
-          <div key={session.id} className="flex items-center border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex-1 grid grid-cols-12 gap-4 items-center">
-              {/* Session Name */}
-              <div className="col-span-2">
-                <span className="text-sm font-medium text-gray-800">{session.name}</span>
-              </div>
-
-              {/* Time */}
-              <div className="col-span-2">
-                <span className="text-sm text-gray-600">{session.time}</span>
-              </div>
-
-              {/* Session Details */}
-              <div className="col-span-6">
-                <div className="text-sm font-medium text-gray-800 mb-1">{session.title}</div>
-                <div className="flex items-center gap-3 text-xs text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {session.venue}
-                  </span>
-                  <span className={`font-medium ${getTypeColor(session.type)}`}>
-                    {session.type}
-                  </span>
+      {sessions.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-10">No sessions yet. Add your first session.</p>
+      ) : (
+        <div className="space-y-3">
+          {sessions.map((session, index) => (
+            <div key={session._id || index} className="flex items-center border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex-1 grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-2 text-sm font-medium text-gray-800">
+                  {session.name || `Session ${index + 1}`}
+                </div>
+                <div className="col-span-2 text-sm text-gray-600">{session.time || '—'}</div>
+                <div className="col-span-6">
+                  <div className="text-sm font-medium text-gray-800 mb-1">{session.title}</div>
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {session.venue || '—'}
+                    </span>
+                    <span className={`font-medium ${getTypeColor(session.type)}`}>
+                      {session.type || '—'}
+                    </span>
+                  </div>
+                </div>
+                <div className="col-span-2 flex items-center justify-end gap-2">
+                  <button onClick={() => handleEdit(session)} className="p-2 text-gray-600 hover:text-teal-600 transition-colors">
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDelete(session)} className="p-2 text-gray-600 hover:text-red-600 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleViewDetails(session)} className="p-2 text-gray-600 hover:text-teal-600 transition-colors">
+                    <Eye className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-
-              {/* Actions */}
-              <div className="col-span-2 flex items-center justify-end gap-2">
-                <button
-                  onClick={() => handleEdit(session)}
-                  className="p-2 text-gray-600 hover:text-teal-600 transition-colors"
-                  title="Edit"
-                >
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(session)}
-                  className="p-2 text-gray-600 hover:text-red-600 transition-colors"
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleViewDetails(session)}
-                  className="p-2 text-gray-600 hover:text-teal-600 transition-colors"
-                  title="View Details"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* Footer Actions */}
       <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
-        <button className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-          Cancel
-        </button>
-        <button
-          onClick={handleSaveChanges}
-          className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-        >
+        <button className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button onClick={handleSaveChanges} className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
           Save Changes
         </button>
       </div>
     </div>
   );
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-800 mb-1">Event Details & Agenda</h1>
           <p className="text-gray-500 text-sm">Configure event information, floor map, and create agenda</p>
         </div>
 
-        {/* Tabs and Profile */}
+        {/* Tabs */}
         <div className="bg-white rounded-lg mb-6">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex gap-2">
-              {['Event Info', 'Floor Map', 'Agenda Builder'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-2 text-sm font-medium transition-colors rounded ${
-                    activeTab === tab
-                      ? 'text-white bg-teal-600'
-                      : 'text-gray-600 border border-gray-300 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-
+          <div className="flex items-center p-4 gap-2">
+            {['Event Info', 'Floor Map', 'Agenda Builder'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-2 text-sm font-medium transition-colors rounded ${
+                  activeTab === tab
+                    ? 'text-white bg-teal-600'
+                    : 'text-gray-600 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Tab Content */}
-        {activeTab === 'Event Info' && renderEventInfo()}
-        {activeTab === 'Floor Map' && renderFloorMap()}
-        {activeTab === 'Agenda Builder' && renderAgendaBuilder()}
+        {activeTab === 'Event Info'      && renderEventInfo()}
+        {activeTab === 'Floor Map'       && renderFloorMap()}
+        {activeTab === 'Agenda Builder'  && renderAgendaBuilder()}
       </div>
 
-      {/* Details Modal */}
+      {/* ── Details Modal ──────────────────────────────────────────────────── */}
       {showDetailsModal && selectedSession && (
-        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-[500px] max-w-2xl max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
               <h2 className="text-xl font-semibold text-gray-800">Session Details</h2>
-              <button
-                onClick={() => setShowDetailsModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={() => setShowDetailsModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="w-6 h-6" />
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="p-6">
-              {/* Session Information */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Session Information</h3>
-                <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="border border-gray-200 rounded-lg p-4 text-center">
                   <div className="flex justify-center mb-2">
                     <Calendar className="w-8 h-8 text-teal-600" />
                   </div>
                   <div className="text-xs text-gray-600 mb-1">Session Date</div>
-                  <div className="text-sm font-medium text-gray-800">{editingSession.sessionDate || 'Jun 22-25, 2026'}</div>
+                  <div className="text-sm font-medium text-gray-800">
+                    {formatDate(event.startDate)} – {formatDate(event.endDate)}
+                  </div>
                 </div>
                 <div className="border border-gray-200 rounded-lg p-4 text-center">
                   <div className="flex justify-center mb-2">
                     <Calendar className="w-8 h-8 text-teal-600" />
                   </div>
                   <div className="text-xs text-gray-600 mb-1">Session Hours</div>
-                  <div className="text-sm font-medium text-gray-800">{editingSession.sessionHours || '08:30AM - 9:00AM'}</div>
+                  <div className="text-sm font-medium text-gray-800">{selectedSession.time || '—'}</div>
                 </div>
               </div>
-
-              {/* Details Section */}
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-800 mb-4">Details</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-gray-800 mb-2">Title</h3>
+                <p className="text-sm text-gray-700">{selectedSession.title}</p>
+              </div>
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-gray-800 mb-2">Venue</h3>
+                <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" /> {selectedSession.venue || '—'}
                 </p>
               </div>
-
-              </div>
-
-
+              {selectedSession.description && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-2">Details</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">{selectedSession.description}</p>
+                </div>
+              )}
             </div>
-
-            {/* Modal Footer */}
             <div className="flex gap-3 justify-end p-6 border-t bg-gray-50">
-              <button
-                onClick={() => setShowDetailsModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-              >
+              <button onClick={() => setShowDetailsModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
                 Close
               </button>
               <button
-                onClick={() => {
-                  handleEdit(selectedSession);
-                  setShowDetailsModal(false);
-                }}
+                onClick={() => { handleEdit(selectedSession); setShowDetailsModal(false); }}
                 className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
               >
                 Edit Session
@@ -585,102 +547,55 @@ export default function EventAgendaBuilder() {
         </div>
       )}
 
-      {/* Add/Edit Session Modal */}
+      {/* ── Add / Edit Session Modal ───────────────────────────────────────── */}
       {showEditModal && editingSession && (
-        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-xl font-semibold text-gray-800">
-                {editingSession.id ? editingSession.title : 'Unlocking higher energy density in LFP cells'}
+                {editingSession.id ? 'Edit Session' : 'Add Session'}
               </h2>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="w-6 h-6" />
               </button>
             </div>
-
-            {/* Modal Body */}
-            <div className="p-6">
-              {/* Session Date & Hours Cards */}
-
-
-              {/* Form Fields */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Session Name</label>
+            <div className="p-6 space-y-4">
+              {[
+                { label: 'Session Name', key: 'name', placeholder: 'e.g. Session 1' },
+                { label: 'Time',         key: 'time', placeholder: 'e.g. 08:30 - 09:00' },
+                { label: 'Title',        key: 'title', placeholder: 'e.g. Registration & Welcome Coffee' },
+                { label: 'Venue',        key: 'venue', placeholder: 'e.g. Main Hall' },
+              ].map(({ label, key, placeholder }) => (
+                <div key={key}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
                   <input
                     type="text"
-                    value={editingSession.name}
-                    onChange={(e) => setEditingSession({...editingSession, name: e.target.value})}
-                    placeholder="e.g. Session 1"
+                    value={editingSession[key] || ''}
+                    onChange={(e) => setEditingSession((p) => ({ ...p, [key]: e.target.value }))}
+                    placeholder={placeholder}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
-                  <input
-                    type="text"
-                    value={editingSession.time}
-                    onChange={(e) => setEditingSession({...editingSession, time: e.target.value})}
-                    placeholder="e.g. 08:30 - 09:00"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                  <input
-                    type="text"
-                    value={editingSession.title}
-                    onChange={(e) => setEditingSession({...editingSession, title: e.target.value})}
-                    placeholder="e.g. Registration & Welcome Coffee"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Venue</label>
-                  <input
-                    type="text"
-                    value={editingSession.venue}
-                    onChange={(e) => setEditingSession({...editingSession, venue: e.target.value})}
-                    placeholder="e.g. Main Hall"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                  <select
-                    value={editingSession.type}
-                    onChange={(e) => setEditingSession({...editingSession, type: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  >
-                    <option value="Session">Session</option>
-                    <option value="Keynote">Keynote</option>
-                    <option value="Break">Break</option>
-                  </select>
-                </div>
+              ))}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                <select
+                  value={editingSession.type || 'Session'}
+                  onChange={(e) => setEditingSession((p) => ({ ...p, type: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  <option value="Session">Session</option>
+                  <option value="Keynote">Keynote</option>
+                  <option value="Break">Break</option>
+                </select>
               </div>
             </div>
-
-            {/* Modal Footer */}
             <div className="flex gap-3 justify-end p-6 border-t bg-gray-50">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-              >
+              <button onClick={() => setShowEditModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  console.log('Save session:', editingSession);
-                  setShowEditModal(false);
-                }}
+                onClick={() => { console.log('Save session:', editingSession); setShowEditModal(false); }}
                 className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
               >
                 {editingSession.id ? 'Update Session' : 'Add Session'}
