@@ -1,16 +1,34 @@
 
+import derivative from "antd/es/theme/themes/default";
 import { apiSlice } from "../../api/apiSlice";
 
-const authSlice = apiSlice.injectEndpoints({
+const userSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
 
-     getAllUsers: builder.query({
-        query: ({ role, search }) => ({
-            url: `/organizer/all-register/697ecdf91d03df1518019a5b?role=${role}&search=${search}`,
-            method: "GET",
-        }),
-        providesTags: ["Users"],
-     }),
+
+   getAllUsers: builder.query({
+  query: ({ id, role, search, limit, page }) => ({
+    url: `/organizer/all-register/${id}?role=${role}&search=${search}&limit=${limit}&page=${page}`,
+    method: "GET",
+  }),
+  providesTags: ["Users"],
+}),
+
+deleteUser: builder.mutation({
+  query: ({ eventId, userId }) => ({
+    url: `/organizer/attendee/${eventId}/${userId}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Users"],
+}),
+
+detailUser: builder.query({
+  query: ({ eventId, userId }) => ({
+    url: `/organizer/attendee/${eventId}/${userId}`,
+    method: "GET",
+    }),
+    providesTags: ["Users"],
+}),
 
 
         adminLogin: builder.mutation({
@@ -30,5 +48,7 @@ const authSlice = apiSlice.injectEndpoints({
 
 export const { 
     useAdminLoginMutation, 
-    useForgotPasswordMutation
- } = authSlice;
+    useGetAllUsersQuery,
+    useDeleteUserMutation,
+    useDetailUserQuery
+ } = userSlice;

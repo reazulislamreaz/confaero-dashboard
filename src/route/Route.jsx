@@ -92,7 +92,7 @@ export const router = createBrowserRouter([
                 element: <AdminUserList />
             },
             {
-                path: "users/details",
+                path: "users/details/:id",
                 element: <UserDetailsPage />
             },
             {
