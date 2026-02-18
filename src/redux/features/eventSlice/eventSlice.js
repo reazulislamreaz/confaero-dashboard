@@ -44,7 +44,13 @@ const eventApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: [{type: "Events"}]
          }),
 
-
+         deleteFloorMap: builder.mutation({
+            query: ({ eventId, floorMapId }) => ({
+                url: `/organizer/events/${eventId}/floormaps/${floorMapId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: [{type: "Events"}]
+         }), 
     })
 });
 
@@ -57,6 +63,7 @@ export const {
     useUpdateSessionMutation,
     useDeleteSessionMutation,
     useUpdateEventMutation,
+    useDeleteFloorMapMutation,
 } = eventApiSlice;
 
  
