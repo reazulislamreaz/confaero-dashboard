@@ -7,13 +7,56 @@ const eventApiSlice = apiSlice.injectEndpoints({
         getEvent: builder.query({
             query: () => `/organizer/events`,
             providesTags: [{type: "Events"}]
-        })
+        }),
+
+        addSession: builder.mutation({
+            query: ({ eventId, sessionData }) => ({
+                url: `/organizer-sessions/events/${eventId}/sessions`,
+                method: 'POST',
+                body: sessionData,
+            }),
+            invalidatesTags: [{type: "Events"}]
+        }),
+
+        updateSession: builder.mutation({
+            query: ({ eventId, sessionId, sessionData }) => ({
+                url: `/organizer/events/${eventId}/sessions/${sessionId}`,
+                method: 'PUT',
+                body: sessionData,
+            }),
+            invalidatesTags: [{type: "Events"}]
+        }),
+
+        deleteSession: builder.mutation({
+            query: ({ eventId, sessionId }) => ({
+                url: `/organizer/events/${eventId}/sessions/${sessionId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: [{type: "Events"}]
+        }),
+
+         updateEvent: builder.mutation({
+            query: ({ eventId, eventData }) => ({
+                url: `/organizer/events/${eventId}`,
+                method: 'PATCH',
+                body: eventData,
+            }),
+            invalidatesTags: [{type: "Events"}]
+         }),
+
+
     })
 });
 
 
+
+
 export const {
     useGetEventQuery,
+    useAddSessionMutation,
+    useUpdateSessionMutation,
+    useDeleteSessionMutation,
+    useUpdateEventMutation,
 } = eventApiSlice;
 
  

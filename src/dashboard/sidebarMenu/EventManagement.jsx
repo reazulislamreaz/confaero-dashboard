@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Upload, Edit, Trash2, Eye, X, MapPin, Calendar } from 'lucide-react';
-import { useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
+import { useGetEventQuery, useUpdateEventMutation } from '../../redux/features/eventSlice/eventSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
+import toast from 'react-hot-toast';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const formatDate = (iso) => {
@@ -23,6 +24,8 @@ export default function EventAgendaBuilder() {
   const [selectedSession, setSelectedSession] = useState(null);
   const [editingSession, setEditingSession] = useState(null);
 
+  
+
   const { eventId, setEvent } = useSelectedEvent();
   const { data: eventResponse, isLoading, isError } = useGetEventQuery();
 
@@ -38,6 +41,10 @@ export default function EventAgendaBuilder() {
 
   // ── Editable Event Info state — seeded from API ────────────────────────────
   const [eventData, setEventData] = useState(null);
+
+
+ const [updateEvent] = useUpdateEventMutation();
+
 
   React.useEffect(() => {
     if (event && !eventData) {
@@ -110,9 +117,24 @@ export default function EventAgendaBuilder() {
     // TODO: dispatch delete mutation
   };
 
-  const handleSaveChanges = () => {
+
+
+  const handleSaveChanges = async () => {
     console.log('Save event data:', eventData);
-    // TODO: dispatch update mutation
+    const formData = new FormData();
+    formData.append('website', eventData.website);
+    formData.append('details', eventData.description);
+    formData.append('banner', eventData.bannerImage);
+    if (eventId) {
+      const result = await updateEvent({ eventId, eventData: formData });
+      if(result.data.success === true) {
+        toast.success('Event updated successfully!');
+        // Optionally refetch event data here if not automatically updated by RTK Query
+      } else {
+        toast.error('Failed to update event. Please try again.');
+      }
+       
+    }
   };
 
   const handleRemoveFloorMap = (id) => {
