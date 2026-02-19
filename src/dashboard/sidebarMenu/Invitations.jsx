@@ -1,475 +1,1009 @@
-import React, { useState } from 'react';
-import { Search, Eye, Heart, Trash2, X, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+// import React, { useState, useMemo } from 'react';
+// import { Search, Eye, Heart, Trash2, X, ChevronLeft, ChevronRight, Plus, Mail, User, Calendar, Building2, Phone, MapPin, RefreshCw } from 'lucide-react';
+// import { useSelectedEvent } from '../../hooks/useSelectedEvent';
+// import { useGetInvitationsQuery } from '../../redux/features/invitatation/invitaionSlice';
 
-export default function InvitationsPage() {
-  const [activeTab, setActiveTab] = useState('All');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(9);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteForm, setInviteForm] = useState({
-    role: '',
-    session: '',
-    name: '',
-    email: ''
-  });
+// // --- Role / Status Config ---
+// const ROLE_MAP = {
+//   SPEAKER: { label: 'Speaker', color: 'text-teal-700 bg-teal-50 border border-teal-200' },
+//   SPONSOR: { label: 'Sponsor', color: 'text-purple-700 bg-purple-50 border border-purple-200' },
+//   VOLUNTEER: { label: 'Volunteer', color: 'text-amber-700 bg-amber-50 border border-amber-200' },
+//   EXHIBITOR: { label: 'Exhibitor', color: 'text-blue-700 bg-blue-50 border border-blue-200' },
+//   TRACK_CHAIR: { label: 'Track Chair', color: 'text-pink-700 bg-pink-50 border border-pink-200' },
+//   ABSTRACT_REVIEWER: { label: 'Reviewer', color: 'text-emerald-700 bg-emerald-50 border border-emerald-200' },
+// };
 
-  const tabs = ['All', 'Speakers', 'Sponsors', 'Exhibitors', 'Volunteers', 'Reviewers', 'Track Chairs'];
+// const STATUS_MAP = {
+//   ACCEPTED: { label: 'Accepted', color: 'text-teal-700 bg-teal-50 border border-teal-200', dot: 'bg-teal-500' },
+//   PENDING: { label: 'Pending', color: 'text-amber-700 bg-amber-50 border border-amber-200', dot: 'bg-amber-400' },
+//   REJECTED: { label: 'Rejected', color: 'text-red-700 bg-red-50 border border-red-200', dot: 'bg-red-500' },
+// };
 
-  const invitations = [
-    { name: 'Dr. Sarah Johnson', role: 'Speaker', email: 'sarah@email.com', status: 'Accepted', date: '2026-01-10' },
-    { name: 'Dr. Sarah Johnson', role: 'Sponsors', email: 'sarah@email.com', status: 'Accepted', date: '2026-01-10' },
-    { name: 'Dr. Sarah Johnson', role: 'Volunteers', email: 'sarah@email.com', status: 'Pending', date: '2026-01-10' },
-    { name: 'Dr. Sarah Johnson', role: 'Exhibitors', email: 'sarah@email.com', status: 'Accepted', date: '2026-01-10' },
-    { name: 'Dr. Sarah Johnson', role: 'Track Chairs', email: 'sarah@email.com', status: 'Rejected', date: '2026-01-10' },
-    { name: 'Dr. Sarah Johnson', role: 'Reviewers', email: 'sarah@email.com', status: 'Pending', date: '2026-01-10' },
-    { name: 'Dr. Sarah Johnson', role: 'Speaker', email: 'sarah@email.com', status: 'Accepted', date: '2026-01-10' },
-    { name: 'Dr. Sarah Johnson', role: 'Speaker', email: 'sarah@email.com', status: 'Accepted', date: '2026-01-10' },
-  ];
+// const TAB_ROLE_MAP = {
+//   All: null,
+//   Speakers: 'SPEAKER',
+//   Sponsors: 'SPONSOR',
+//   Exhibitors: 'EXHIBITOR',
+//   Volunteers: 'VOLUNTEER',
+//   Reviewers: 'ABSTRACT_REVIEWER',
+//   'Track Chairs': 'TRACK_CHAIR',
+// };
 
-  const filteredInvitations = invitations.filter(inv => {
-    const matchesSearch = inv.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTab = activeTab === 'All' || inv.role === activeTab;
-    return matchesSearch && matchesTab;
-  });
+// const TABS = Object.keys(TAB_ROLE_MAP);
 
-  const totalPages = Math.ceil(filteredInvitations.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentInvitations = filteredInvitations.slice(startIndex, startIndex + itemsPerPage);
+// function getRoleInfo(role) {
+//   return ROLE_MAP[role] || { label: role, color: 'text-gray-700 bg-gray-50 border border-gray-200' };
+// }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Accepted': return 'text-teal-600 bg-teal-50';
-      case 'Pending': return 'text-yellow-600 bg-yellow-50';
-      case 'Rejected': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
-    }
-  };
+// function getStatusInfo(status) {
+//   return STATUS_MAP[status] || { label: status, color: 'text-gray-700 bg-gray-50 border border-gray-200', dot: 'bg-gray-400' };
+// }
 
-  const getRoleColor = (role) => {
-    const colors = {
-      'Speaker': 'text-teal-600 bg-teal-50',
-      'Sponsors': 'text-purple-600 bg-purple-50',
-      'Volunteers': 'text-yellow-600 bg-yellow-50',
-      'Exhibitors': 'text-blue-600 bg-blue-50',
-      'Track Chairs': 'text-pink-600 bg-pink-50',
-      'Reviewers': 'text-green-600 bg-green-50',
-    };
-    return colors[role] || 'text-gray-600 bg-gray-50';
-  };
+// function formatDate(dateStr) {
+//   if (!dateStr) return '—';
+//   return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+// }
 
-  const handleViewDetails = (invitation) => {
-    setSelectedUser(invitation);
-    setShowDetailsModal(true);
-  };
+// // --- Skeleton Row ---
+// function SkeletonRow() {
+//   return (
+//     <tr>
+//       {[...Array(6)].map((_, i) => (
+//         <td key={i} className="px-6 py-4">
+//           <div className="h-4 bg-gray-100 rounded animate-pulse" style={{ width: `${60 + Math.random() * 30}%` }} />
+//         </td>
+//       ))}
+//     </tr>
+//   );
+// }
 
-  const handleDelete = (invitation) => {
-    console.log('Delete invitation:', invitation);
-  };
+// // --- Badge ---
+// function Badge({ className, children }) {
+//   return (
+//     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium ${className}`}>
+//       {children}
+//     </span>
+//   );
+// }
 
-  const handleSendInvitation = () => {
-    setShowInviteModal(true);
-    setInviteForm({ role: '', session: '', name: '', email: '' });
-  };
+// // --- Details Modal ---
+// function DetailsModal({ invitation, onClose, onResend }) {
+//   if (!invitation) return null;
+//   const role = getRoleInfo(invitation.role);
+//   const status = getStatusInfo(invitation.status);
+//   return (
+//     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+//       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+//         {/* Header */}
+//         <div className="bg-gradient-to-r from-teal-600 to-teal-500 p-6 text-white relative">
+//           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+//             <X className="w-5 h-5" />
+//           </button>
+//           <div className="flex items-center gap-4">
+//             <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">
+//               {invitation.name?.[0] || '?'}
+//             </div>
+//             <div>
+//               <h2 className="text-xl font-semibold">{invitation.name || 'Unknown'}</h2>
+//               <p className="text-teal-100 text-sm mt-0.5">{invitation.email}</p>
+//             </div>
+//           </div>
+//           <div className="flex gap-2 mt-4">
+//             <Badge className={role.color}>{role.label}</Badge>
+//             <Badge className={`${status.color} flex items-center`}>
+//               <span className={`w-1.5 h-1.5 rounded-full ${status.dot} mr-1`} />
+//               {status.label}
+//             </Badge>
+//           </div>
+//         </div>
 
-  const handleInviteFormSubmit = () => {
-    if (!inviteForm.role || !inviteForm.name || !inviteForm.email) {
-      alert('Please fill in all required fields');
-      return;
-    }
-    if (inviteForm.role === 'Speaker' && !inviteForm.session) {
-      alert('Please select a session for Speaker role');
-      return;
-    }
-    console.log('Send invitation:', inviteForm);
-    setShowInviteModal(false);
-    setInviteForm({ role: '', session: '', name: '', email: '' });
-  };
+//         {/* Body */}
+//         <div className="p-6 space-y-5">
+//           <Section title="Invitation Details">
+//             <InfoRow icon={<Mail className="w-4 h-4" />} label="Email" value={invitation.email} />
+//             <InfoRow icon={<Calendar className="w-4 h-4" />} label="Sent" value={formatDate(invitation.createdAt)} />
+//             <InfoRow icon={<Calendar className="w-4 h-4" />} label="Updated" value={formatDate(invitation.updatedAt)} />
+//           </Section>
+//           <Section title="System Info">
+//             <InfoRow icon={<User className="w-4 h-4" />} label="Invitation ID" value={<code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{invitation._id}</code>} />
+//             <InfoRow icon={<Building2 className="w-4 h-4" />} label="Event ID" value={<code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{invitation.eventId}</code>} />
+//           </Section>
+//         </div>
 
-  const handleInviteFormChange = (field, value) => {
-    setInviteForm(prev => ({ ...prev, [field]: value }));
+//         <div className="flex gap-3 px-6 pb-6">
+//           <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+//             Close
+//           </button>
+//           <button
+//             onClick={() => { onResend(invitation); onClose(); }}
+//             className="flex-1 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
+//           >
+//             <RefreshCw className="w-4 h-4" /> Resend
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Section({ title, children }) {
+//   return (
+//     <div>
+//       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{title}</p>
+//       <div className="space-y-2.5">{children}</div>
+//     </div>
+//   );
+// }
+
+// function InfoRow({ icon, label, value }) {
+//   return (
+//     <div className="flex items-start gap-3">
+//       <span className="text-gray-400 mt-0.5">{icon}</span>
+//       <span className="text-sm text-gray-500 w-24 shrink-0">{label}</span>
+//       <span className="text-sm text-gray-800 font-medium">{value}</span>
+//     </div>
+//   );
+// }
+
+// // --- Send Invitation Modal ---
+// function SendInvitationModal({ onClose, onSubmit }) {
+//   const [form, setForm] = useState({ role: '', session: '', name: '', email: '' });
+//   const set = (field, val) => setForm(p => ({ ...p, [field]: val }));
+
+//   const handleSubmit = () => {
+//     if (!form.role || !form.name || !form.email) return alert('Please fill in all required fields');
+//     if (form.role === 'SPEAKER' && !form.session) return alert('Please select a session for Speaker');
+//     onSubmit(form);
+//     onClose();
+//   };
+
+//   return (
+//     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+//       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+//         <div className="flex items-center justify-between px-6 py-5 border-b">
+//           <div>
+//             <h2 className="text-lg font-semibold text-gray-800">Send Invitation</h2>
+//             <p className="text-sm text-gray-500 mt-0.5">Invite someone to participate in this event</p>
+//           </div>
+//           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+//             <X className="w-5 h-5" />
+//           </button>
+//         </div>
+
+//         <div className="p-6 space-y-4">
+//           <Field label="Role" required>
+//             <select value={form.role} onChange={e => set('role', e.target.value)} className={selectClass}>
+//               <option value="">Select a role</option>
+//               {Object.entries(ROLE_MAP).map(([k, v]) => (
+//                 <option key={k} value={k}>{v.label}</option>
+//               ))}
+//             </select>
+//           </Field>
+
+//           {form.role === 'SPEAKER' && (
+//             <Field label="Session" required>
+//               <select value={form.session} onChange={e => set('session', e.target.value)} className={selectClass}>
+//                 <option value="">Select a session</option>
+//                 {['Session 1', 'Session 2', 'Session 3', 'Session 4'].map(s => (
+//                   <option key={s} value={s}>{s}</option>
+//                 ))}
+//               </select>
+//             </Field>
+//           )}
+
+//           <Field label="Full Name" required>
+//             <input type="text" placeholder="e.g. Dr. Sarah Johnson" value={form.name}
+//               onChange={e => set('name', e.target.value)} className={inputClass} />
+//           </Field>
+
+//           <Field label="Email Address" required>
+//             <input type="email" placeholder="e.g. sarah@example.com" value={form.email}
+//               onChange={e => set('email', e.target.value)} className={inputClass} />
+//           </Field>
+//         </div>
+
+//         <div className="px-6 pb-6">
+//           <button onClick={handleSubmit}
+//             className="w-full py-3 bg-teal-600 text-white rounded-xl font-medium hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
+//             <Mail className="w-4 h-4" /> Send Invitation
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Field({ label, required, children }) {
+//   return (
+//     <div>
+//       <label className="block text-sm font-medium text-gray-700 mb-1.5">
+//         {label} {required && <span className="text-red-500">*</span>}
+//       </label>
+//       {children}
+//     </div>
+//   );
+// }
+
+// const inputClass = 'w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition';
+// const selectClass = 'w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition';
+
+// // --- Main Page ---
+// export default function InvitationsPage() {
+//   const [activeTab, setActiveTab] = useState('All');
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [itemsPerPage, setItemsPerPage] = useState(9);
+//   const [showDetailsModal, setShowDetailsModal] = useState(false);
+//   const [selectedInvitation, setSelectedInvitation] = useState(null);
+//   const [showInviteModal, setShowInviteModal] = useState(false);
+//   const [favorites, setFavorites] = useState(new Set());
+
+//   const { eventId } = useSelectedEvent();
+//   console.log(eventId);
+//   const { data: invitationsData, isLoading } = useGetInvitationsQuery(eventId);
+
+//   // Extract real data
+//   const allInvitations = useMemo(() => invitationsData?.data?.data || [], [invitationsData]);
+
+//   const filteredInvitations = useMemo(() => {
+//     const roleFilter = TAB_ROLE_MAP[activeTab];
+//     return allInvitations.filter(inv => {
+//       const matchesSearch = !searchTerm ||
+//         (inv.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         (inv.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+//       const matchesTab = !roleFilter || inv.role === roleFilter;
+//       return matchesSearch && matchesTab;
+//     });
+//   }, [allInvitations, activeTab, searchTerm]);
+
+//   const totalPages = Math.ceil(filteredInvitations.length / itemsPerPage);
+//   const startIndex = (currentPage - 1) * itemsPerPage;
+//   const currentInvitations = filteredInvitations.slice(startIndex, startIndex + itemsPerPage);
+
+//   const tabCounts = useMemo(() => {
+//     const counts = { All: allInvitations.length };
+//     Object.entries(TAB_ROLE_MAP).forEach(([tab, role]) => {
+//       if (role) counts[tab] = allInvitations.filter(i => i.role === role).length;
+//     });
+//     return counts;
+//   }, [allInvitations]);
+
+//   const toggleFavorite = (id) => setFavorites(prev => {
+//     const next = new Set(prev);
+//     next.has(id) ? next.delete(id) : next.add(id);
+//     return next;
+//   });
+
+//   const handleDelete = (inv) => {
+//     console.log('Delete:', inv._id);
+//     // dispatch delete action here
+//   };
+
+//   return (
+//     <div className="bg-gray-50 min-h-screen p-6">
+//       <style>{`
+//         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+//         .animate-fade-in { animation: fadeIn 0.2s ease; }
+//         .row-enter { animation: fadeIn 0.15s ease both; }
+//       `}</style>
+
+//       <div className="max-w-7xl mx-auto">
+//         {/* Header */}
+//         <div className="flex items-center justify-between mb-6">
+//           <div>
+//             <h1 className="text-2xl font-bold text-gray-900">Invitations</h1>
+//             <p className="text-gray-500 text-sm mt-0.5">
+//               {isLoading ? 'Loading...' : `${allInvitations.length} total invitation${allInvitations.length !== 1 ? 's' : ''}`}
+//             </p>
+//           </div>
+//           <button onClick={() => setShowInviteModal(true)}
+//             className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
+//             <Plus className="w-4 h-4" /> Send Invitation
+//           </button>
+//         </div>
+
+//         {/* Tabs */}
+//         <div className="bg-white rounded-xl border border-gray-100 mb-4 shadow-sm overflow-x-auto">
+//           <div className="flex p-1.5 gap-1">
+//             {TABS.map(tab => (
+//               <button key={tab} onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
+//                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-all ${
+//                   activeTab === tab
+//                     ? 'bg-teal-600 text-white shadow-sm'
+//                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+//                 }`}>
+//                 {tab}
+//                 {tabCounts[tab] > 0 && (
+//                   <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+//                     activeTab === tab ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+//                   }`}>{tabCounts[tab]}</span>
+//                 )}
+//               </button>
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* Search */}
+//         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 mb-4">
+//           <div className="relative">
+//             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+//             <input type="text" placeholder="Search by name or email…" value={searchTerm}
+//               onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+//               className="w-full pl-9 pr-4 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 border-0" />
+//           </div>
+//         </div>
+
+//         {/* Table */}
+//         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+//           <div className="overflow-x-auto">
+//             <table className="w-full">
+//               <thead>
+//                 <tr className="border-b border-gray-100">
+//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
+//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Role</th>
+//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
+//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody className="divide-y divide-gray-50">
+//                 {isLoading ? (
+//                   [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
+//                 ) : currentInvitations.length === 0 ? (
+//                   <tr>
+//                     <td colSpan={6} className="px-6 py-16 text-center">
+//                       <div className="flex flex-col items-center gap-2 text-gray-400">
+//                         <Mail className="w-10 h-10 opacity-30" />
+//                         <p className="text-sm font-medium">No invitations found</p>
+//                         <p className="text-xs">{searchTerm ? 'Try a different search term' : 'Send your first invitation to get started'}</p>
+//                       </div>
+//                     </td>
+//                   </tr>
+//                 ) : (
+//                   currentInvitations.map((inv, i) => {
+//                     const role = getRoleInfo(inv.role);
+//                     const status = getStatusInfo(inv.status);
+//                     const isFav = favorites.has(inv._id);
+//                     return (
+//                       <tr key={inv._id} className="hover:bg-gray-50/80 transition-colors row-enter"
+//                         style={{ animationDelay: `${i * 30}ms` }}>
+//                         <td className="px-6 py-4">
+//                           <div className="flex items-center gap-3">
+//                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+//                               {(inv.name || inv.email)?.[0]?.toUpperCase() || '?'}
+//                             </div>
+//                             <span className="text-sm font-medium text-gray-800">{inv.name || <span className="text-gray-400 italic">No name</span>}</span>
+//                           </div>
+//                         </td>
+//                         <td className="px-6 py-4">
+//                           <Badge className={role.color}>{role.label}</Badge>
+//                         </td>
+//                         <td className="px-6 py-4 text-sm text-gray-500">{inv.email}</td>
+//                         <td className="px-6 py-4">
+//                           <Badge className={status.color}>
+//                             <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+//                             {status.label}
+//                           </Badge>
+//                         </td>
+//                         <td className="px-6 py-4 text-sm text-gray-500">{formatDate(inv.createdAt)}</td>
+//                         <td className="px-6 py-4">
+//                           <div className="flex items-center gap-1">
+//                             <button onClick={() => { setSelectedInvitation(inv); setShowDetailsModal(true); }}
+//                               className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors" title="View Details">
+//                               <Eye className="w-4 h-4" />
+//                             </button>
+//                             <button onClick={() => toggleFavorite(inv._id)}
+//                               className={`p-1.5 rounded-lg transition-colors ${isFav ? 'text-pink-500 bg-pink-50' : 'text-gray-400 hover:text-pink-500 hover:bg-pink-50'}`} title="Favorite">
+//                               <Heart className="w-4 h-4" fill={isFav ? 'currentColor' : 'none'} />
+//                             </button>
+//                             <button onClick={() => handleDelete(inv)}
+//                               className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+//                               <Trash2 className="w-4 h-4" />
+//                             </button>
+//                           </div>
+//                         </td>
+//                       </tr>
+//                     );
+//                   })
+//                 )}
+//               </tbody>
+//             </table>
+//           </div>
+
+//           {/* Pagination */}
+//           {!isLoading && filteredInvitations.length > 0 && (
+//             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50">
+//               <div className="flex items-center gap-2 text-sm text-gray-500">
+//                 <span>Show</span>
+//                 <select value={itemsPerPage} onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+//                   className="px-2 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+//                   {[9, 18, 27, 50].map(n => <option key={n} value={n}>{n}</option>)}
+//                 </select>
+//                 <span>of <strong>{filteredInvitations.length}</strong> results</span>
+//               </div>
+
+//               <div className="flex items-center gap-1">
+//                 <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+//                   className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+//                   <ChevronLeft className="w-4 h-4" />
+//                 </button>
+//                 {[...Array(Math.min(6, totalPages))].map((_, i) => {
+//                   const p = i + 1;
+//                   return (
+//                     <button key={p} onClick={() => setCurrentPage(p)}
+//                       className={`w-8 h-8 text-sm rounded-lg font-medium transition-colors ${
+//                         currentPage === p ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+//                       }`}>{p}</button>
+//                   );
+//                 })}
+//                 <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+//                   className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+//                   <ChevronRight className="w-4 h-4" />
+//                 </button>
+//               </div>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       {showDetailsModal && (
+//         <DetailsModal
+//           invitation={selectedInvitation}
+//           onClose={() => setShowDetailsModal(false)}
+//           onResend={(inv) => console.log('Resend to:', inv.email)}
+//         />
+//       )}
+
+//       {showInviteModal && (
+//         <SendInvitationModal
+//           onClose={() => setShowInviteModal(false)}
+//           onSubmit={(form) => console.log('Send invitation:', form)}
+//         />
+//       )}
+//     </div>
+//   );
+// }
+
+
+
+import React, { useState, useMemo, useCallback } from 'react';
+import { Search, Eye, Heart, Trash2, X, ChevronLeft, ChevronRight, Plus, Mail, Calendar, Building2, User, RefreshCw } from 'lucide-react';
+import { Popconfirm } from 'antd';
+import { useSelectedEvent } from '../../hooks/useSelectedEvent';
+import { useGetInvitationsQuery, useSendInvitationMutation} from '../../redux/features/invitatation/invitaionSlice';
+import toast from 'react-hot-toast';
+
+// ─── Config ──────────────────────────────────────────────────────────────────
+
+const ROLE_MAP = {
+  SPEAKER:           { label: 'Speaker',    color: 'text-teal-700 bg-teal-50 border border-teal-200' },
+  SPONSOR:           { label: 'Sponsor',    color: 'text-purple-700 bg-purple-50 border border-purple-200' },
+  VOLUNTEER:         { label: 'Volunteer',  color: 'text-amber-700 bg-amber-50 border border-amber-200' },
+  EXHIBITOR:         { label: 'Exhibitor',  color: 'text-blue-700 bg-blue-50 border border-blue-200' },
+  TRACK_CHAIR:       { label: 'Track Chair',color: 'text-pink-700 bg-pink-50 border border-pink-200' },
+  ABSTRACT_REVIEWER: { label: 'Reviewer',   color: 'text-emerald-700 bg-emerald-50 border border-emerald-200' },
+};
+
+const STATUS_MAP = {
+  ACCEPTED: { label: 'Accepted', color: 'text-teal-700 bg-teal-50 border border-teal-200',  dot: 'bg-teal-500' },
+  PENDING:  { label: 'Pending',  color: 'text-amber-700 bg-amber-50 border border-amber-200', dot: 'bg-amber-400' },
+  REJECTED: { label: 'Rejected', color: 'text-red-700 bg-red-50 border border-red-200',    dot: 'bg-red-500' },
+};
+
+const TAB_ROLE_MAP = {
+  All:            '',
+  Speakers:       'SPEAKER',
+  Sponsors:       'SPONSOR',
+  Exhibitors:     'EXHIBITOR',
+  Volunteers:     'VOLUNTEER',
+  Reviewers:      'ABSTRACT_REVIEWER',
+  'Track Chairs': 'TRACK_CHAIR',
+};
+
+const TABS = Object.keys(TAB_ROLE_MAP);
+
+const getRoleInfo   = (r) => ROLE_MAP[r]   || { label: r, color: 'text-gray-700 bg-gray-50 border border-gray-200' };
+const getStatusInfo = (s) => STATUS_MAP[s] || { label: s, color: 'text-gray-700 bg-gray-50 border border-gray-200', dot: 'bg-gray-400' };
+const formatDate    = (d) => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+
+// ─── RTK Query slice — update your query like this ───────────────────────────
+//
+// getInvitations: builder.query({
+//   query: ({ id, page = 1, limit = 9, role = '', status = '', search = '' }) => ({
+//     url: `/invitation/event/${id}`,
+//     method: 'GET',
+//     params: {
+//       page,
+//       limit,
+//       ...(role   && { role }),
+//       ...(status && { status }),
+//       ...(search && { search }),
+//     },
+//   }),
+//   providesTags: ['Invitations'],
+// }),
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function Badge({ className, children }) {
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium ${className}`}>
+      {children}
+    </span>
+  );
+}
+
+function SkeletonRow() {
+  return (
+    <tr>
+      {[...Array(6)].map((_, i) => (
+        <td key={i} className="px-6 py-4">
+          <div className="h-4 bg-gray-100 rounded animate-pulse" style={{ width: `${50 + i * 9}%` }} />
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+function Section({ title, children }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{title}</p>
+      <div className="space-y-2.5">{children}</div>
+    </div>
+  );
+}
+
+function InfoRow({ icon, label, value }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="text-gray-400 mt-0.5 shrink-0">{icon}</span>
+      <span className="text-sm text-gray-500 w-24 shrink-0">{label}</span>
+      <span className="text-sm text-gray-800 font-medium break-all">{value}</span>
+    </div>
+  );
+}
+
+function Field({ label, required, children }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const inputCls  = 'w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition';
+const selectCls = 'w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition';
+
+// ─── Details Modal ────────────────────────────────────────────────────────────
+
+function DetailsModal({ invitation: inv, onClose, onResend }) {
+  if (!inv) return null;
+  const role   = getRoleInfo(inv.role);
+  const status = getStatusInfo(inv.status);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in">
+        <div className="bg-gradient-to-r from-teal-600 to-teal-500 p-6 text-white relative">
+          <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold uppercase">
+              {(inv.name || inv.email)?.[0] || '?'}
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold">{inv.name || <span className="italic opacity-60">No name</span>}</h2>
+              <p className="text-teal-100 text-sm mt-0.5">{inv.email}</p>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Badge className={role.color}>{role.label}</Badge>
+            <Badge className={status.color}>
+              <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+              {status.label}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5">
+          <Section title="Invitation Details">
+            <InfoRow icon={<Mail className="w-4 h-4" />}     label="Email"   value={inv.email} />
+            <InfoRow icon={<Calendar className="w-4 h-4" />} label="Sent"    value={formatDate(inv.createdAt)} />
+            <InfoRow icon={<Calendar className="w-4 h-4" />} label="Updated" value={formatDate(inv.updatedAt)} />
+          </Section>
+          <Section title="System Info">
+            <InfoRow icon={<User className="w-4 h-4" />}      label="ID"       value={<code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{inv._id}</code>} />
+            <InfoRow icon={<Building2 className="w-4 h-4" />} label="Event ID" value={<code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{inv.eventId}</code>} />
+          </Section>
+        </div>
+
+        <div className="flex gap-3 px-6 pb-6">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Close
+          </button>
+          <button onClick={() => { onResend(inv); onClose(); }}
+            className="flex-1 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
+            <RefreshCw className="w-4 h-4" /> Resend
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Send Invitation Modal ────────────────────────────────────────────────────
+
+
+
+function SendInvitationModal({ onClose, onSubmit }) {
+  const [form, setForm] = useState({ role: '', session: '', name: '', email: '' });
+  const set = (field, val) => setForm(p => ({ ...p, [field]: val }));
+
+  const handleSubmit = () => {
+    if (!form.role || !form.email) return alert('Please fill in all required fields');
+    if (form.role === 'SPEAKER' && !form.session) return alert('Please select a session for Speaker');
+    onSubmit(form);
+    onClose();
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in">
+        <div className="flex items-center justify-between px-6 py-5 border-b">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-800 mb-1">Invitations</h1>
-            <p className="text-gray-500 text-sm">Send and manage invitations to event participants</p>
+            <h2 className="text-lg font-semibold text-gray-800">Send Invitation</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Invite someone to participate in this event</p>
           </div>
-          <button
-            onClick={handleSendInvitation}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Send Invitation
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg mb-4">
-          <div className="flex overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  setCurrentPage(1);
-                }}
-                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+        <div className="p-6 space-y-4">
+          <Field label="Role" required>
+            <select value={form.role} onChange={e => set('role', e.target.value)} className={selectCls}>
+              <option value="">Select a role</option>
+              {Object.entries(ROLE_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
+          </Field>
+
+          {form.role === 'SPEAKER' && (
+            <Field label="Session" required>
+              <select value={form.session} onChange={e => set('session', e.target.value)} className={selectCls}>
+                <option value="">Select a session</option>
+                {['Session 1', 'Session 2', 'Session 3', 'Session 4'].map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </Field>
+          )}
+
+          {/* <Field label="Full Name" required>
+            <input type="text" placeholder="e.g. Dr. Sarah Johnson" value={form.name}
+              onChange={e => set('name', e.target.value)} className={inputCls} />
+          </Field> */}
+
+          <Field label="Email Address" required>
+            <input type="email" placeholder="e.g. sarah@example.com" value={form.email}
+              onChange={e => set('email', e.target.value)} className={inputCls} />
+          </Field>
+        </div>
+
+        <div className="px-6 pb-6">
+          <button onClick={handleSubmit}
+            className="w-full py-3 bg-teal-600 text-white rounded-xl font-medium hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
+            <Mail className="w-4 h-4" /> Send Invitation
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function InvitationsPage() {
+  const [activeTab, setActiveTab]         = useState('All');
+  const [searchInput, setSearchInput]     = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage]     = useState(1);
+  const [itemsPerPage, setItemsPerPage]   = useState(5);
+  const [showDetails, setShowDetails]     = useState(false);
+  const [selectedInv, setSelectedInv]     = useState(null);
+  const [showInvite, setShowInvite]       = useState(false);
+  const [favorites, setFavorites]         = useState(new Set());
+  const debounceRef                       = React.useRef(null);
+
+  const { eventId } = useSelectedEvent();
+
+
+
+  const [sendInvitee,] = useSendInvitationMutation();
+
+const sendInvite = async (form) => {
+  // console.log('Send invitation with data:', form);
+  const data = {
+    email: form.email,
+    role: form.role,
+ 
+  }
+  console.log(data);
+  try {
+    const response = await sendInvitee({ data: data, id: eventId });
+    console.log(response);
+    if(response.success === true){
+      toast('Invitation sent successfully!');
+    } 
+  } catch (error) {
+    console.error('Error sending invitation:', error);
+  }
+};
+
+  // Debounce search → sends to server only after 400ms idle
+  const handleSearchChange = (val) => {
+    setSearchInput(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(val);
+      setCurrentPage(1);
+    }, 400);
+  };
+
+  // All filters are sent as query params to the server
+  const queryParams = useMemo(() => ({
+    id:     eventId,
+    page:   currentPage,
+    limit:  itemsPerPage,
+    role:   TAB_ROLE_MAP[activeTab] || '',
+    search: debouncedSearch,
+  }), [eventId, currentPage, itemsPerPage, activeTab, debouncedSearch]);
+  console.log(queryParams);
+
+  const { data: invitationsData, isLoading, isFetching } = useGetInvitationsQuery(queryParams);
+
+  console.log(invitationsData);
+
+
+  const invitations = invitationsData?.data?.data  || [];
+  const meta        = invitationsData?.data?.meta  || { total: 0 };
+  const totalPages  = Math.ceil(meta.total / itemsPerPage);
+  const loading     = isLoading || isFetching;
+
+  const toggleFavorite = useCallback((id) => {
+    setFavorites(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleDelete = useCallback((inv) => {
+    console.log('Delete invitation:', inv._id);
+    // dispatch your delete mutation here
+  }, []);
+
+  const handleTabChange = (tab) => { setActiveTab(tab); setCurrentPage(1); };
+
+  return (
+    <div className="bg-gray-50 min-h-screen p-6">
+      <style>{`
+        @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+        .animate-fade-in { animation: fadeIn .2s ease; }
+        .row-in { animation: fadeIn .15s ease both; }
+      `}</style>
+
+      <div className="max-w-7xl mx-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Invitations</h1>
+            <p className="text-gray-500 text-sm mt-0.5">
+              {loading ? 'Loading…' : `${meta.total} total invitation${meta.total !== 1 ? 's' : ''}`}
+            </p>
+          </div>
+          <button onClick={() => setShowInvite(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
+            <Plus className="w-4 h-4" /> Send Invitation
+          </button>
+        </div>
+
+        {/* Tabs — each tab sends `role` param to API */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm mb-4 overflow-x-auto">
+          <div className="flex p-1.5 gap-1 min-w-max">
+            {TABS.map(tab => (
+              <button key={tab} onClick={() => handleTabChange(tab)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-all ${
                   activeTab === tab
-                    ? 'text-white rounded ml-2 bg-[#32A69A]'
-                    : 'text-gray-600 border ml-2 border-gray-300 hover:text-gray-800'
-                }`}
-              >
+                    ? 'bg-teal-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}>
                 {tab}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+        {/* Search — debounced, sends `search` param to API */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 mb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search invitations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Search by name or email…"
+              value={searchInput}
+              onChange={e => handleSearchChange(e.target.value)}
+              className="w-full pl-9 pr-10 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 border-0"
             />
+            {/* Spinner while fetching */}
+            {loading && (
+              <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-teal-500 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+            )}
           </div>
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Role</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Date</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+              <thead>
+                <tr className="border-b border-gray-100">
+                  {['Name', 'Role', 'Email', 'Status', 'Date', 'Actions'].map(h => (
+                    <th key={h} className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
-                {currentInvitations.map((invitation, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-800">{invitation.name}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getRoleColor(invitation.role)}`}>
-                        {invitation.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{invitation.email}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(invitation.status)}`}>
-                        {invitation.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{invitation.date}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleViewDetails(invitation)}
-                          className="p-1 text-gray-600 hover:text-teal-600 transition-colors"
-                          title="View Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="p-1 text-gray-600 hover:text-pink-600 transition-colors"
-                          title="Favorite"
-                        >
-                          <Heart className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(invitation)}
-                          className="p-1 text-gray-600 hover:text-red-600 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+              <tbody className="divide-y divide-gray-50">
+                {loading ? (
+                  [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
+                ) : invitations.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-16 text-center">
+                      <div className="flex flex-col items-center gap-2 text-gray-400">
+                        <Mail className="w-10 h-10 opacity-30" />
+                        <p className="text-sm font-medium">No invitations found</p>
+                        <p className="text-xs">{debouncedSearch ? 'Try a different search term' : 'Send your first invitation to get started'}</p>
                       </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  invitations.map((inv, i) => {
+                    const role   = getRoleInfo(inv.role);
+                    const status = getStatusInfo(inv.status);
+                    const isFav  = favorites.has(inv._id);
+                    return (
+                      <tr key={inv._id} className="hover:bg-gray-50/80 transition-colors row-in" style={{ animationDelay: `${i * 25}ms` }}>
+                        {/* Name */}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold shrink-0 uppercase">
+                              {(inv.name || inv.email)?.[0] || '?'}
+                            </div>
+                            <span className="text-sm font-medium text-gray-800">
+                              {inv.name || <span className="text-gray-400 italic text-xs">No name</span>}
+                            </span>
+                          </div>
+                        </td>
+                        {/* Role */}
+                        <td className="px-6 py-4"><Badge className={role.color}>{role.label}</Badge></td>
+                        {/* Email */}
+                        <td className="px-6 py-4 text-sm text-gray-500">{inv.email}</td>
+                        {/* Status */}
+                        <td className="px-6 py-4">
+                          <Badge className={status.color}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+                            {status.label}
+                          </Badge>
+                        </td>
+                        {/* Date */}
+                        <td className="px-6 py-4 text-sm text-gray-500">{formatDate(inv.createdAt)}</td>
+                        {/* Actions */}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => { setSelectedInv(inv); setShowDetails(true); }}
+                              className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                              title="View Details">
+                              <Eye className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => toggleFavorite(inv._id)}
+                              className={`p-1.5 rounded-lg transition-colors ${isFav ? 'text-pink-500 bg-pink-50' : 'text-gray-400 hover:text-pink-500 hover:bg-pink-50'}`}
+                              title="Favourite">
+                              <Heart className="w-4 h-4" fill={isFav ? 'currentColor' : 'none'} />
+                            </button>
+
+                            {/* Ant Design Popconfirm for delete */}
+                            <Popconfirm
+                              title="Delete Invitation"
+                              description="Are you sure you want to delete this invitation? This action cannot be undone."
+                              onConfirm={() => handleDelete(inv)}
+                              okText="Yes, Delete"
+                              cancelText="Cancel"
+                              okButtonProps={{
+                                danger: true,
+                                style: { borderRadius: '8px' },
+                              }}
+                              cancelButtonProps={{
+                                style: { borderRadius: '8px' },
+                              }}
+                              placement="topRight">
+                              <button
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </Popconfirm>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>Showing</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value={9}>9</option>
-                <option value={18}>18</option>
-                <option value={27}>27</option>
-                <option value={50}>50</option>
-              </select>
-              <span>of {filteredInvitations.length}</span>
-            </div>
+          {/* Server-driven pagination */}
+          {!loading && meta.total > 0 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <span>Show</span>
+                <select value={itemsPerPage}
+                  onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                  className="px-2 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                  {[9, 18, 27, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+                <span>of <strong>{meta.total}</strong> results</span>
+              </div>
 
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              
-              {[...Array(Math.min(6, totalPages))].map((_, index) => {
-                const pageNum = index + 1;
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`w-8 h-8 rounded ${
-                      currentPage === pageNum
-                        ? 'bg-teal-600 text-white'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-              
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                {Array.from({ length: Math.min(6, totalPages) }, (_, i) => i + 1).map(p => (
+                  <button key={p} onClick={() => setCurrentPage(p)}
+                    className={`w-8 h-8 text-sm rounded-lg font-medium transition-colors ${
+                      currentPage === p ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                    }`}>{p}</button>
+                ))}
+
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Details Modal */}
-      {showDetailsModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
-              <h2 className="text-xl font-semibold text-gray-800">Invitation Details</h2>
-              <button 
-                onClick={() => setShowDetailsModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6">
-              {/* Personal Information */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
-                <div className="space-y-3">
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Name:</span>
-                    <span className="text-gray-800 text-sm font-medium">{selectedUser.name}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Email:</span>
-                    <span className="text-gray-800 text-sm">{selectedUser.email}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Role:</span>
-                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getRoleColor(selectedUser.role)}`}>
-                      {selectedUser.role}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Invitation Status */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Invitation Status</h3>
-                <div className="space-y-3">
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Status:</span>
-                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedUser.status)}`}>
-                      {selectedUser.status}
-                    </span>
-                  </div>
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Sent Date:</span>
-                    <span className="text-gray-800 text-sm">{selectedUser.date}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Response Date:</span>
-                    <span className="text-gray-800 text-sm">{selectedUser.date}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional Information */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Additional Information</h3>
-                <div className="space-y-3">
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Organization:</span>
-                    <span className="text-gray-800 text-sm">Tech Solutions Inc.</span>
-                  </div>
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Phone:</span>
-                    <span className="text-gray-800 text-sm">+1 (555) 123-4567</span>
-                  </div>
-                  <div className="flex">
-                    <span className="w-32 text-gray-600 text-sm">Location:</span>
-                    <span className="text-gray-800 text-sm">Dhaka, Bangladesh</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Notes</h3>
-                <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
-                  Invitation sent for the 18th Lithium Supply & Battery Raw Materials Conference. 
-                  Participant has confirmed attendance and requested additional information about 
-                  the venue and accommodation options.
-                </p>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex gap-3 justify-end p-6 border-t bg-gray-50">
-              <button
-                onClick={() => setShowDetailsModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  console.log('Resend invitation to:', selectedUser);
-                  setShowDetailsModal(false);
-                }}
-                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-              >
-                Resend Invitation
-              </button>
-            </div>
-          </div>
-        </div>
+      {showDetails && (
+        <DetailsModal
+          invitation={selectedInv}
+          onClose={() => setShowDetails(false)}
+          onResend={(inv) => console.log('Resend to:', inv.email)}
+        />
       )}
 
-      {/* Send Invitation Modal */}
-      {showInviteModal && (
-        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-md">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-lg font-semibold text-gray-800">Send Invitation</h2>
-              <button 
-                onClick={() => setShowInviteModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 space-y-4">
-              {/* Role Dropdown */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Role
-                </label>
-                <select
-                  value={inviteForm.role}
-                  onChange={(e) => handleInviteFormChange('role', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                >
-                  <option value="">Select role</option>
-                  <option value="Speaker">Speaker</option>
-                  <option value="Sponsors">Sponsors</option>
-                  <option value="Exhibitors">Exhibitors</option>
-                  <option value="Volunteers">Volunteers</option>
-                  <option value="Reviewers">Reviewers</option>
-                  <option value="Track Chairs">Track Chairs</option>
-                </select>
-              </div>
-
-              {/* Session Dropdown - Only show for Speaker */}
-              {inviteForm.role === 'Speaker' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Session
-                  </label>
-                  <select
-                    value={inviteForm.session}
-                    onChange={(e) => handleInviteFormChange('session', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  >
-                    <option value="">Select session</option>
-                    <option value="Session 1">Session 1</option>
-                    <option value="Session 2">Session 2</option>
-                    <option value="Session 3">Session 3</option>
-                    <option value="Session 4">Session 4</option>
-                  </select>
-                </div>
-              )}
-
-              {/* Name Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter name"
-                  value={inviteForm.name}
-                  onChange={(e) => handleInviteFormChange('name', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-
-              {/* Email Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="Enter email"
-                  value={inviteForm.email}
-                  onChange={(e) => handleInviteFormChange('email', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-6 pt-0">
-              <button
-                onClick={handleInviteFormSubmit}
-                className="w-full py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
-              >
-                Send Invitation
-              </button>
-            </div>
-          </div>
-        </div>
+      {showInvite && (
+        <SendInvitationModal
+          onClose={() => setShowInvite(false)}
+          onSubmit={(form) =>  sendInvite(form)}
+        />
       )}
     </div>
   );
