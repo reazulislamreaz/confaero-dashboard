@@ -31,6 +31,7 @@ const announceSlice = apiSlice.injectEndpoints({
             method: 'DELETE',
         }), 
         invalidatesTags: ['Announcements'],
+        
     }),
   }),
 });
