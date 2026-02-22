@@ -740,7 +740,10 @@ const sendInvite = async (form) => {
     console.log(response);
     if(response.success === true){
       toast('Invitation sent successfully!');
-    } 
+    } else if(response.error.data.success === false){
+      toast(response.error.data.message || 'Failed to send invitation' );
+    }
+
   } catch (error) {
     console.error('Error sending invitation:', error);
   }

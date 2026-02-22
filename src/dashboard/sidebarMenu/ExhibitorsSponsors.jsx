@@ -1,45 +1,108 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Check, X, Download, Globe, Mail, ChevronRight, Building2, Clock, Tag, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { LayoutGrid, Check, X, Download, Globe, Mail, ChevronRight, Building2, Clock, Tag, FileText } from 'lucide-react';
 import { FaCheck } from 'react-icons/fa6';
 import { RxCross2 } from 'react-icons/rx';
+import {
+  
+  useGetSponsorsQuery,
+  useSponsorDetailsQuery,
+  useAcceptBoothRequestMutation,
+  useCancelBoothRequestMutation,
+  useAcceptSponsorshipRequestMutation,
+  useCancelSponsorshipRequestMutation,
+  useGetExibutorsQuery,
+} from '../../redux/features/exibutor&sponsor/boothSlice';
+import { useSelectedEvent } from '../../hooks/useSelectedEvent';
+ 
 
 export default function ExhibitorsSponsors() {
   const [activeTab, setActiveTab] = useState('Exhibitors');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const exhibitors = [
-    { id: 1, name: 'InnovateLab', subtitle: 'Hardware Solutions', status: 'Approved', booth: 'A-12', offer: '20% Off Annual Plan' },
-    { id: 2, name: 'InnovateLab', subtitle: 'Hardware Solutions', status: 'Approved', booth: 'A-12', offer: '20% Off Annual Plan' },
-    { id: 3, name: 'InnovateLab', subtitle: 'Hardware Solutions', status: 'Approved', booth: 'A-12', offer: '20% Off Annual Plan' },
-    { id: 4, name: 'InnovateLab', subtitle: 'Hardware Solutions', status: 'Pending', booth: 'B-05', offer: '20% Off Annual Plan' },
-    { id: 5, name: 'InnovateLab', subtitle: 'Hardware Solutions', status: 'Pending', booth: 'B-08', offer: '20% Off Annual Plan' },
-    { id: 6, name: 'InnovateLab', subtitle: 'Hardware Solutions', status: 'Pending', booth: 'C-15', offer: '20% Off Annual Plan' }
-  ];
+   const { eventId, setEvent } = useSelectedEvent();
+  console.log(eventId);
 
-  const sponsors = [
-    { id: 1, name: 'Tesla Energy', status: 'Pending', description: 'Lorem Ipsum is simply dummy text of the...' },
-    { id: 2, name: 'Tesla Energy', status: 'Pending', description: 'Lorem Ipsum is simply dummy text of the...' },
-    { id: 3, name: 'Tesla Energy', status: 'Pending', description: 'Lorem Ipsum is simply dummy text of the...' },
-    { id: 4, name: 'Tesla Energy', status: 'Pending', description: 'Lorem Ipsum is simply dummy text of the...' },
-    { id: 5, name: 'Tesla Energy', status: 'Pending', description: 'Lorem Ipsum is simply dummy text of the...' },
-    { id: 6, name: 'Tesla Energy', status: 'Pending', description: 'Lorem Ipsum is simply dummy text of the...' }
-  ];
+  const { data: exhibitorsRes, isLoading: isLoadingExhibitors } = useGetExibutorsQuery(eventId);
+  
+  // console.log(exhibitorsRes);
+
+  const { data: sponsorsRes, isLoading: isLoadingSponsors } = useGetSponsorsQuery(eventId);
+
+  // console.log(sponsorsRes);
+
+  const { data: sponsorDetailsRes, isLoading: isLoadingSponsorDetails } = useSponsorDetailsQuery(
+    selectedItem?._id,
+    { skip: !selectedItem || activeTab !== 'Sponsors' }
+  );
+
+  const [acceptBoothRequest] = useAcceptBoothRequestMutation();
+  const [cancelBoothRequest] = useCancelBoothRequestMutation();
+  const [acceptSponsorshipRequest] = useAcceptSponsorshipRequestMutation();
+  const [cancelSponsorshipRequest] = useCancelSponsorshipRequestMutation();
+
+  const exhibitors = exhibitorsRes?.data || [];
+  const sponsors = sponsorsRes?.data?.data || [];
+  const sponsorDetails = sponsorDetailsRes?.data;
 
   const handleViewDetails = (item) => {
     setSelectedItem(item);
     setShowDetailsModal(true);
   };
 
-  const handleApprove = (item) => {
-    console.log('Approve:', item);
+  const handleApprove = async (item) => {
+    console.log(item);
+    try {
+      if (activeTab === 'Exhibitors') {
+       const res = await acceptBoothRequest({ id: item._id, body: { boothNumber: item.boothNumber } }).unwrap();
+       console.log(res);
+      } else {
+          const res = await acceptSponsorshipRequest(item._id).unwrap();
+          console.log(res);
+      }
+    } catch (err) {
+      console.error('Approve failed:', err);
+    }
   };
 
-  const handleReject = (item) => {
-    console.log('Reject:', item);
+  const handleReject = async (item) => {
+
+    console.log(item);
+
+    try {
+      if (activeTab === 'Exhibitors') {
+      const res =  await cancelBoothRequest({ id: item._id, body: { boothNumber: item.boothNumber } }).unwrap();
+      console.log(res);
+      } else {
+        const res = await cancelSponsorshipRequest(item._id).unwrap();
+        console.log(res);
+      }
+    } catch (err) {
+      console.error('Reject failed:', err);
+    }
   };
 
-  const currentData = activeTab === 'Exhibitors' ? exhibitors : sponsors;
+  const getStatusBadgeClass = (status) => {
+    const s = status?.toLowerCase();
+    if (s === 'active' || s === 'approved') return 'bg-green-500 text-white';
+    if (s === 'pending' || s === 'inactive') return 'bg-yellow-400 text-gray-800';
+    if (s === 'rejected') return 'bg-red-400 text-white';
+    return 'bg-gray-300 text-gray-800';
+  };
+
+  const getStatusLabel = (status) => {
+    const s = status?.toLowerCase();
+    if (s === 'active') return 'Approved';
+    if (s === 'inactive') return 'Pending';
+    return status?.charAt(0).toUpperCase() + status?.slice(1);
+  };
+
+  const isPending = (status) => {
+    const s = status?.toLowerCase();
+    return s === 'pending' || s === 'inactive';
+  };
+
+  const currentCount = activeTab === 'Exhibitors' ? exhibitors.length : sponsors.length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -56,9 +119,7 @@ export default function ExhibitorsSponsors() {
             <button
               onClick={() => setActiveTab('Exhibitors')}
               className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'Exhibitors'
-                  ? 'bg-teal-600 text-white'
-                  : 'text-gray-600 hover:text-gray-900'
+                activeTab === 'Exhibitors' ? 'bg-teal-600 text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Exhibitors
@@ -66,9 +127,7 @@ export default function ExhibitorsSponsors() {
             <button
               onClick={() => setActiveTab('Sponsors')}
               className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'Sponsors'
-                  ? 'bg-teal-600 text-white'
-                  : 'text-gray-600 hover:text-gray-900'
+                activeTab === 'Sponsors' ? 'bg-teal-600 text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Sponsors
@@ -77,175 +136,193 @@ export default function ExhibitorsSponsors() {
 
           <div className="flex items-center gap-2 text-sm">
             <LayoutGrid className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-900">10</span>
+            <span className="font-medium text-gray-900">{currentCount}</span>
           </div>
         </div>
 
         {/* Exhibitors Grid */}
-{activeTab === 'Exhibitors' && (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-    {exhibitors.map((item) => (
-      <div
-        key={item.id}
-        className="bg-white rounded-xl overflow-hidden flex flex-col"
-      >
-        {/* Full Background Image with Overlay */}
-        <div className="relative h-32 w-full">
-          <img
-            src="/public/image/exi.jpg"
-            alt="Office"
-            className="w-full h-full object-cover"
-          />
-          {/* Semi-transparent overlay for text readability */}
-          <div className="absolute inset-0 bg-black/10"></div>
+        {activeTab === 'Exhibitors' && (
+          <>
+            {isLoadingExhibitors ? (
+              <div className="text-center py-10 text-gray-500">Loading exhibitors...</div>
+            ) : exhibitors.length === 0 ? (
+              <div className="text-center py-10 text-gray-500">No exhibitors found.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {exhibitors.map((item) => (
+                  <div key={item._id} className="bg-white rounded-xl overflow-hidden flex flex-col">
+                    {/* Banner Image */}
+                    <div className="relative h-32 w-full">
+                      <img
+                        src={item.banner || '/public/image/exi.jpg'}
+                        alt={item.companyName}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/10"></div>
 
-          {/* Status Badge - Top Right */}
-          <div className="absolute top-3 right-3 z-10">
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${
-                item.status === 'Approved'
-                  ? 'bg-green-500 text-white'
-                  : item.status === 'Pending'
-                  ? 'bg-yellow-400 text-gray-800'
-                  : 'bg-red-400 text-gray-800'
-              }`}
-            >
-              {item.status}
-            </span>
-          </div>
+                      {/* Status Badge */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${getStatusBadgeClass(item.status)}`}>
+                          {getStatusLabel(item.status)}
+                        </span>
+                      </div>
 
-          {/* Text Content Over Image */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-            <h3 className="font-semibold text-base mb-1">{item.name}</h3>
-            <p className="text-sm mb-2">{item.subtitle}</p>
-            <div className="flex items-center gap-2 text-sm">
-              <Building2 className="w-4 h-4" />
-              <span>{item.booth || '—'}</span>
-            </div>
-          </div>
-        </div>
+                      {/* Text Over Image */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                        <h3 className="font-semibold text-base mb-1">{item.companyName}</h3>
+                        <p className="text-sm mb-2 line-clamp-1">{item.description}</p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Building2 className="w-4 h-4" />
+                          <span>{item.boothNumber || '—'}</span>
+                        </div>
+                      </div>
+                    </div>
 
-        {/* Special Offer Section (White Background Below Image) */}
-        <div className="px-4 py-3 bg-[#EBF6F5] mt-3 border border-[#D2D2D2] rounded">
-          <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-teal-600 flex-shrink-0" />
-            <div>
-              <div className="text-[10px] text-teal-600 font-bold uppercase">SPECIAL OFFER</div>
-              <div className="text-sm font-semibold text-gray-900">{item.offer}</div>
-            </div>
-          </div>
-        </div>
+                    {/* Special Offer */}
+                    {item.offerTitle && (
+                      <div className="px-4 py-3 bg-[#EBF6F5] mt-3 border border-[#D2D2D2] rounded mx-0">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                          <div>
+                            <div className="text-[10px] text-teal-600 font-bold uppercase">SPECIAL OFFER</div>
+                            <div className="text-sm font-semibold text-gray-900">{item.offerTitle}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-        {/* Bottom Action Bar: View Details + Approve/Reject */}
-        <div className=" py-2 bg-white border-t  border-gray-200 flex items-center justify-between gap-2">
-          <button
-            onClick={() => handleViewDetails(item)}
-            className="flex-1 py-2 text-center cursor-pointer border border-[#D2D2D2] rounded text-sm font-medium text-gray-700 hover:text-gray-900  transition-colors"
-          >
-            View Details
-          </button>
+                    {/* Bottom Actions */}
+                    <div className="py-2 bg-white border-t border-gray-200 flex items-center justify-between gap-2 mt-auto">
+                      <button
+                        onClick={() => handleViewDetails(item)}
+                        className="flex-1 py-2 text-center cursor-pointer border border-[#D2D2D2] rounded text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                      >
+                        View Details
+                      </button>
 
-          {/* Show Approve/Reject Buttons Only if Pending */}
-          {item.status === 'Pending' && (
-            <>
-              <button
-                onClick={() => handleApprove(item.id)}
-                className="p-1.5 hover:bg-green-100 border cursor-pointer border-[#D2D2D2] rounded"
-              >
-                <FaCheck className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleReject(item.id)}
-                className="p-1.5 text-red-600 hover:bg-red-100 border cursor-pointer border-[#D2D2D2] rounded"
-              >
-               <RxCross2 className="w-5 h-5" />
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    ))}
-  </div>
-)}
+                      {isPending(item.status) && (
+                        <>
+                          <button
+                            onClick={() => handleApprove(item)}
+                            className="p-1.5 hover:bg-green-100 border cursor-pointer border-[#D2D2D2] rounded"
+                          >
+                            <FaCheck className="w-5 h-5 text-green-600" />
+                          </button>
+                          <button
+                            onClick={() => handleReject(item)}
+                            className="p-1.5 text-red-600 hover:bg-red-100 border cursor-pointer border-[#D2D2D2] rounded"
+                          >
+                            <RxCross2 className="w-5 h-5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
 
         {/* Sponsors Grid */}
         {activeTab === 'Sponsors' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {sponsors.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Card Content */}
-                <div className="p-4">
-                  <div className="flex items-start gap-3 mb-4">
-                    {/* Avatar */}
-                    <img src="/public/image/review.png" alt="" />
-                    
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 text-base mb-1">{item.name}</h3>
-                      <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
+          <>
+            {isLoadingSponsors ? (
+              <div className="text-center py-10 text-gray-500">Loading sponsors...</div>
+            ) : sponsors.length === 0 ? (
+              <div className="text-center py-10 text-gray-500">No sponsors found.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {sponsors.map((item) => (
+                  <div key={item._id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex items-start gap-3 mb-4">
+                        {/* Logo */}
+                        <img
+                          src={item.logoUrl || '/public/image/review.png'}
+                          alt={item.companyName}
+                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                        />
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-base mb-1">{item.companyName}</h3>
+                          <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
+                        </div>
+
+                        {/* Status Badge */}
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusBadgeClass(item.status)}`}>
+                          {getStatusLabel(item.status)}
+                        </span>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                        <button
+                          onClick={() => handleViewDetails(item)}
+                          className="flex-1 text-sm border border-[#D2D2D2] rounded font-medium text-gray-700 hover:text-gray-900 py-1.5"
+                        >
+                          View Details
+                        </button>
+                        <button
+                          onClick={() => handleApprove(item)}
+                          className="w-9 h-9 flex items-center border border-[#D2D2D2] rounded justify-center text-green-600 hover:bg-green-50 transition-colors"
+                        >
+                          <Check className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleReject(item)}
+                          className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 border border-[#D2D2D2] rounded transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Status Badge */}
-                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-400 text-gray-800 whitespace-nowrap">
-                      {item.status}
-                    </span>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                    <button
-                      onClick={() => handleViewDetails(item)}
-                      className="flex-1 text-sm border border-[#D2D2D2] rounded font-medium text-gray-700 hover:text-gray-900 py-1.5"
-                    >
-                      View Details
-                    </button>
-                    <button
-                      onClick={() => handleApprove(item)}
-                      className="w-9 h-9 flex items-center border border-[#D2D2D2] rounded justify-center text-green-600 hover:bg-green-50  transition-colors"
-                    >
-                      <Check className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleReject(item)}
-                      className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 border border-[#D2D2D2] rounded transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Details Modal */}
       {showDetailsModal && selectedItem && (
-        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
-            {/* Modal Header with Image */}
+            {/* Modal Header */}
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowDetailsModal(false)}
                 className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-600 hover:text-gray-900 shadow-lg z-10"
               >
                 <X className="w-5 h-5" />
               </button>
-              
+
               {activeTab === 'Exhibitors' ? (
-                <div className="h-44 bg-gradient-to-br from-purple-300 via-purple-200 to-purple-100 relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-30">
-                    <svg viewBox="0 0 400 200" className="w-full h-full">
-                      <path d="M0,100 Q100,50 200,100 T400,100" fill="none" stroke="white" strokeWidth="40" opacity="0.3"/>
-                      <path d="M0,120 Q100,70 200,120 T400,120" fill="none" stroke="white" strokeWidth="30" opacity="0.2"/>
-                    </svg>
-                  </div>
+                <div className="h-44 w-full overflow-hidden relative">
+                  <img
+                    src={selectedItem.banner || '/public/image/exi.jpg'}
+                    alt={selectedItem.companyName}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/20"></div>
                 </div>
               ) : (
                 <div className="h-44 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center relative overflow-hidden">
-                  <div className="relative z-10 w-28 h-28 bg-gradient-to-br from-red-600 to-red-800 rounded-3xl transform rotate-12 flex items-center justify-center shadow-2xl">
-                    <div className="text-white text-5xl font-bold transform -rotate-12">T</div>
-                  </div>
+                  {(sponsorDetails?.logoUrl || selectedItem.logoUrl) ? (
+                    <img
+                      src={sponsorDetails?.logoUrl || selectedItem.logoUrl}
+                      alt={selectedItem.companyName}
+                      className="w-28 h-28 rounded-3xl object-cover z-10"
+                    />
+                  ) : (
+                    <div className="relative z-10 w-28 h-28 bg-gradient-to-br from-red-600 to-red-800 rounded-3xl transform rotate-12 flex items-center justify-center shadow-2xl">
+                      <div className="text-white text-5xl font-bold transform -rotate-12">
+                        {selectedItem.companyName?.charAt(0)}
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 </div>
               )}
@@ -253,123 +330,163 @@ export default function ExhibitorsSponsors() {
 
             {/* Modal Body */}
             <div className="p-6">
-              {/* Company Info */}
-              <div className="mb-5">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">
-                  {activeTab === 'Exhibitors' ? 'TchFlow' : 'Tesla, Inc.'}
-                </h2>
-                <p className="text-sm text-gray-500">Software & Technology</p>
-              </div>
+              {isLoadingSponsorDetails && activeTab === 'Sponsors' ? (
+                <div className="text-center py-4 text-gray-500 text-sm">Loading details...</div>
+              ) : (
+                <>
+                  {/* Company Info */}
+                  <div className="mb-5">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold text-gray-900 mb-1">
+                        {activeTab === 'Exhibitors' ? selectedItem.companyName : (sponsorDetails?.companyName || selectedItem.companyName)}
+                      </h2>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(activeTab === 'Exhibitors' ? selectedItem.status : (sponsorDetails?.status || selectedItem.status))}`}>
+                        {getStatusLabel(activeTab === 'Exhibitors' ? selectedItem.status : (sponsorDetails?.status || selectedItem.status))}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      {activeTab === 'Exhibitors' ? selectedItem.description : (sponsorDetails?.description || selectedItem.description)}
+                    </p>
+                  </div>
 
-              {/* About */}
-              <div className="mb-5">
-                <h3 className="font-semibold text-gray-900 text-sm mb-2">About</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
-                </p>
-              </div>
+                  {/* Special Offer (Exhibitors only) */}
+                  {activeTab === 'Exhibitors' && selectedItem.offerTitle && (
+                    <div className="mb-5 bg-teal-50 border-l-4 border-teal-500 p-3 rounded">
+                      <div className="flex items-start gap-2">
+                        <Tag className="w-4 h-4 text-teal-600 mt-0.5" />
+                        <div>
+                          <div className="text-[10px] text-teal-600 font-bold mb-0.5">SPECIAL OFFER</div>
+                          <div className="text-sm font-semibold text-gray-900">{selectedItem.offerTitle}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-              {/* Special Offer (Exhibitors only) */}
-              {activeTab === 'Exhibitors' && (
-                <div className="mb-5 bg-teal-50 border-l-4 border-teal-500 p-3 rounded">
-                  <div className="flex items-start gap-2">
-                    <Tag className="w-4 h-4 text-teal-600 mt-0.5" />
-                    <div>
-                      <div className="text-[10px] text-teal-600 font-bold mb-0.5">SPECIAL OFFER</div>
-                      <div className="text-sm font-semibold text-gray-900">20% Off Annual Plan</div>
+                  {/* Info Cards (Exhibitors only) */}
+                  {activeTab === 'Exhibitors' && (
+                    <div className="grid grid-cols-2 gap-3 mb-5">
+                      <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                        <Building2 className="w-5 h-5 text-gray-400 mx-auto mb-1.5" />
+                        <div className="text-[10px] text-gray-500 mb-0.5">Assigned Booth</div>
+                        <div className="text-sm font-bold text-gray-900">{selectedItem.boothNumber || '—'}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                        <Clock className="w-5 h-5 text-gray-400 mx-auto mb-1.5" />
+                        <div className="text-[10px] text-gray-500 mb-0.5">Opening Hours</div>
+                        <div className="text-xs font-bold text-gray-900">{selectedItem.boothOpening || '—'}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Connect */}
+                  <div className="mb-5">
+                    <h3 className="font-semibold text-gray-900 text-sm mb-3">Connect</h3>
+                    <div className="space-y-2">
+                      {(activeTab === 'Exhibitors' ? selectedItem.websiteUrl : sponsorDetails?.websiteUrl) && (
+                        <a
+                          href={activeTab === 'Exhibitors' ? selectedItem.websiteUrl : sponsorDetails?.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                              <Globe className="w-4 h-4 text-gray-600" />
+                            </div>
+                            <div className="text-left">
+                              <div className="text-[10px] text-gray-500">Website</div>
+                              <div className="text-xs font-medium text-gray-900 truncate max-w-[180px]">
+                                {activeTab === 'Exhibitors' ? selectedItem.websiteUrl : sponsorDetails?.websiteUrl}
+                              </div>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                        </a>
+                      )}
+
+                      {(activeTab === 'Exhibitors' ? selectedItem.publicEmail : sponsorDetails?.publicEmail) && (
+                        <a
+                          href={`mailto:${activeTab === 'Exhibitors' ? selectedItem.publicEmail : sponsorDetails?.publicEmail}`}
+                          className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                              <Mail className="w-4 h-4 text-gray-600" />
+                            </div>
+                            <div className="text-left">
+                              <div className="text-[10px] text-gray-500">Email</div>
+                              <div className="text-xs font-medium text-gray-900">
+                                {activeTab === 'Exhibitors' ? selectedItem.publicEmail : sponsorDetails?.publicEmail}
+                              </div>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                        </a>
+                      )}
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Info Cards */}
-              {activeTab === 'Exhibitors' && (
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
-                    <Building2 className="w-5 h-5 text-gray-400 mx-auto mb-1.5" />
-                    <div className="text-[10px] text-gray-500 mb-0.5">Assigned Booth</div>
-                    <div className="text-sm font-bold text-gray-900">A-12</div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
-                    <Clock className="w-5 h-5 text-gray-400 mx-auto mb-1.5" />
-                    <div className="text-[10px] text-gray-500 mb-0.5">Opening Hours</div>
-                    <div className="text-xs font-bold text-gray-900">7:00 AM - 10:00AM</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Connect */}
-              <div className="mb-5">
-                <h3 className="font-semibold text-gray-900 text-sm mb-3">Connect</h3>
-                <div className="space-y-2">
-                  <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                        <Globe className="w-4 h-4 text-gray-600" />
-                      </div>
-                      <div className="text-left">
-                        <div className="text-[10px] text-gray-500">Website</div>
-                        <div className="text-xs font-medium text-gray-900">https://example.com</div>
+                  {/* Resources (Exhibitors only) */}
+                  {activeTab === 'Exhibitors' && selectedItem.resources?.length > 0 && (
+                    <div className="mb-5">
+                      <h3 className="font-semibold text-gray-900 text-sm mb-3">Resources</h3>
+                      <div className="space-y-2">
+                        {selectedItem.resources.map((resource, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-5 h-5 text-red-500" />
+                              <div>
+                                <div className="text-xs font-medium text-gray-900">{resource.name || resource.fileName || 'Resource'}</div>
+                                {resource.size && <div className="text-[10px] text-gray-500">{resource.size}</div>}
+                              </div>
+                            </div>
+                            {resource.url && (
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
+                              >
+                                <Download className="w-4 h-4 text-gray-600" />
+                              </a>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </button>
-                  
-                  <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                        <Mail className="w-4 h-4 text-gray-600" />
-                      </div>
-                      <div className="text-left">
-                        <div className="text-[10px] text-gray-500">Email</div>
-                        <div className="text-xs font-medium text-gray-900">example@gmail.com</div>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </button>
-                </div>
-              </div>
+                  )}
 
-              {/* Resources (Exhibitors only) */}
-              {activeTab === 'Exhibitors' && (
-                <div className="mb-5">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-3">Resources</h3>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-red-500" />
-                      <div>
-                        <div className="text-xs font-medium text-gray-900">2025_Product_Catalog.pdf</div>
-                        <div className="text-[10px] text-gray-500">2.4 Mb</div>
-                      </div>
+                  {/* Sponsor Stats */}
+                  {activeTab === 'Sponsors' && sponsorDetails?.profileView !== undefined && (
+                    <div className="mb-5 bg-gray-50 rounded-lg p-3 border border-gray-100 text-center">
+                      <div className="text-[10px] text-gray-500 mb-0.5">Profile Views</div>
+                      <div className="text-lg font-bold text-gray-900">{sponsorDetails.profileView}</div>
                     </div>
-                    <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded transition-colors">
-                      <Download className="w-4 h-4 text-gray-600" />
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => {
+                        handleReject(selectedItem);
+                        setShowDetailsModal(false);
+                      }}
+                      className="flex-1 py-2.5 border-2 border-red-500 text-red-500 rounded-lg text-sm font-semibold hover:bg-red-50 transition-colors"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleApprove(selectedItem);
+                        setShowDetailsModal(false);
+                      }}
+                      className="flex-1 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors"
+                    >
+                      Approve
                     </button>
                   </div>
-                </div>
+                </>
               )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => {
-                    handleReject(selectedItem);
-                    setShowDetailsModal(false);
-                  }}
-                  className="flex-1 py-2.5 border-2 border-red-500 text-red-500 rounded-lg text-sm font-semibold hover:bg-red-50 transition-colors"
-                >
-                  Reject
-                </button>
-                <button
-                  onClick={() => {
-                    handleApprove(selectedItem);
-                    setShowDetailsModal(false);
-                  }}
-                  className="flex-1 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors"
-                >
-                  Approve
-                </button>
-              </div>
             </div>
           </div>
         </div>
