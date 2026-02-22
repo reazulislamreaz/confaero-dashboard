@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, X, Bold, Italic, Underline, Link2, List, ListOrdered, Upload, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
-import { GrAnnounce } from 'react-icons/gr';
+import { Plus, Trash2, X, Bold, Italic, Underline, Link2, List, ListOrdered, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import { useCreateAnnouncementMutation, useDeleteAnnouncementMutation, useGetAnnouncementsQuery, useUpdateAnnouncementMutation } from '../../redux/features/announcment/anounceSlice';
+import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 
 export default function NoticeAnnouncements() {
   const [showModal, setShowModal] = useState(false);
@@ -9,55 +10,32 @@ export default function NoticeAnnouncements() {
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [announcementImage, setAnnouncementImage] = useState(null);
   const [announcementImagePreview, setAnnouncementImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: ''
+  const { eventId } = useSelectedEvent();
+
+  const { data: announcementsRes, isLoading: isLoadingAnnouncements } = useGetAnnouncementsQuery({
+    eventId,
+    page: currentPage,
+    limit: itemsPerPage,
   });
 
-  const announcements = [
-    {
-      id: 1,
-      date: 'April 12, 2023 at 22:22 PM',
-      title: 'Last day registration Announcements',
-      description: 'Official update from event by'
-    },
-    {
-      id: 2,
-      date: 'April 12, 2023 at 22:22 PM',
-      title: 'Last day registration Announcements',
-      description: 'Official update from event by'
-    },
-    {
-      id: 3,
-      date: 'April 12, 2023 at 22:22 PM',
-      title: 'Last day registration Announcements',
-      description: 'Official update from event by'
-    },
-    {
-      id: 4,
-      date: 'April 12, 2023 at 22:22 PM',
-      title: 'Last day registration Announcements',
-      description: 'Official update from event by'
-    },
-    {
-      id: 5,
-      date: 'April 12, 2023 at 22:22 PM',
-      title: 'Last day registration Announcements',
-      description: 'Official update from event by'
-    },
-    {
-      id: 6,
-      date: 'April 12, 2023 at 22:22 PM',
-      title: 'Last day registration Announcements',
-      description: 'Official update from event by'
-    }
-  ];
+  const [createAnnouncement] = useCreateAnnouncementMutation();
+  const [updateAnnouncement] = useUpdateAnnouncementMutation();
+  const [deleteAnnouncement] = useDeleteAnnouncementMutation();
 
-  const totalPages = Math.ceil(announcements.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentAnnouncements = announcements.slice(startIndex, endIndex);
+  const [formData, setFormData] = useState({ title: '', description: '' });
+
+  const announcements = announcementsRes?.data || [];
+  const totalItems = announcementsRes?.meta?.total || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) +
+      ' at ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -81,29 +59,45 @@ export default function NoticeAnnouncements() {
 
   const handleEditClick = (announcement) => {
     setEditingAnnouncement(announcement);
-    setFormData({
-      title: announcement.title,
-      description: announcement.description
-    });
-    setAnnouncementImagePreview(null);
+    setFormData({ title: announcement.title, description: announcement.description });
     setAnnouncementImage(null);
+    setAnnouncementImagePreview(null);
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
-    console.log('Delete announcement:', id);
+  const handleDelete = async (id) => {
+    try {
+      await deleteAnnouncement(id).unwrap();
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
   };
 
-  const handleSubmit = () => {
-    if (editingAnnouncement) {
-      console.log('Update announcement:', formData);
-    } else {
-      console.log('Create announcement:', formData);
+  const handleSubmit = async () => {
+    if (!formData.title.trim() || !formData.description.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append('title', formData.title);
+      fd.append('description', formData.description);
+      if (announcementImage) {
+        fd.append('file', announcementImage);
+      }
+
+      if (editingAnnouncement) {
+        await updateAnnouncement({ announcementId : editingAnnouncement._id,eventId, body: fd }).unwrap();
+      } else {
+        
+        await createAnnouncement({ eventId, body: fd }).unwrap();
+      }
+
+      handleCloseModal();
+    } catch (err) {
+      console.error('Submit failed:', err);
+    } finally {
+      setIsSubmitting(false);
     }
-    setShowModal(false);
-    setFormData({ title: '', description: '' });
-    setAnnouncementImage(null);
-    setAnnouncementImagePreview(null);
   };
 
   const handleCloseModal = () => {
@@ -111,10 +105,11 @@ export default function NoticeAnnouncements() {
     setFormData({ title: '', description: '' });
     setAnnouncementImage(null);
     setAnnouncementImagePreview(null);
+    setEditingAnnouncement(null);
   };
 
   return (
-    <div className=" bg-gray-50 p-6">
+    <div className="bg-gray-50 p-6">
       <div className="">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -122,7 +117,7 @@ export default function NoticeAnnouncements() {
             <h1 className="text-2xl font-semibold text-gray-800 mb-1">Notice announcements</h1>
             <p className="text-gray-500 text-sm">Manage User and profiles</p>
           </div>
-          <button 
+          <button
             onClick={handleCreateClick}
             className="flex items-center gap-2 px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
           >
@@ -133,38 +128,44 @@ export default function NoticeAnnouncements() {
 
         {/* Announcements List */}
         <div className="bg-white rounded-lg shadow-sm">
-          <div className="divide-y divide-gray-200">
-            {currentAnnouncements.map((announcement) => (
-              <div key={announcement.id} className="p-6 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3 flex-1">
-                      <img className='mt-3' src="/public/image/ann.png" alt="" />
-                    <div className="flex-1">
-                      <div className="text-xs text-gray-500 mb-1">{announcement.date}</div>
-                      <h3 className="text-[22px] font-semibold text-gray-800 mb-1">{announcement.title}</h3>
-                      <p className="text-sm text-gray-600">{announcement.description}</p>
+          {isLoadingAnnouncements ? (
+            <div className="text-center py-10 text-gray-500">Loading announcements...</div>
+          ) : announcements.length === 0 ? (
+            <div className="text-center py-10 text-gray-500">No announcements found.</div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {announcements.map((announcement) => (
+                <div key={announcement._id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <img className="mt-3" src="/public/image/ann.png" alt="" />
+                      <div className="flex-1">
+                        <div className="text-xs text-gray-500 mb-1">{formatDate(announcement.createdAt)}</div>
+                        <h3 className="text-[22px] font-semibold text-gray-800 mb-1">{announcement.title}</h3>
+                        <p className="text-sm text-gray-600">{announcement.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => handleEditClick(announcement)}
+                        className="p-2 text-gray-400 hover:text-teal-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(announcement._id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleEditClick(announcement)}
-                      className="p-2 text-gray-400 hover:text-teal-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Edit"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(announcement.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Pagination */}
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
@@ -183,18 +184,18 @@ export default function NoticeAnnouncements() {
                 <option value="20">20</option>
                 <option value="50">50</option>
               </select>
-              <span>of {announcements.length}</span>
+              <span>of {totalItems}</span>
             </div>
 
             <div className="flex items-center gap-1">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
                 className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              
+
               {[...Array(Math.min(5, totalPages))].map((_, index) => {
                 const page = index + 1;
                 return (
@@ -202,9 +203,7 @@ export default function NoticeAnnouncements() {
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
-                      currentPage === page
-                        ? 'bg-teal-600 text-white'
-                        : 'text-gray-600 hover:bg-gray-100'
+                      currentPage === page ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
                     {page}
@@ -213,7 +212,7 @@ export default function NoticeAnnouncements() {
               })}
 
               <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
                 className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -233,10 +232,7 @@ export default function NoticeAnnouncements() {
               <h2 className="text-lg font-semibold text-gray-800">
                 {editingAnnouncement ? 'Edit announcement' : 'Add announcements'}
               </h2>
-              <button 
-                onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -248,9 +244,9 @@ export default function NoticeAnnouncements() {
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-white relative">
                   {announcementImagePreview ? (
                     <div className="relative">
-                      <img 
-                        src={announcementImagePreview} 
-                        alt="Announcement preview" 
+                      <img
+                        src={announcementImagePreview}
+                        alt="Announcement preview"
                         className="max-h-32 mx-auto rounded"
                       />
                       <button
@@ -292,16 +288,12 @@ export default function NoticeAnnouncements() {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
                 />
-                <div className="text-right text-xs text-gray-400 mt-1">
-                  Write at least 100 characters
-                </div>
+                <div className="text-right text-xs text-gray-400 mt-1">Write at least 100 characters</div>
               </div>
 
               {/* Description */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   placeholder="Add your job description..."
                   value={formData.description}
@@ -309,46 +301,27 @@ export default function NoticeAnnouncements() {
                   rows="6"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none text-sm"
                 />
-                
                 {/* Text Editor Toolbar */}
                 <div className="flex items-center gap-2 mt-2 p-2 border-t border-gray-200">
-                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Bold">
-                    <Bold className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Italic">
-                    <Italic className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Underline">
-                    <Underline className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Strikethrough">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M7 16h.01" />
-                    </svg>
-                  </button>
-                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Link">
-                    <Link2 className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Bullet List">
-                    <List className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Numbered List">
-                    <ListOrdered className="w-4 h-4" />
-                  </button>
+                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Bold"><Bold className="w-4 h-4" /></button>
+                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Italic"><Italic className="w-4 h-4" /></button>
+                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Underline"><Underline className="w-4 h-4" /></button>
+                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Link"><Link2 className="w-4 h-4" /></button>
+                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Bullet List"><List className="w-4 h-4" /></button>
+                  <button className="p-1 text-gray-600 hover:text-gray-800" title="Numbered List"><ListOrdered className="w-4 h-4" /></button>
                 </div>
-                <div className="text-right text-xs text-gray-400 mt-1">
-                  Write at least 300 characters
-                </div>
+                <div className="text-right text-xs text-gray-400 mt-1">Write at least 300 characters</div>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6">
+            <div className="p-6 pt-0">
               <button
                 onClick={handleSubmit}
-                className="w-full py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+                disabled={isSubmitting || !formData.title.trim() || !formData.description.trim()}
+                className="w-full py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Submit
+                {isSubmitting ? 'Submitting...' : 'Submit'}
               </button>
             </div>
           </div>
