@@ -1,6 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { apiSlice } from "../../api/apiSlice";
 
+// Get initial eventId from localStorage
+const getInitialEventId = () => {
+  try {
+    const savedEventId = localStorage.getItem('selectedEventId');
+    return savedEventId || null;
+  } catch (error) {
+    console.error('Error reading eventId from localStorage:', error);
+    return null;
+  }
+};
+
 // API endpoints
 const eventApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -10,10 +21,10 @@ const eventApiSlice = apiSlice.injectEndpoints({
         }),
 
         addSession: builder.mutation({
-            query: ({ eventId, sessionData }) => ({
+            query: ({ eventId, session }) => ({
                 url: `/organizer-sessions/events/${eventId}/sessions`,
                 method: 'POST',
-                body: sessionData,
+                body: session,
             }),
             invalidatesTags: [{type: "Events"}]
         }),
@@ -50,7 +61,7 @@ const eventApiSlice = apiSlice.injectEndpoints({
                 method: 'DELETE',
             }),
             invalidatesTags: [{type: "Events"}]
-         }), 
+         }),
     })
 });
 
@@ -72,17 +83,29 @@ export const {
 const selectedEventSlice = createSlice({
     name: 'selectedEvent',
     initialState: {
-        eventId: null,
+        eventId: getInitialEventId(),
         eventData: null,
     },
     reducers: {
         setSelectedEvent: (state, action) => {
             state.eventId = action.payload._id || action.payload.id;
             state.eventData = action.payload;
+            // Persist to localStorage
+            try {
+                localStorage.setItem('selectedEventId', state.eventId);
+            } catch (error) {
+                console.error('Error saving eventId to localStorage:', error);
+            }
         },
         clearSelectedEvent: (state) => {
             state.eventId = null;
             state.eventData = null;
+            // Clear from localStorage
+            try {
+                localStorage.removeItem('selectedEventId');
+            } catch (error) {
+                console.error('Error removing eventId from localStorage:', error);
+            }
         }
     }
 });

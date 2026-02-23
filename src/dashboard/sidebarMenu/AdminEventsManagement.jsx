@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Search, Calendar, MapPin, ExternalLink, Plus, Edit2, Trash2, Heart, X } from 'lucide-react';
 import { TiPinOutline } from 'react-icons/ti';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setSelectedEvent } from '../../redux/features/eventSlice/eventSlice';
 
 export default function AdminEventManagement({ onEventSelect }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('Recently');
   const [eventDate, setEventDate] = useState('Recently');
@@ -22,7 +25,7 @@ export default function AdminEventManagement({ onEventSelect }) {
     boothSlot: '',
     details: ''
   });
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvent, setSelectedEventLocal] = useState(null);
 
   const events = [
     {
@@ -61,8 +64,10 @@ export default function AdminEventManagement({ onEventSelect }) {
   ];
 
   const handleEventClick = (event) => {
-    console.log(event)
-    setSelectedEvent(event);
+    console.log(event);
+    setSelectedEventLocal(event);
+    // Set eventId in Redux store so it's available on all pages
+    dispatch(setSelectedEvent(event));
     if (onEventSelect) {
       onEventSelect(event);
     }

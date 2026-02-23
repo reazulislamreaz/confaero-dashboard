@@ -225,6 +225,7 @@ import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { useDeleteUserMutation, useGetAllUsersQuery } from '../../redux/features/userSlice/userSlice';
 import toast from 'react-hot-toast';
 import { Popconfirm } from 'antd';
+import { useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
 
 // Role display mapping
 const ROLE_DISPLAY = {
@@ -256,6 +257,8 @@ export default function UserManagement() {
   const [selectedRole, setSelectedRole] = useState('');
 
   const navigate = useNavigate();
+
+ 
 
   const { eventId } = useSelectedEvent();
   console.log(eventId);

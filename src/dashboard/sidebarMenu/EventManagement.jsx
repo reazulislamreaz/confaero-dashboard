@@ -692,11 +692,16 @@ export default function EventAgendaBuilder() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [editingSession, setEditingSession] = useState(null);
+  
+  console.log(editingSession?.id)
 
   const floorMapFileRef = useRef();
 
   const { eventId, setEvent } = useSelectedEvent();
+
   const { data: eventResponse, isLoading, isError } = useGetEventQuery();
+  
+  console.log(eventResponse)
 
   const event = eventResponse?.data?.[0];
 
@@ -878,8 +883,11 @@ export default function EventAgendaBuilder() {
 
   const [addSession] = useAddSessionMutation();
   const [editSession] = useUpdateSessionMutation();
-
+ 
   const handleSaveSession = async () => {
+    console.log(editingSession.id)
+    console.log(editingSession)
+    console.log(eventId)
     const formData = new FormData();
     formData.append('title', editingSession.title || '');
     formData.append('details', editingSession.details || '');
@@ -911,7 +919,7 @@ export default function EventAgendaBuilder() {
           session: formData,
         });
       }
-
+   console.log(result)
       if (result?.data?.success === true) {
         toast.success(
           editingSession.id

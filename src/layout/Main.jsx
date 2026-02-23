@@ -4,13 +4,14 @@ import toast from 'react-hot-toast';
 
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-
-// Mock function to determine if user is admin - in a real app, this would come from auth context
-// const isAdmin = true;
-const isAdmin = false;
+import { useIsAdmin } from "../hooks/useUserRole";
 
 const Main = () => {
-  const [hasSelectedEvent, setHasSelectedEvent] = useState(false);
+  const isAdmin = useIsAdmin();
+  const [hasSelectedEvent, setHasSelectedEvent] = useState(() => {
+    // Initialize from localStorage to persist across page navigations
+    return localStorage.getItem('selectedEventId') !== null;
+  });
   const location = useLocation();
 
   const handleEventSelect = (event) => {
@@ -21,11 +22,10 @@ const Main = () => {
     setHasSelectedEvent(false);
   };
 
-  // Reset event selection when navigating away from admin events page
+  // Sync hasSelectedEvent state with localStorage
   useEffect(() => {
-    if (!location.pathname.includes('admin-events')) {
-      setHasSelectedEvent(false);
-    }
+    const hasEventInStorage = localStorage.getItem('selectedEventId') !== null;
+    setHasSelectedEvent(hasEventInStorage);
   }, [location.pathname]);
 
   return (

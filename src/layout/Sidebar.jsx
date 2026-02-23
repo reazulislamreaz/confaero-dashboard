@@ -29,6 +29,9 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
     return savedState ? JSON.parse(savedState) : false;
   });
 
+  // Check if event is selected from localStorage (for persistent menu visibility)
+  const eventSelected = hasSelectedEvent || localStorage.getItem('selectedEventId') !== null;
+
   const handleLogOut = () => {
     Swal.fire({
       title: "Are you sure?",
@@ -42,6 +45,8 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
       if (result.isConfirmed) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('selectedEventId');
 
         Swal.fire({
           title: "Logged Out!",
@@ -108,7 +113,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
             {/* Registration User, admin Users*/}
             {
               isAdmin ? (
-                hasSelectedEvent ? (
+                eventSelected ? (
                   // Show event-specific menu when an event is selected by admin
                   <div>
                     {/* Event-specific navigation items - excluding user management */}

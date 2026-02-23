@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Upload, Bold, Italic, Underline, Strikethrough, Link, List, ListOrdered, Calendar, MapPin, User, CheckSquare, FileText, Store, Megaphone, Users, CheckCircle } from 'lucide-react';
+import { useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
 
 export default function ConferenceDashboard() {
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
@@ -10,6 +11,10 @@ export default function ConferenceDashboard() {
   const [announcementDescription, setAnnouncementDescription] = useState('');
   const [announcementImage, setAnnouncementImage] = useState(null);
   
+   const { data: eventResponse, isLoading, isError } = useGetEventQuery();
+   
+   console.log(eventResponse)
+
   // Reviewer form state
   const [reviewerEmail, setReviewerEmail] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([

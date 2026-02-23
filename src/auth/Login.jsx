@@ -43,9 +43,14 @@ const Login = () => {
 
     try {
       const response = await login(data).unwrap();
+
       console.log('Login response:', response);
+
       if(response.success === true){
         localStorage.setItem('token', response.data.accessToken);
+        localStorage.setItem('userRole', response.data.activeRole);
+        console.log('Saved userRole:', response.data.activeRole);
+        console.log('Current localStorage userRole:', localStorage.getItem('userRole'));
         toast.success(response.message)
       }
       navigate('/dashboard/home');

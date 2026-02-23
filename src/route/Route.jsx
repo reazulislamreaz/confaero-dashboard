@@ -40,6 +40,7 @@ import AdminUserList from "../dashboard/sidebarMenu/AdminUserList";
 import AdminEventManagement from "../dashboard/sidebarMenu/AdminEventsManagement";
 import DashboardOverview from "../dashboard/home/AdminOverview";
 import EventOverview from "../dashboard/home/EventOverview";
+import AdminRoute from "./AdminRoute";
 
 // Wrapper component to pass context to AdminEventManagement
 function AdminEventsWrapper() {
@@ -76,11 +77,11 @@ export const router = createBrowserRouter([
             },
             {
                 path: "admin-home",
-                element: <DashboardOverview />
+                element: <AdminRoute><DashboardOverview /></AdminRoute>
             },
             {
                 path: "admin-events/event-overview",
-                element: <EventOverview />
+                element: <AdminRoute><EventOverview /></AdminRoute>
             },
             {
                 path: "users",
@@ -89,7 +90,7 @@ export const router = createBrowserRouter([
 
             {
                 path: "user-management",
-                element: <AdminUserList />
+                element: <AdminRoute><AdminUserList /></AdminRoute>
             },
             {
                 path: "users/details/:id",
@@ -97,11 +98,11 @@ export const router = createBrowserRouter([
             },
             {
                 path: "user-management/details",
-                element: <UserDetailsPage />
+                element: <AdminRoute><UserDetailsPage /></AdminRoute>
             },
             {
                 path: "admin-events",
-                element: <AdminEventsWrapper />
+                element: <AdminRoute><AdminEventsWrapper /></AdminRoute>
             },
             {
                 path: "invitaitons",
