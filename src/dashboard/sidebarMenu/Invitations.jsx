@@ -471,7 +471,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { Search, Eye, Heart, Trash2, X, ChevronLeft, ChevronRight, Plus, Mail, Calendar, Building2, User, RefreshCw } from 'lucide-react';
 import { Popconfirm } from 'antd';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
-import { useGetInvitationsQuery, useSendInvitationMutation} from '../../redux/features/invitatation/invitaionSlice';
+import { useDeleteInvitationMutation, useGetInvitationsQuery, useSendInvitationForSpekerMutation, useSendInvitationMutation} from '../../redux/features/invitatation/invitaionSlice';
 import toast from 'react-hot-toast';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
@@ -506,23 +506,6 @@ const TABS = Object.keys(TAB_ROLE_MAP);
 const getRoleInfo   = (r) => ROLE_MAP[r]   || { label: r, color: 'text-gray-700 bg-gray-50 border border-gray-200' };
 const getStatusInfo = (s) => STATUS_MAP[s] || { label: s, color: 'text-gray-700 bg-gray-50 border border-gray-200', dot: 'bg-gray-400' };
 const formatDate    = (d) => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
-
-// ─── RTK Query slice — update your query like this ───────────────────────────
-//
-// getInvitations: builder.query({
-//   query: ({ id, page = 1, limit = 9, role = '', status = '', search = '' }) => ({
-//     url: `/invitation/event/${id}`,
-//     method: 'GET',
-//     params: {
-//       page,
-//       limit,
-//       ...(role   && { role }),
-//       ...(status && { status }),
-//       ...(search && { search }),
-//     },
-//   }),
-//   providesTags: ['Invitations'],
-// }),
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -640,15 +623,13 @@ function DetailsModal({ invitation: inv, onClose, onResend }) {
 
 // ─── Send Invitation Modal ────────────────────────────────────────────────────
 
-
-
 function SendInvitationModal({ onClose, onSubmit }) {
   const [form, setForm] = useState({ role: '', session: '', name: '', email: '' });
   const set = (field, val) => setForm(p => ({ ...p, [field]: val }));
 
   const handleSubmit = () => {
     if (!form.role || !form.email) return alert('Please fill in all required fields');
-    if (form.role === 'SPEAKER' && !form.session) return alert('Please select a session for Speaker');
+    if (form.role === 'SPEAKER' && form.session === '') return alert('Please select a session for Speaker');
     onSubmit(form);
     onClose();
   };
@@ -678,21 +659,21 @@ function SendInvitationModal({ onClose, onSubmit }) {
             <Field label="Session" required>
               <select value={form.session} onChange={e => set('session', e.target.value)} className={selectCls}>
                 <option value="">Select a session</option>
-                {['Session 1', 'Session 2', 'Session 3', 'Session 4'].map(s => (
-                  <option key={s} value={s}>{s}</option>
+                {['Session 1', 'Session 2', 'Session 3', 'Session 4'].map((s, index) => (
+                  <option key={index} value={index}>{s}</option>
                 ))}
               </select>
             </Field>
           )}
 
-          {/* <Field label="Full Name" required>
-            <input type="text" placeholder="e.g. Dr. Sarah Johnson" value={form.name}
-              onChange={e => set('name', e.target.value)} className={inputCls} />
-          </Field> */}
-
           <Field label="Email Address" required>
-            <input type="email" placeholder="e.g. sarah@example.com" value={form.email}
-              onChange={e => set('email', e.target.value)} className={inputCls} />
+            <input
+              type="email"
+              placeholder="e.g. sarah@example.com"
+              value={form.email}
+              onChange={e => set('email', e.target.value)}
+              className={inputCls}
+            />
           </Field>
         </div>
 
@@ -710,46 +691,56 @@ function SendInvitationModal({ onClose, onSubmit }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function InvitationsPage() {
-  const [activeTab, setActiveTab]         = useState('All');
-  const [searchInput, setSearchInput]     = useState('');
+  const [activeTab, setActiveTab]             = useState('All');
+  const [searchInput, setSearchInput]         = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [currentPage, setCurrentPage]     = useState(1);
-  const [itemsPerPage, setItemsPerPage]   = useState(5);
-  const [showDetails, setShowDetails]     = useState(false);
-  const [selectedInv, setSelectedInv]     = useState(null);
-  const [showInvite, setShowInvite]       = useState(false);
-  const [favorites, setFavorites]         = useState(new Set());
-  const debounceRef                       = React.useRef(null);
+  const [currentPage, setCurrentPage]         = useState(1);
+  const [itemsPerPage, setItemsPerPage]       = useState(5);
+  const [showDetails, setShowDetails]         = useState(false);
+  const [selectedInv, setSelectedInv]         = useState(null);
+  const [showInvite, setShowInvite]           = useState(false);
+  const [favorites, setFavorites]             = useState(new Set());
+  const debounceRef                           = React.useRef(null);
 
   const { eventId } = useSelectedEvent();
-
-
-
-  const [sendInvitee,] = useSendInvitationMutation();
-
-const sendInvite = async (form) => {
-  // console.log('Send invitation with data:', form);
-  const data = {
-    email: form.email,
-    role: form.role,
  
-  }
-  console.log(data);
-  try {
-    const response = await sendInvitee({ data: data, id: eventId });
-    console.log(response);
-    if(response.success === true){
-      toast('Invitation sent successfully!');
-    } else if(response.error.data.success === false){
-      toast(response.error.data.message || 'Failed to send invitation' );
+
+  const [sendInvitationToSpeaker] = useSendInvitationForSpekerMutation();
+  const [sendInvitee]             = useSendInvitationMutation();
+
+  // ─── Send Invite Handler ────────────────────────────────────────────────────
+  const sendInvite = async (form) => {
+    try {
+      let response;
+
+      if (form.role === 'SPEAKER') {
+        const data = {
+          email:        form.email,
+          sessionIndex: Number(form.session), // 0-based index
+        };
+        console.log(data)
+        response = await sendInvitationToSpeaker({ data, eventId });
+        console.log(response)
+      } else {
+        const data = {
+          email: form.email,
+          role:  form.role,
+        };
+        response = await sendInvitee({ data, id: eventId });
+      }
+
+      if (response?.data?.success === true) {
+        toast.success(response.data.message || 'Invitation sent successfully');
+      } else {
+        toast.error(response?.error?.data?.message || 'Failed to send invitation');
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      toast.error('Something went wrong');
     }
+  };
 
-  } catch (error) {
-    console.error('Error sending invitation:', error);
-  }
-};
-
-  // Debounce search → sends to server only after 400ms idle
+  // ─── Debounced Search ───────────────────────────────────────────────────────
   const handleSearchChange = (val) => {
     setSearchInput(val);
     clearTimeout(debounceRef.current);
@@ -759,7 +750,7 @@ const sendInvite = async (form) => {
     }, 400);
   };
 
-  // All filters are sent as query params to the server
+  // ─── Query Params ───────────────────────────────────────────────────────────
   const queryParams = useMemo(() => ({
     id:     eventId,
     page:   currentPage,
@@ -767,15 +758,11 @@ const sendInvite = async (form) => {
     role:   TAB_ROLE_MAP[activeTab] || '',
     search: debouncedSearch,
   }), [eventId, currentPage, itemsPerPage, activeTab, debouncedSearch]);
-  console.log(queryParams);
 
   const { data: invitationsData, isLoading, isFetching } = useGetInvitationsQuery(queryParams);
 
-  console.log(invitationsData);
-
-
-  const invitations = invitationsData?.data?.data  || [];
-  const meta        = invitationsData?.data?.meta  || { total: 0 };
+  const invitations = invitationsData?.data?.data || [];
+  const meta        = invitationsData?.data?.meta || { total: 0 };
   const totalPages  = Math.ceil(meta.total / itemsPerPage);
   const loading     = isLoading || isFetching;
 
@@ -787,10 +774,25 @@ const sendInvite = async (form) => {
     });
   }, []);
 
-  const handleDelete = useCallback((inv) => {
+  const [deleteInvitation] = useDeleteInvitationMutation();
+
+  const handleDelete = useCallback(async (inv) => {
+    
     console.log('Delete invitation:', inv._id);
-    // dispatch your delete mutation here
+    
+    try {
+      const res = await deleteInvitation( {inviteId : inv._id, eventId});
+      
+      if (res?.data?.success) {
+        toast.success(res.data.message || 'Invitation deleted');
+      }
+    } catch (error) {
+      console.error('Error deleting invitation:', error);
+      toast.error('Failed to delete invitation');
+    }
+     
   }, []);
+
 
   const handleTabChange = (tab) => { setActiveTab(tab); setCurrentPage(1); };
 
@@ -812,13 +814,14 @@ const sendInvite = async (form) => {
               {loading ? 'Loading…' : `${meta.total} total invitation${meta.total !== 1 ? 's' : ''}`}
             </p>
           </div>
-          <button onClick={() => setShowInvite(true)}
+          <button
+            onClick={() => setShowInvite(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
             <Plus className="w-4 h-4" /> Send Invitation
           </button>
         </div>
 
-        {/* Tabs — each tab sends `role` param to API */}
+        {/* Tabs */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm mb-4 overflow-x-auto">
           <div className="flex p-1.5 gap-1 min-w-max">
             {TABS.map(tab => (
@@ -834,7 +837,7 @@ const sendInvite = async (form) => {
           </div>
         </div>
 
-        {/* Search — debounced, sends `search` param to API */}
+        {/* Search */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 mb-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -845,7 +848,6 @@ const sendInvite = async (form) => {
               onChange={e => handleSearchChange(e.target.value)}
               className="w-full pl-9 pr-10 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 border-0"
             />
-            {/* Spinner while fetching */}
             {loading && (
               <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-teal-500 animate-spin" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
@@ -886,6 +888,7 @@ const sendInvite = async (form) => {
                     const isFav  = favorites.has(inv._id);
                     return (
                       <tr key={inv._id} className="hover:bg-gray-50/80 transition-colors row-in" style={{ animationDelay: `${i * 25}ms` }}>
+
                         {/* Name */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
@@ -897,10 +900,13 @@ const sendInvite = async (form) => {
                             </span>
                           </div>
                         </td>
+
                         {/* Role */}
                         <td className="px-6 py-4"><Badge className={role.color}>{role.label}</Badge></td>
+
                         {/* Email */}
                         <td className="px-6 py-4 text-sm text-gray-500">{inv.email}</td>
+
                         {/* Status */}
                         <td className="px-6 py-4">
                           <Badge className={status.color}>
@@ -908,8 +914,10 @@ const sendInvite = async (form) => {
                             {status.label}
                           </Badge>
                         </td>
+
                         {/* Date */}
                         <td className="px-6 py-4 text-sm text-gray-500">{formatDate(inv.createdAt)}</td>
+
                         {/* Actions */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1">
@@ -927,20 +935,14 @@ const sendInvite = async (form) => {
                               <Heart className="w-4 h-4" fill={isFav ? 'currentColor' : 'none'} />
                             </button>
 
-                            {/* Ant Design Popconfirm for delete */}
                             <Popconfirm
                               title="Delete Invitation"
                               description="Are you sure you want to delete this invitation? This action cannot be undone."
                               onConfirm={() => handleDelete(inv)}
                               okText="Yes, Delete"
                               cancelText="Cancel"
-                              okButtonProps={{
-                                danger: true,
-                                style: { borderRadius: '8px' },
-                              }}
-                              cancelButtonProps={{
-                                style: { borderRadius: '8px' },
-                              }}
+                              okButtonProps={{ danger: true, style: { borderRadius: '8px' } }}
+                              cancelButtonProps={{ style: { borderRadius: '8px' } }}
                               placement="topRight">
                               <button
                                 className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -950,6 +952,7 @@ const sendInvite = async (form) => {
                             </Popconfirm>
                           </div>
                         </td>
+
                       </tr>
                     );
                   })
@@ -958,12 +961,13 @@ const sendInvite = async (form) => {
             </table>
           </div>
 
-          {/* Server-driven pagination */}
+          {/* Pagination */}
           {!loading && meta.total > 0 && (
             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span>Show</span>
-                <select value={itemsPerPage}
+                <select
+                  value={itemsPerPage}
                   onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
                   className="px-2 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
                   {[9, 18, 27, 50].map(n => <option key={n} value={n}>{n}</option>)}
@@ -972,7 +976,9 @@ const sendInvite = async (form) => {
               </div>
 
               <div className="flex items-center gap-1">
-                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
                   className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -984,7 +990,9 @@ const sendInvite = async (form) => {
                     }`}>{p}</button>
                 ))}
 
-                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
                   className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -992,8 +1000,10 @@ const sendInvite = async (form) => {
             </div>
           )}
         </div>
+
       </div>
 
+      {/* Modals */}
       {showDetails && (
         <DetailsModal
           invitation={selectedInv}
@@ -1005,7 +1015,7 @@ const sendInvite = async (form) => {
       {showInvite && (
         <SendInvitationModal
           onClose={() => setShowInvite(false)}
-          onSubmit={(form) =>  sendInvite(form)}
+          onSubmit={(form) => sendInvite(form)}
         />
       )}
     </div>

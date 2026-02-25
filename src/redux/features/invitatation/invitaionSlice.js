@@ -2,14 +2,8 @@ import { apiSlice } from "../../api/apiSlice";
 
 const invitaionSlice =  apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        sendInvitation: builder.mutation({  
-            query: ({ data , id}) => ({
-                url: `/invitation/create/${id}`,
-                method: 'POST', 
-                body: data,
-            }),
-        }),
-       getInvitations: builder.query({
+
+         getInvitations: builder.query({
   query: ({ id, page = 1, limit = 9, role = '', status = '', search = '' }) => ({
     url: `/invitation/event/${id}`,
     method: 'GET',
@@ -22,12 +16,47 @@ const invitaionSlice =  apiSlice.injectEndpoints({
     },
   }),
   providesTags: ['Invitations'],
-}),
-       
+   }),
+
+
+
+        sendInvitation: builder.mutation({  
+            query: ({ data , id}) => ({
+                url: `/invitation/create/${id}`,
+                method: 'POST', 
+                body: data,
+            }),
+            invalidatesTags: ['Invitations'],
+        }),
+ 
+    sendInvitationForSpeker: builder.mutation({
+  query: ({data, eventId}) => ({
+    url: `/invitation/${eventId}/make-speaker`,
+    method: 'POST',
+    body: data,
+  }),
+  invalidatesTags: ['Invitations'], 
+    }),
+
+    deleteInvitation: builder.mutation({
+  query: ({inviteId, eventId}) => ({
+    url: `/invitation/${inviteId}/${eventId}`, 
+    method: 'DELETE',
+  }),
+  invalidatesTags: ['Invitations'], 
+    }),    
+
+
+
+
+
+
     }),
 });
 
 export const { 
     useSendInvitationMutation, 
-    useGetInvitationsQuery 
+    useGetInvitationsQuery ,
+    useSendInvitationForSpekerMutation,
+    useDeleteInvitationMutation,
 } = invitaionSlice;
