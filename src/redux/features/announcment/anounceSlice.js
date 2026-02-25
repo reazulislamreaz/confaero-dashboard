@@ -26,8 +26,8 @@ const announceSlice = apiSlice.injectEndpoints({
         invalidatesTags: ['Announcements'],
     }),
     deleteAnnouncement: builder.mutation({
-        query: ({ announcementId,eventId }) => ({   
-            url: `/organizerAnnouncement/announcements/${announcementId}/${eventId}`,
+        query: ({id, eventId}) => ({   
+            url: `/announcement/${id}/${eventId}`,
             method: 'DELETE',
         }), 
         invalidatesTags: ['Announcements'],

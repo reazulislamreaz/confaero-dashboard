@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Plus, Trash2, X, Bold, Italic, Underline, Link2, List, ListOrdered, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { useCreateAnnouncementMutation, useDeleteAnnouncementMutation, useGetAnnouncementsQuery, useUpdateAnnouncementMutation } from '../../redux/features/announcment/anounceSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
+import { Popconfirm } from 'antd';
+import toast from 'react-hot-toast';
 
 export default function NoticeAnnouncements() {
   const [showModal, setShowModal] = useState(false);
@@ -66,8 +68,14 @@ export default function NoticeAnnouncements() {
   };
 
   const handleDelete = async (id) => {
+    console.log(id)
     try {
-      await deleteAnnouncement(id).unwrap();
+     const res = await deleteAnnouncement({id, eventId}).unwrap();
+     console.log(res)
+     if(res.success === true){
+      toast.success('Announcement deleted successfully'); 
+       
+     }
     } catch (err) {
       console.error('Delete failed:', err);
     }
@@ -153,13 +161,22 @@ export default function NoticeAnnouncements() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => handleDelete(announcement._id)}
+                  <Popconfirm 
+                        title="Are you sure to delete this announcement?"
+                        onConfirm={() => handleDelete(announcement._id)}
+                        okText="Yes"
+                        cancelText="No"
+                      >  
+                      <button 
                         className="p-2 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded-lg transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
+                     
+                       </Popconfirm> 
+
+
                     </div>
                   </div>
                 </div>

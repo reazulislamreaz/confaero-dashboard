@@ -28,19 +28,27 @@ const eventApiSlice = apiSlice.injectEndpoints({
             }),
             invalidatesTags: [{type: "Events"}]
         }),
+        addSessionByCsvfile: builder.mutation({
+            query: ({ eventId, file }) => ({
+                url: `/organizer-sessions/events/${eventId}/sessions/upload-csv`,
+                method: 'POST',
+                body: file,
+            }),
+            invalidatesTags: [{type: "Events"}]
+        }),
 
         updateSession: builder.mutation({
-            query: ({ eventId, sessionId, sessionData }) => ({
-                url: `/organizer/events/${eventId}/sessions/${sessionId}`,
-                method: 'PUT',
-                body: sessionData,
+            query: ({ eventId, sessionId, session }) => ({
+                url: `/organizer-sessions/events/${eventId}/sessions/${sessionId}`,
+                method: 'PATCH',
+                body: session,
             }),
             invalidatesTags: [{type: "Events"}]
         }),
 
         deleteSession: builder.mutation({
             query: ({ eventId, sessionId }) => ({
-                url: `/organizer/events/${eventId}/sessions/${sessionId}`,
+                url: `/organizer-sessions/events/${eventId}/sessions/${sessionId}`,
                 method: 'DELETE',
             }),
             invalidatesTags: [{type: "Events"}]
@@ -75,6 +83,7 @@ export const {
     useDeleteSessionMutation,
     useUpdateEventMutation,
     useDeleteFloorMapMutation,
+    useAddSessionByCsvfileMutation,
 } = eventApiSlice;
 
  

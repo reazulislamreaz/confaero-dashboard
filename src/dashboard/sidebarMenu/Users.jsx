@@ -258,10 +258,7 @@ export default function UserManagement() {
 
   const navigate = useNavigate();
 
- 
-
   const { eventId } = useSelectedEvent();
-  console.log(eventId);
 
 const { data: usersData, isLoading, isError } = useGetAllUsersQuery(
   {
@@ -276,7 +273,7 @@ const { data: usersData, isLoading, isError } = useGetAllUsersQuery(
   }
 );
 
-  console.log(usersData);
+  // console.log(usersData);
   // Extract data from response shape
   const users = usersData?.data?.data || [];
   const meta = usersData?.data?.meta || {};

@@ -1,17 +1,27 @@
-import React from 'react';
+import React from "react";
 
-import OverviewChart from './OverviewChart';
-import RejectedProductsPage from './RecentUser';
-import Cardd from './Card';
-import AdminOverview from './AdminOverview';
-import { useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
-import { useIsAdmin } from '../../hooks/useUserRole';
+import OverviewChart from "./OverviewChart";
+import RejectedProductsPage from "./RecentUser";
+import Cardd from "./Card";
+import AdminOverview from "./AdminOverview";
+import { useGetEventQuery } from "../../redux/features/eventSlice/eventSlice";
+import { useIsAdmin } from "../../hooks/useUserRole";
+import { useSelectedEvent } from "../../hooks/useSelectedEvent";
 
 const DashboardHome = () => {
   const isAdmin = useIsAdmin();
-  const { data: eventResponse, isLoading, isError } = useGetEventQuery();
 
-  console.log(eventResponse)
+  const { data: eventResponse } = useGetEventQuery();
+  
+
+  const { eventId, setEvent } = useSelectedEvent();
+  console.log(eventId);
+
+  const event = eventResponse?.data?.[0];
+
+  React.useEffect(() => {
+    if (event && !eventId) setEvent(event);
+  }, [event, eventId, setEvent]);
 
   return (
     <div>
