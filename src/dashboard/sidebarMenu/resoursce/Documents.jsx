@@ -1,185 +1,592 @@
+// import React, { useState } from 'react';
+// import { Upload, Search, Filter, Trash2, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react';
+// import { useGetDocumentDetailsQuery, useGetDocumentsQuery, useGetPendingDocumentsQuery } from '../../../redux/features/resourcec/resourcesSlice';
+// import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
+
+// export default function DocumentManagement() {
+//   const [activeFilter, setActiveFilter] = useState('All');
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [itemsPerPage, setItemsPerPage] = useState(6);
+//   const [showUploadModal, setShowUploadModal] = useState(false);
+//   const [documentId , setDocumentId] = useState(null);
+//   const { eventId } = useSelectedEvent();
+
+//   const { data: documentDetailsData, isLoading: detailsLoading, isError: detailsError } = useGetDocumentDetailsQuery(
+//     { eventId, id: documentId },
+//     { skip: !documentId }
+//   );
+//   console.log(documentDetailsData);
+
+//   const { data: documentsData, isLoading, isError } = useGetDocumentsQuery(
+//     { eventId, page: currentPage, limit: itemsPerPage },
+//     { skip: !eventId || activeFilter !== 'All' }
+//   );
+
+//   const { data: pendingDocumentsData, isLoading: pendingLoading, isError: pendingError } = useGetPendingDocumentsQuery(
+//     { eventId },
+//     { skip: !eventId || activeFilter !== 'Pending' }
+//   );
+
+//   // Pick the right dataset based on active filter
+//   const activeData = activeFilter === 'Pending' ? pendingDocumentsData : documentsData;
+//   const documents = activeData?.data?.data ?? [];
+//   const meta = activeData?.data?.meta ?? { page: 1, limit: itemsPerPage, total: 0 };
+//   const totalPages = Math.ceil(meta.total / itemsPerPage);
+
+//   // Client-side search filter (API doesn't seem to support search param)
+//   const filteredDocuments = documents.filter(doc =>
+//     doc.documentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//     doc.documentType.toLowerCase().includes(searchQuery.toLowerCase())
+//   );
+
+//   const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+
+//   const formatRole = (role) => {
+//     if (!role) return 'Unknown';
+//     return role.charAt(0) + role.slice(1).toLowerCase(); // "ORGANIZER" → "Organizer"
+//   };
+
+//   const formatDate = (isoString) => {
+//     if (!isoString) return '—';
+//     return new Date(isoString).toLocaleDateString('en-CA').replace(/-/g, '/'); // "2026/02/10"
+//   };
+
+//   const getStatusColor = (status) => {
+//     switch (status?.toLowerCase()) {
+//       case 'approved': return 'text-teal-600';
+//       case 'rejected': return 'text-red-600';
+//       case 'pending':  return 'text-orange-600';
+//       default:         return 'text-gray-600';
+//     }
+//   };
+
+//   const getUploadedByBadge = (role) => {
+//     switch (role?.toUpperCase()) {
+//       case 'ORGANIZER': return 'bg-gray-100 text-gray-700';
+//       case 'SPEAKER':   return 'bg-blue-100 text-blue-700';
+//       case 'MODERATOR': return 'bg-purple-100 text-purple-700';
+//       default:          return 'bg-gray-100 text-gray-700';
+//     }
+//   };
+
+//   const handleDelete = (id) => console.log('Delete document:', id);
+//   const handleView = (id) => {
+//        console.log('View document:', id);
+//         setDocumentId(id);
+//   } 
+
+//   const handleFilterChange = (filter) => {
+//     setActiveFilter(filter);
+//     setCurrentPage(1); // reset pagination on filter switch
+//   };
+
+//   const handleUploadSubmit = (e) => {
+//     e.preventDefault();
+//     console.log('Document uploaded!');
+//     setShowUploadModal(false);
+//   };
+
+//   const isLoadingAny = isLoading || pendingLoading;
+//   const isErrorAny = isError || pendingError;
+
+//   const UploadModal = () => (
+//     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//       <div className="bg-white rounded-xl max-w-md w-full p-6">
+//         <div className="flex justify-between items-center mb-4">
+//           <h2 className="text-xl font-semibold">Add Document</h2>
+//           <button onClick={() => setShowUploadModal(false)} className="text-gray-500 hover:text-gray-700">
+//             <X className="w-5 h-5" />
+//           </button>
+//         </div>
+//         <form onSubmit={handleUploadSubmit}>
+//           <div className="mb-4">
+//             <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
+//             <select
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+//               defaultValue="Events"
+//             >
+//               {['Events','Abstracts','Booklet','Floor maps','Workshops','Panels','Demos','Q&A','Posters','Networking','Research papers'].map(t => (
+//                 <option key={t} value={t}>{t}</option>
+//               ))}
+//             </select>
+//           </div>
+//           <div className="border-2 border-dashed border-teal-300 rounded-lg p-6 mb-4 text-center cursor-pointer hover:bg-teal-50 transition-colors">
+//             <div className="w-8 h-8 mx-auto mb-2 text-teal-500">
+//               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+//                 <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+//               </svg>
+//             </div>
+//             <p className="text-sm text-teal-600 font-medium">Upload Document</p>
+//             <input type="file" className="hidden" />
+//           </div>
+//           <div className="flex gap-3">
+//             <button type="button" onClick={() => setShowUploadModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+//               Cancel
+//             </button>
+//             <button type="submit" className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+//               Submit
+//             </button>
+//           </div>
+//         </form>
+//       </div>
+//     </div>
+//   );
+
+//   return (
+//     <div className="min-h-screen bg-gray-50">
+//       <div className="">
+//         {/* Header */}
+//         <div className="mb-6">
+//           <h1 className="text-2xl font-semibold text-gray-800 mb-1">Documents</h1>
+//           <p className="text-gray-500 text-sm">Upload and manage event documents</p>
+//         </div>
+
+//         {/* Filters and Search */}
+//         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+//           <div className="flex items-center justify-between mb-4">
+//             <div className="flex gap-3">
+//               {['All', 'Pending'].map((filter) => (
+//                 <button
+//                   key={filter}
+//                   onClick={() => handleFilterChange(filter)}
+//                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+//                     activeFilter === filter ? 'bg-[#5BB8AE] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+//                   }`}
+//                 >
+//                   {filter}
+//                 </button>
+//               ))}
+//             </div>
+//             <button
+//               onClick={() => setShowUploadModal(true)}
+//               className="flex items-center gap-2 px-6 py-2 bg-[#5BB8AE] text-white rounded-lg hover:bg-teal-700 transition-colors"
+//             >
+//               <Upload className="w-4 h-4" />
+//               Upload Document
+//             </button>
+//           </div>
+//           <div className="flex items-center gap-3">
+//             <div className="flex-1 relative">
+//               <input
+//                 type="text"
+//                 placeholder="Search by document name"
+//                 value={searchQuery}
+//                 onChange={(e) => setSearchQuery(e.target.value)}
+//                 className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+//               />
+//               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+//             </div>
+//             <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+//               <Filter className="w-5 h-5 text-gray-600" />
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Table */}
+//         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+//           <div className="overflow-x-auto">
+//             <table className="w-full">
+//               <thead className="bg-teal-50">
+//                 <tr>
+//                   {['Document Name', 'Uploaded by', 'Status', 'Type', 'Date', 'Actions'].map(h => (
+//                     <th key={h} className="px-6 py-3 text-left text-sm font-semibold text-gray-700">{h}</th>
+//                   ))}
+//                 </tr>
+//               </thead>
+//               <tbody className="divide-y divide-gray-200">
+//                 {isLoadingAny ? (
+//                   <tr>
+//                     <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">Loading documents...</td>
+//                   </tr>
+//                 ) : isErrorAny ? (
+//                   <tr>
+//                     <td colSpan={6} className="px-6 py-10 text-center text-red-500 text-sm">Failed to load documents.</td>
+//                   </tr>
+//                 ) : filteredDocuments.length === 0 ? (
+//                   <tr>
+//                     <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">No documents found.</td>
+//                   </tr>
+//                 ) : (
+//                   filteredDocuments.map((doc) => (
+//                     <tr key={doc._id} className="hover:bg-gray-50">
+//                       <td className="px-6 py-4">
+//                         <div className="flex items-center gap-2">
+//                           <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
+//                             <svg className="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+//                               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+//                             </svg>
+//                           </div>
+//                           <span className="text-sm text-gray-800">{doc.documentName}</span>
+//                         </div>
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getUploadedByBadge(doc.uploadedBy?.activeRole)}`}>
+//                           {formatRole(doc.uploadedBy?.activeRole)}
+//                         </span>
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <span className={`text-sm font-medium ${getStatusColor(doc.status)}`}>
+//                           {capitalize(doc.status)}
+//                         </span>
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <span className="text-sm text-gray-800">{doc.documentType}</span>
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <span className="text-sm text-gray-600">{formatDate(doc.createdAt)}</span>
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <div className="flex items-center gap-2">
+//                           <button onClick={() => handleDelete(doc._id)} className="p-1 text-gray-600 hover:text-red-600 transition-colors" title="Delete">
+//                             <Trash2 className="w-5 h-5" />
+//                           </button>
+//                           <button onClick={() => handleView(doc._id)} className="p-1 text-gray-600 hover:text-teal-600 transition-colors" title="View">
+//                             <Eye className="w-5 h-5" />
+//                           </button>
+//                         </div>
+//                       </td>
+//                     </tr>
+//                   ))
+//                 )}
+//               </tbody>
+//             </table>
+//           </div>
+
+//           {/* Pagination — driven by server meta */}
+//           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+//             <div className="flex items-center gap-2 text-sm text-gray-600">
+//               <span>Showing</span>
+//               <select
+//                 value={itemsPerPage}
+//                 onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+//                 className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500"
+//               >
+//                 {[6, 10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
+//               </select>
+//               <span>of {meta.total}</span>
+//             </div>
+
+//             <div className="flex items-center gap-1">
+//               <button
+//                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+//                 disabled={currentPage === 1}
+//                 className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+//               >
+//                 <ChevronLeft className="w-5 h-5" />
+//               </button>
+
+//               {[...Array(totalPages)].map((_, index) => {
+//                 const page = index + 1;
+//                 if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+//                   return (
+//                     <button
+//                       key={page}
+//                       onClick={() => setCurrentPage(page)}
+//                       className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
+//                         currentPage === page ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+//                       }`}
+//                     >
+//                       {page}
+//                     </button>
+//                   );
+//                 }
+//                 if (page === currentPage - 2 || page === currentPage + 2) {
+//                   return <span key={page} className="px-1 text-gray-400">...</span>;
+//                 }
+//                 return null;
+//               })}
+
+//               <button
+//                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+//                 disabled={currentPage === totalPages || totalPages === 0}
+//                 className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+//               >
+//                 <ChevronRight className="w-5 h-5" />
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       {showUploadModal && <UploadModal />}
+//     </div>
+//   );
+// }
+
+
 import React, { useState } from 'react';
-import { Upload, Search, Filter, Trash2, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Upload, Search, Filter, Trash2, Eye, ChevronLeft, ChevronRight, X, FileText, Calendar, User, Tag, ExternalLink, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { useDeleteDocumentMutation, useGetDocumentDetailsQuery, useGetDocumentsQuery, useGetPendingDocumentsQuery } from '../../../redux/features/resourcec/resourcesSlice';
+import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
+import { Popconfirm } from 'antd';
+import toast from 'react-hot-toast';
 
 export default function DocumentManagement() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
-  const [showUploadModal, setShowUploadModal] = useState(false); // 👈 Modal State
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [documentId, setDocumentId] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const { eventId } = useSelectedEvent();
 
-  const documents = [
-    {
-      id: 1,
-      name: 'Senior Software Engineer',
-      uploadedBy: 'Organizer',
-      status: 'Approved',
-      type: 'Abstracts',
-      date: '2026/01/10'
-    },
-    {
-      id: 2,
-      name: 'Senior Software Engineer',
-      uploadedBy: 'Speaker',
-      status: 'Rejected',
-      type: 'Booklet',
-      date: '2026/01/10'
-    },
-    {
-      id: 3,
-      name: 'Senior Software Engineer',
-      uploadedBy: 'Speaker',
-      status: 'Approved',
-      type: 'Floor maps',
-      date: '2026/01/10'
-    },
-    {
-      id: 4,
-      name: 'Junior Software Engineer',
-      uploadedBy: 'Organizer',
-      status: 'Approved',
-      type: 'Workshops',
-      date: '2026/01/11'
-    },
-    {
-      id: 5,
-      name: 'Junior Software Engineer',
-      uploadedBy: 'Speaker',
-      status: 'Pending',
-      type: 'Panels',
-      date: '2026/01/11'
-    },
-    {
-      id: 6,
-      name: 'Lead Software Engineer',
-      uploadedBy: 'Speaker',
-      status: 'Approved',
-      type: 'Demos',
-      date: '2026/01/12'
-    },
-    {
-      id: 7,
-      name: 'Senior Software Engineer',
-      uploadedBy: 'Moderator',
-      status: 'Approved',
-      type: 'Q&A',
-      date: '2026/01/12'
-    },
-    {
-      id: 8,
-      name: 'Frontend Developer',
-      uploadedBy: 'Speaker',
-      status: 'Rejected',
-      type: 'Posters',
-      date: '2026/01/13'
-    },
-    {
-      id: 9,
-      name: 'Backend Developer',
-      uploadedBy: 'Organizer',
-      status: 'Approved',
-      type: 'Networking',
-      date: '2026/01/14'
-    },
-    {
-      id: 10,
-      name: 'Data Scientist',
-      uploadedBy: 'Speaker',
-      status: 'Approved',
-      type: 'Research papers',
-      date: '2026/01/15'
-    }
-  ];
+  const { data: documentDetailsData, isLoading: detailsLoading } = useGetDocumentDetailsQuery(
+    { eventId, id: documentId },
+    { skip: !documentId }
+  );
+
+  const { data: documentsData, isLoading, isError } = useGetDocumentsQuery(
+    { eventId, page: currentPage, limit: itemsPerPage },
+    { skip: !eventId || activeFilter !== 'All' }
+  );
+
+  const { data: pendingDocumentsData, isLoading: pendingLoading, isError: pendingError } = useGetPendingDocumentsQuery(
+    { eventId },
+    { skip: !eventId || activeFilter !== 'Pending' }
+  );
+
+  const activeData = activeFilter === 'Pending' ? pendingDocumentsData : documentsData;
+  const documents = activeData?.data?.data ?? [];
+  const meta = activeData?.data?.meta ?? { page: 1, limit: itemsPerPage, total: 0 };
+  const totalPages = Math.ceil(meta.total / itemsPerPage);
+
+  const filteredDocuments = documents.filter(doc =>
+    doc.documentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doc.documentType.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const details = documentDetailsData?.data;
+
+  const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+
+  const formatRole = (role) => {
+    if (!role) return 'Unknown';
+    return role.charAt(0) + role.slice(1).toLowerCase();
+  };
+
+  const formatDate = (isoString) => {
+    if (!isoString) return '—';
+    return new Date(isoString).toLocaleDateString('en-CA').replace(/-/g, '/');
+  };
+
+  const formatDateLong = (isoString) => {
+    if (!isoString) return '—';
+    return new Date(isoString).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Approved':
-        return 'text-teal-600';
-      case 'Rejected':
-        return 'text-red-600';
-      case 'Pending':
-        return 'text-orange-600';
-      default:
-        return 'text-gray-600';
+    switch (status?.toLowerCase()) {
+      case 'approved': return 'text-teal-600';
+      case 'rejected': return 'text-red-600';
+      case 'pending':  return 'text-orange-600';
+      default:         return 'text-gray-600';
     }
   };
 
   const getUploadedByBadge = (role) => {
-    switch (role) {
-      case 'Organizer':
-        return 'bg-gray-100 text-gray-700';
-      case 'Speaker':
-        return 'bg-blue-100 text-blue-700';
-      case 'Moderator':
-        return 'bg-purple-100 text-purple-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
+    switch (role?.toUpperCase()) {
+      case 'ORGANIZER': return 'bg-gray-100 text-gray-700';
+      case 'SPEAKER':   return 'bg-blue-100 text-blue-700';
+      case 'MODERATOR': return 'bg-purple-100 text-purple-700';
+      default:          return 'bg-gray-100 text-gray-700';
     }
   };
 
-  const filteredDocuments = documents.filter(doc => {
-    const matchesFilter = activeFilter === 'All' || doc.status === activeFilter;
-    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         doc.type.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const getStatusBadge = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'approved': return { bg: 'bg-teal-50 border border-teal-200', text: 'text-teal-700', icon: <CheckCircle className="w-4 h-4" /> };
+      case 'rejected': return { bg: 'bg-red-50 border border-red-200',   text: 'text-red-700',  icon: <XCircle className="w-4 h-4" /> };
+      case 'pending':  return { bg: 'bg-orange-50 border border-orange-200', text: 'text-orange-700', icon: <Clock className="w-4 h-4" /> };
+      default:         return { bg: 'bg-gray-50 border border-gray-200',  text: 'text-gray-700', icon: null };
+    }
+  };
 
-  const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentDocuments = filteredDocuments.slice(startIndex, endIndex);
+  const [deleteDocument] = useDeleteDocumentMutation();
 
-  const handleDelete = (id) => {
-    console.log('Delete document:', id);
+  const handleDelete = async (id) => {
+    try {
+     const res = await deleteDocument(id).unwrap();
+     console.log(res);
+      if (res.success === true) {
+        toast.success('Document deleted successfully');
+      }  
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+    }
   };
 
   const handleView = (id) => {
-    console.log('View document:', id);
+    setDocumentId(id);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetails = () => {
+    setShowDetailsModal(false);
+    setDocumentId(null);
+  };
+
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+    setCurrentPage(1);
   };
 
   const handleUploadSubmit = (e) => {
     e.preventDefault();
-    console.log('Document uploaded!');
-    setShowUploadModal(false); // Close modal after submit
+    setShowUploadModal(false);
   };
 
-  // --- Upload Modal Component ---
+  const isLoadingAny = isLoading || pendingLoading;
+  const isErrorAny = isError || pendingError;
+
+  // --- Document Details Modal ---
+  const DetailsModal = () => {
+    const statusBadge = getStatusBadge(details?.status);
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+          {/* Modal Header */}
+          <div className="bg-gradient-to-r from-teal-600 to-teal-500 px-6 py-5">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-white font-semibold text-lg leading-tight">
+                    {detailsLoading ? 'Loading...' : details?.documentName ?? '—'}
+                  </h2>
+                  <p className="text-teal-100 text-sm mt-0.5">Document Details</p>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseDetails}
+                className="text-white/70 hover:text-white transition-colors mt-0.5"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Modal Body */}
+          <div className="px-6 py-5">
+            {detailsLoading ? (
+              <div className="flex items-center justify-center py-10 text-gray-400 text-sm">
+                Loading document details...
+              </div>
+            ) : !details ? (
+              <div className="flex items-center justify-center py-10 text-red-400 text-sm">
+                Failed to load document details.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Status Badge */}
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${statusBadge.bg} ${statusBadge.text}`}>
+                  {statusBadge.icon}
+                  {capitalize(details.status)}
+                </div>
+
+                {/* Info Grid */}
+                <div className="grid grid-cols-2 gap-4 pt-1">
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide flex items-center gap-1.5">
+                      <Tag className="w-3 h-3" /> Document Type
+                    </p>
+                    <p className="text-sm text-gray-800 font-medium">{details.documentType}</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide flex items-center gap-1.5">
+                      <User className="w-3 h-3" /> Uploaded By
+                    </p>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getUploadedByBadge(details.uploadedBy?.activeRole)}`}>
+                      {formatRole(details.uploadedBy?.activeRole)}
+                    </span>
+                    {details.uploadedBy?.email && (
+                      <p className="text-xs text-gray-500">{details.uploadedBy.email}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3" /> Uploaded On
+                    </p>
+                    <p className="text-sm text-gray-800">{formatDateLong(details.createdAt)}</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3" /> Last Updated
+                    </p>
+                    <p className="text-sm text-gray-800">{formatDateLong(details.updatedAt)}</p>
+                  </div>
+                </div>
+
+                {/* Document URL */}
+                {details.documentUrl && (
+                  <div className="pt-1 space-y-1">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Document File</p>
+                    <a
+                      href={details.documentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 w-full px-4 py-2.5 bg-teal-50 border border-teal-200 rounded-lg text-teal-700 text-sm font-medium hover:bg-teal-100 transition-colors group"
+                    >
+                      <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center shrink-0">
+                        <svg className="w-3.5 h-3.5 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                        </svg>
+                      </div>
+                      <span className="truncate flex-1">{details.documentName}</span>
+                      <ExternalLink className="w-4 h-4 shrink-0 opacity-60 group-hover:opacity-100" />
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Modal Footer */}
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+            <button
+              onClick={handleCloseDetails}
+              className="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- Upload Modal ---
   const UploadModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-md w-full p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Add Document</h2>
-          <button
-            onClick={() => setShowUploadModal(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
+          <button onClick={() => setShowUploadModal(false)} className="text-gray-500 hover:text-gray-700">
             <X className="w-5 h-5" />
           </button>
         </div>
-
         <form onSubmit={handleUploadSubmit}>
-          {/* Document Type */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               defaultValue="Events"
             >
-              <option value="Events">Events</option>
-              <option value="Abstracts">Abstracts</option>
-              <option value="Booklet">Booklet</option>
-              <option value="Floor maps">Floor maps</option>
-              <option value="Workshops">Workshops</option>
-              <option value="Panels">Panels</option>
-              <option value="Demos">Demos</option>
-              <option value="Q&A">Q&A</option>
-              <option value="Posters">Posters</option>
-              <option value="Networking">Networking</option>
-              <option value="Research papers">Research papers</option>
+              {['Events','Abstracts','Booklet','Floor maps','Workshops','Panels','Demos','Q&A','Posters','Networking','Research papers'].map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
             </select>
           </div>
-
-          {/* Upload Area */}
           <div className="border-2 border-dashed border-teal-300 rounded-lg p-6 mb-4 text-center cursor-pointer hover:bg-teal-50 transition-colors">
             <div className="w-8 h-8 mx-auto mb-2 text-teal-500">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -189,8 +596,6 @@ export default function DocumentManagement() {
             <p className="text-sm text-teal-600 font-medium">Upload Document</p>
             <input type="file" className="hidden" />
           </div>
-
-          {/* Buttons */}
           <div className="flex gap-3">
             <button
               type="button"
@@ -227,11 +632,9 @@ export default function DocumentManagement() {
               {['All', 'Pending'].map((filter) => (
                 <button
                   key={filter}
-                  onClick={() => setActiveFilter(filter)}
+                  onClick={() => handleFilterChange(filter)}
                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                    activeFilter === filter
-                      ? 'bg-[#5BB8AE] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    activeFilter === filter ? 'bg-[#5BB8AE] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {filter}
@@ -239,14 +642,13 @@ export default function DocumentManagement() {
               ))}
             </div>
             <button
-              onClick={() => setShowUploadModal(true)} // 👈 Open Modal
+              onClick={() => setShowUploadModal(true)}
               className="flex items-center gap-2 px-6 py-2 bg-[#5BB8AE] text-white rounded-lg hover:bg-teal-700 transition-colors"
             >
-              <Upload className="w-4 h-4"/>
+              <Upload className="w-4 h-4" />
               Upload Document
             </button>
           </div>
-
           <div className="flex items-center gap-3">
             <div className="flex-1 relative">
               <input
@@ -270,63 +672,88 @@ export default function DocumentManagement() {
             <table className="w-full">
               <thead className="bg-teal-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Document Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Uploaded by</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                  {['Document Name', 'Uploaded by', 'Status', 'Type', 'Date', 'Actions'].map(h => (
+                    <th key={h} className="px-6 py-3 text-left text-sm font-semibold text-gray-700">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {currentDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
-                          <svg className="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
-                          </svg>
-                        </div>
-                        <span className="text-sm text-gray-800">{doc.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getUploadedByBadge(doc.uploadedBy)}`}>
-                        {doc.uploadedBy}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-sm font-medium ${getStatusColor(doc.status)}`}>
-                        {doc.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-800">{doc.type}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">{doc.date}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleDelete(doc.id)}
-                          className="p-1 text-gray-600 hover:text-red-600 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleView(doc.id)}
-                          className="p-1 text-gray-600 hover:text-teal-600 transition-colors"
-                          title="View"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
-                      </div>
+                {isLoadingAny ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">
+                      Loading documents...
                     </td>
                   </tr>
-                ))}
+                ) : isErrorAny ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-red-500 text-sm">
+                      Failed to load documents.
+                    </td>
+                  </tr>
+                ) : filteredDocuments.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">
+                      No documents found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredDocuments.map((doc) => (
+                    <tr key={doc._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
+                            <svg className="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                            </svg>
+                          </div>
+                          <span className="text-sm text-gray-800">{doc.documentName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getUploadedByBadge(doc.uploadedBy?.activeRole)}`}>
+                          {formatRole(doc.uploadedBy?.activeRole)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-sm font-medium ${getStatusColor(doc.status)}`}>
+                          {capitalize(doc.status)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-800">{doc.documentType}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600">{formatDate(doc.createdAt)}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+
+                      <Popconfirm
+  title="Are you sure you want to delete this document?"
+  onConfirm={() => handleDelete(doc._id)}
+  okText="Yes"
+  cancelText="No"
+>
+  <button 
+    className="p-1 text-gray-600 hover:text-red-600 transition-colors"
+    title="Delete"
+  >
+    <Trash2 className="w-5 h-5" />
+  </button>
+</Popconfirm>
+ 
+                          <button
+                            onClick={() => handleView(doc._id)}
+                            className="p-1 text-gray-600 hover:text-teal-600 transition-colors"
+                            title="View"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -337,15 +764,12 @@ export default function DocumentManagement() {
               <span>Showing</span>
               <select
                 value={itemsPerPage}
-                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
                 className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
-                <option value="6">6</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
+                {[6, 10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
               </select>
-              <span>of {filteredDocuments.length}</span>
+              <span>of {meta.total}</span>
             </div>
 
             <div className="flex items-center gap-1">
@@ -356,22 +780,16 @@ export default function DocumentManagement() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              
+
               {[...Array(totalPages)].map((_, index) => {
                 const page = index + 1;
-                if (
-                  page === 1 ||
-                  page === totalPages ||
-                  (page >= currentPage - 1 && page <= currentPage + 1)
-                ) {
+                if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
                   return (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
-                        currentPage === page
-                          ? 'bg-teal-600 text-white'
-                          : 'text-gray-600 hover:bg-gray-100'
+                        currentPage === page ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                       }`}
                     >
                       {page}
@@ -386,7 +804,7 @@ export default function DocumentManagement() {
 
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages || totalPages === 0}
                 className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -396,8 +814,8 @@ export default function DocumentManagement() {
         </div>
       </div>
 
-      {/* Upload Modal */}
       {showUploadModal && <UploadModal />}
+      {showDetailsModal && <DetailsModal />}
     </div>
   );
 }

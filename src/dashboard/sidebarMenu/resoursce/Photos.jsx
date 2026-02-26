@@ -3,6 +3,8 @@ import { Upload, X, Image as ImageIcon, Folder, Camera, Cross, Edit } from 'luci
 import { BiCross } from 'react-icons/bi';
 import { FaCross } from 'react-icons/fa6';
 import { RxCross2 } from 'react-icons/rx';
+import { useGetPhotosQuery } from '../../../redux/features/photos/photoSlice';
+import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
 
 export default function Photos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,6 +19,14 @@ export default function Photos() {
     { id: 4, src: '/public/image/photo.png', category: 'other', title: 'Events' },
  
   ]);
+
+  const {eventId} = useSelectedEvent();
+  
+
+  const {data: photosData, isLoading, isError} = useGetPhotosQuery({eventId: eventId, page: 1, limit: 10});
+
+  console.log(photosData);
+
 
   const categories = [
     { id: 'all', name: 'All' },

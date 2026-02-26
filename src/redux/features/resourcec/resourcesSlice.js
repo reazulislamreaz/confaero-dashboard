@@ -32,10 +32,31 @@ const resourcecSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Resources'],
         }),
 
+        deleteDocument: builder.mutation({
+            query: (id) => ({   
+                url: `/document/my/${id}`,
+                method: 'DELETE',
+            }), 
+            invalidatesTags: ['Resources'],
+
+        }),
+
+        approveDocument: builder.mutation({
+            query: ({id, eventId}) => ({   
+                url: `/document/approve/${id}/${eventId}`,
+                method: 'PATCH',
+            }), 
+            invalidatesTags: ['Resources'],
+        }),
+
 
     }),});
 
 export const {
-    useGetResourcesQuery,
-    useCreateResourceMutation,
+    useGetDocumentsQuery,
+    useGetDocumentDetailsQuery,
+    useGetPendingDocumentsQuery,
+    useUploadDocumentMutation,
+    useDeleteDocumentMutation,
+    useApproveDocumentMutation,
 } = resourcecSlice;
