@@ -1,51 +1,68 @@
 import { useState } from 'react';
-import { Upload, X, Image as ImageIcon, Folder, Camera, Cross, Edit } from 'lucide-react';
-import { BiCross } from 'react-icons/bi';
-import { FaCross } from 'react-icons/fa6';
+import { Upload, X, Image as ImageIcon, Edit } from 'lucide-react';
 import { RxCross2 } from 'react-icons/rx';
-import { useGetPhotosQuery } from '../../../redux/features/photos/photoSlice';
+import { useDeletePhotoMutation, useGetPhotosQuery } from '../../../redux/features/photos/photoSlice';
 import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
+import { Popconfirm } from 'antd';
+import toast from 'react-hot-toast';
 
 export default function Photos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [photos, setPhotos] = useState([
-    { id: 1, src: '/public/image/photo.png', category: 'event', title: 'Events' },
-    { id: 2, src: '/public/image/photo.png', category: 'event', title: 'Events' },
-    { id: 3, src: '/public/image/photo.png', category: 'booth', title: 'Events' },
-    { id: 4, src: '/public/image/photo.png', category: 'other', title: 'Events' },
-    { id: 4, src: '/public/image/photo.png', category: 'floor', title: 'Events' },
-    { id: 4, src: '/public/image/photo.png', category: 'campaign', title: 'Events' },
-    { id: 4, src: '/public/image/photo.png', category: 'other', title: 'Events' },
- 
-  ]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
 
-  const {eventId} = useSelectedEvent();
-  
+  const { eventId } = useSelectedEvent();
 
-  const {data: photosData, isLoading, isError} = useGetPhotosQuery({eventId: eventId, page: 1, limit: 10});
+  const { data: photosData, isLoading, isError } = useGetPhotosQuery({
+    eventId,
+    page: currentPage,
+    limit: itemsPerPage
+  });
 
-  console.log(photosData);
-
+  const photos = photosData?.data ?? [];
+  const meta = photosData?.meta ?? { page: 1, limit: itemsPerPage, total: 0 };
+  const totalPages = Math.ceil(meta.total / itemsPerPage);
 
   const categories = [
-    { id: 'all', name: 'All' },
-    { id: 'event', name: 'Event' },
-    { id: 'booth', name: 'Booth gallery' },
-    { id: 'floor', name: 'Floor map' },
+    { id: 'all',      name: 'All' },
+    { id: 'event',    name: 'Event' },
+    { id: 'booth',    name: 'Booth gallery' },
+    { id: 'floor',    name: 'Floor map' },
     { id: 'campaign', name: 'Campaign' },
-    { id: 'other', name: 'Other\'s' }
+    { id: 'other',    name: "Other's" }
   ];
 
-  const filteredPhotos = selectedCategory === 'all' 
-    ? photos 
-    : photos.filter(photo => photo.category === selectedCategory);
+  const filteredPhotos = selectedCategory === 'all'
+    ? photos
+    : photos.filter(photo => photo.type?.toLowerCase() === selectedCategory.toLowerCase());
+
+    const [deletePhoto] = useDeletePhotoMutation();
+
+  const handleDelete = async(id) => {
+      try {
+       const res = await deletePhoto(id);
+       if (res?.data?.success === true) {
+        toast.success('Photo deleted successfully');
+       } 
+      } catch (error) {
+        console.error('Error deleting photo:', error);
+      }
+  };
+
+  const handleEdit = (id) => {
+    console.log('Edit photo:', id);
+  };
 
   const handleUpload = (e) => {
     e.preventDefault();
-    // In a real app, you would handle the file upload here
     console.log('Photo uploaded');
     setIsModalOpen(false);
+  };
+
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setCurrentPage(1);
   };
 
   return (
@@ -70,15 +87,15 @@ export default function Photos() {
       </header>
 
       {/* Category Filter */}
-      <div className=" px-4 sm:px-6 lg:px-8 py-4">
+      <div className="px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex flex-wrap gap-2">
           {categories.map(category => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
+              onClick={() => handleCategoryChange(category.id)}
               className={`px-4 py-2 rounded-full text-sm font-medium border cursor-pointer border-[#D2D2D2] transition-colors ${
                 selectedCategory === category.id
-                  ? 'bg-teal-500 text-white'
+                  ? 'bg-teal-500 text-white border-teal-500'
                   : 'bg-white text-gray-700 hover:bg-gray-100'
               }`}
             >
@@ -89,94 +106,124 @@ export default function Photos() {
       </div>
 
       {/* Photo Grid */}
-      <div className="  px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPhotos.map(photo => (
-            <div key={photo.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              <div className="relative">
-                <img 
-                  src={photo.src} 
-                  alt={photo.title} 
-                  className="w-full h-48 object-cover"
-                />
-                <div className="absolute top-2 right-2 flex gap-1">
-                  <button className="bg-white/80 hover:bg-white p-1 rounded-full">
-                    <Edit size={16} className="text-gray-600" />
-                  </button>
-                  <button className="bg-white/80 hover:bg-white p-1 rounded-full">
-                    <RxCross2 size={16} className="text-gray-600" />
-                  </button>
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+            Loading photos...
+          </div>
+        ) : isError ? (
+          <div className="flex items-center justify-center py-20 text-red-400 text-sm">
+            Failed to load photos.
+          </div>
+        ) : filteredPhotos.length === 0 ? (
+          <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+            No photos found.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPhotos.map(photo => (
+              <div key={photo._id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <div className="relative">
+                  <img
+                    src={photo.imageUrl}
+                    alt={photo.type}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => { e.target.src = '/public/image/photo.png'; }}
+                  />
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    <button
+                      onClick={() => handleEdit(photo._id)}
+                      className="bg-white/80 hover:bg-white p-1 rounded-full transition-colors"
+                      title="Edit"
+                    >
+                      <Edit size={16} className="text-gray-600" />
+                    </button>
+                    <Popconfirm
+                      title="Are you sure you want to delete this photo?"
+                      onConfirm={() => handleDelete(photo._id)}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+
+                    <button 
+                      className="bg-white/80 hover:bg-white p-1 rounded-full transition-colors"
+                      title="Delete"
+                    >
+                      <RxCross2 size={16} className="text-gray-600 hover:text-red-500" />
+                    </button>
+                    </Popconfirm>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <p className="text-sm text-gray-600 capitalize">{photo.type}</p>
                 </div>
               </div>
-              <div className="p-4">
-                <p className="text-sm text-gray-600">{photo.title}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Showing</span>
-            <select className="border border-gray-300 rounded px-2 py-1 text-sm">
-              <option>6</option>
-              <option>12</option>
-              <option>24</option>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              {[6, 12, 24].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
-            <span className="text-sm text-gray-600">of 50</span>
+            <span className="text-sm text-gray-600">of {meta.total}</span>
           </div>
+
           <div className="flex gap-1">
-            {[1, 2, 3, 4, 5].map(page => (
-              <button
-                key={page}
-                className={`px-3 py-1 rounded text-sm ${
-                  page === 1
-                    ? 'bg-teal-500 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+            {[...Array(totalPages)].map((_, index) => {
+              const page = index + 1;
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    currentPage === page
+                      ? 'bg-teal-500 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Add Photo Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Add Photo</h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <X size={24} />
               </button>
             </div>
 
             <form onSubmit={handleUpload}>
               <div className="mb-6">
-                <div className="border-2 border-dashed border-teal-300 rounded-lg p-8 text-center hover:border-teal-400 transition-colors">
+                <div className="border-2 border-dashed border-teal-300 rounded-lg p-8 text-center hover:border-teal-400 transition-colors cursor-pointer">
                   <div className="flex flex-col items-center">
                     <ImageIcon size={32} className="text-teal-500 mb-2" />
                     <span className="text-sm text-gray-600">Upload Image</span>
+                    <input type="file" className="hidden" accept="image/*" />
                   </div>
                 </div>
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                <select
-                  value="event"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
                   <option value="event">Events</option>
                   <option value="booth">Booth gallery</option>
                   <option value="floor">Floor map</option>
