@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Users, UserPlus, TrendingUp, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
+import { useAddminDashboardOverviewQuery } from '../../redux/features/eventSlice/eventSlice';
 
 export default function DashboardOverview() {
   const [selectedMonth, setSelectedMonth] = useState('Monthly');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [organizerEmails, setOrganizerEmails] = useState(['example@email.com']);
+
+ const {data: overviewData, isLoading, isError} = useAddminDashboardOverviewQuery();
+ console.log(overviewData);
+
   const [formData, setFormData] = useState({
     title: '',
     website: '',

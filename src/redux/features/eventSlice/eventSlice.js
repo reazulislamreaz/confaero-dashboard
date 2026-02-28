@@ -83,6 +83,11 @@ eventOverview: builder.query({
     query: (eventId) => `/superAdmin/singleEvent/${eventId}/overview`,
 }),
 
+addminDashboardOverview: builder.query({
+    query: ( ) => `/superAdmin/dashboard/overview`,
+}),
+
+
 adminEventdetails: builder.query({
     query: (eventId) => `/superAdmin/events/${eventId}`,
     providesTags: (result, error, eventId) => [{ type: 'AdminEventDetails', id: eventId }],
@@ -145,7 +150,9 @@ export const {
     useAdminCreateEventMutation,
     useAdminUpdateEventMutation,
     useAdminDeleteEventMutation,
+
     useEventOverviewQuery,
+    useAddminDashboardOverviewQuery,
 
 } = eventApiSlice;
 
