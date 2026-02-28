@@ -1,6 +1,7 @@
 
 import derivative from "antd/es/theme/themes/default";
 import { apiSlice } from "../../api/apiSlice";
+import { use } from "react";
 
 const userSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -30,6 +31,16 @@ detailUser: builder.query({
     providesTags: ["Users"],
 }),
 
+///Add more user-related endpoints here as needed
+
+ adminUsers: builder.query({
+  query: () => ({
+    url: `/superAdmin/users`,
+    method: "GET",
+  }),
+  providesTags: ["AdminUsers"],
+}),
+
 
         adminLogin: builder.mutation({
             query: (data) => ({
@@ -50,5 +61,7 @@ export const {
     useAdminLoginMutation, 
     useGetAllUsersQuery,
     useDeleteUserMutation,
-    useDetailUserQuery
+    useDetailUserQuery,
+
+    useAdminUsersQuery
  } = userSlice;

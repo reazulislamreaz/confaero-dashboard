@@ -704,6 +704,7 @@ export default function InvitationsPage() {
 
   const { eventId } = useSelectedEvent();
  
+  console.log(eventId);
 
   const [sendInvitationToSpeaker] = useSendInvitationForSpekerMutation();
   const [sendInvitee]             = useSendInvitationMutation();
@@ -760,6 +761,7 @@ export default function InvitationsPage() {
   }), [eventId, currentPage, itemsPerPage, activeTab, debouncedSearch]);
 
   const { data: invitationsData, isLoading, isFetching } = useGetInvitationsQuery(queryParams);
+  console.log(invitationsData);
 
   const invitations = invitationsData?.data?.data || [];
   const meta        = invitationsData?.data?.meta || { total: 0 };

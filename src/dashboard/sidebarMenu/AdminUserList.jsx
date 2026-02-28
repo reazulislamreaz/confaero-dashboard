@@ -1,34 +1,35 @@
 import React, { useState } from 'react';
-import { Search, Eye, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAdminUsersQuery } from '../../redux/features/userSlice/userSlice';
 
 const App = () => {
-    const navigate = useNavigate()
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [roleFilter, setRoleFilter] = useState('all');
 
-  // Mock user data
-  const users = [
-    { id: 1, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'User', joined: 'January 12, 2025' },
-    { id: 2, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'Organizer', joined: 'January 12, 2025' },
-    { id: 3, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'User', joined: 'January 12, 2025' },
-    { id: 4, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'Organizer', joined: 'January 12, 2025' },
-    { id: 5, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'User', joined: 'January 12, 2025' },
-    { id: 6, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'Organizer', joined: 'January 12, 2025' },
-    { id: 7, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'User', joined: 'January 12, 2025' },
-    { id: 8, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'Organizer', joined: 'January 12, 2025' },
-    { id: 9, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'User', joined: 'January 12, 2025' },
-    { id: 10, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'Organizer', joined: 'January 12, 2025' },
-    { id: 11, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'User', joined: 'January 12, 2025' },
-    { id: 12, name: 'Dr. Sarah Wilson', email: 'example@email.com', address: 'Dhaka, Bangladesh', role: 'Organizer', joined: 'January 12, 2025' },
-  ];
+  const { data: adminUsersData, isLoading, isError } = useAdminUsersQuery();
+
+  const users = adminUsersData?.data
+    ?.filter(user => user.activeRole === 'ATTENDEE' || user.activeRole === 'ORGANIZER')
+    ?.map(user => ({
+      id: user._id,
+      name: user.profile?.name || 'N/A',
+      email: user.email,
+      address: user.profile?.address || 'N/A',
+      role: user.activeRole === 'ORGANIZER' ? 'Organizer' : 'User',
+      joined: new Date(user.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      })
+    })) || [];
 
   // Filter users based on search term and role
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -73,22 +74,20 @@ const App = () => {
             <Search size={20} />
           </div>
         </div>
-        
+
         {/* Role Filter */}
         <div className="flex items-center space-x-2 ml-4">
           <span className="text-sm text-gray-700">Role:</span>
-          <select 
+          <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All</option>
-            <option value="User">User</option>
+            <option value="User">Attendee</option>
             <option value="Organizer">Organizer</option>
           </select>
         </div>
-        
-       
       </div>
 
       {/* Users Table */}
@@ -100,15 +99,32 @@ const App = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {currentUsers.map((user, index) => (
+            {isLoading && (
+              <tr>
+                <td colSpan={7} className="text-center text-gray-500 py-6">Loading users...</td>
+              </tr>
+            )}
+            {isError && (
+              <tr>
+                <td colSpan={7} className="text-center text-red-500 py-6">Failed to load users.</td>
+              </tr>
+            )}
+            {!isLoading && !isError && currentUsers.length === 0 && (
+              <tr>
+                <td colSpan={7} className="text-center text-gray-400 py-6">No users found.</td>
+              </tr>
+            )}
+            {!isLoading && !isError && currentUsers.map((user, index) => (
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#0{index + 1}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  #{String(startIndex + index + 1).padStart(2, '0')}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.address}</td>
@@ -116,20 +132,18 @@ const App = () => {
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     user.role === 'User' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                   }`}>
-                    {user.role}
+                    {user.role === 'User' ? 'Attendee' : 'Organizer'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.joined}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex space-x-2">
-                    <button  
-                     onClick={() => navigate("/dashboard/user-management/details")}
-                     className="px-3 py-1 bg-teal-500 text-white text-xs rounded-md hover:bg-teal-600 transition-colors">
+                    <button
+                      onClick={() => navigate("/dashboard/user-management/details")}
+                      className="px-3 py-1 bg-teal-500 text-white text-xs rounded-md hover:bg-teal-600 transition-colors"
+                    >
                       Details
                     </button>
-                    {/* <button className="p-1 text-gray-500 hover:text-red-500 transition-colors">
-                      <Edit size={16} />
-                    </button> */}
                     <button className="p-1 text-gray-500 hover:text-red-500 transition-colors">
                       <Trash2 size={16} />
                     </button>
@@ -145,8 +159,8 @@ const App = () => {
       <div className="flex items-center justify-between mt-6">
         <div className="flex items-center">
           <span className="text-sm text-gray-700 mr-2">Showing</span>
-          <select 
-            value={itemsPerPage} 
+          <select
+            value={itemsPerPage}
             onChange={handleItemsPerPageChange}
             className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -157,31 +171,31 @@ const App = () => {
           </select>
           <span className="text-sm text-gray-700 ml-2">of {filteredUsers.length}</span>
         </div>
-        
+
         <div className="flex items-center space-x-2">
-          <button 
+          <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className={`p-2 rounded-md ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
           >
             <ChevronLeft size={18} />
           </button>
-          
+
           {[...Array(totalPages)].map((_, i) => (
             <button
               key={i + 1}
               onClick={() => handlePageChange(i + 1)}
               className={`px-3 py-1 rounded-md text-sm ${
-                currentPage === i + 1 
-                  ? 'bg-blue-500 text-white' 
+                currentPage === i + 1
+                  ? 'bg-blue-500 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100'
               }`}
             >
               {i + 1}
             </button>
           ))}
-          
-          <button 
+
+          <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className={`p-2 rounded-md ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
