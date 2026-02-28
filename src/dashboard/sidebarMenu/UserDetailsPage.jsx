@@ -26,6 +26,7 @@ const formatDate = (dateStr) => {
 
 export default function UserDetailsPage() {
   const { id } = useParams();
+  console.log(id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { eventId } = useSelectedEvent();
   const navigate = useNavigate();
@@ -34,6 +35,8 @@ export default function UserDetailsPage() {
     { eventId, userId: id },
     { skip: !eventId || !id }
   );
+
+  console.log(userDetailsResponse);
 
   // ── Map API response to local variables ──────────────────────────────────
   const raw = userDetailsResponse?.data;

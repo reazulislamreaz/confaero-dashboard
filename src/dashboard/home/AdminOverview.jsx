@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Users, UserPlus, TrendingUp, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Calendar, MapPin, Users, UserPlus, TrendingUp, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import { useAddminDashboardOverviewQuery } from '../../redux/features/eventSlice/eventSlice';
+import { Link } from 'react-router-dom';
 
 export default function DashboardOverview() {
   const [selectedMonth, setSelectedMonth] = useState('Monthly');
@@ -9,8 +10,7 @@ export default function DashboardOverview() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [organizerEmails, setOrganizerEmails] = useState(['example@email.com']);
 
- const {data: overviewData, isLoading, isError} = useAddminDashboardOverviewQuery();
- console.log(overviewData);
+  const { data: overviewData, isLoading, isError } = useAddminDashboardOverviewQuery();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -24,75 +24,19 @@ export default function DashboardOverview() {
     details: ''
   });
 
-  const featuredEvents = [
-    {
-      id: 1,
-      title: '18th Lithium Supply & Battery Raw Materials Conference',
-      date: 'Jun 22-25, 2026',
-      location: 'Las Vegas, USA'
-    },
-    {
-      id: 2,
-      title: 'Global Tech Summit 2026',
-      date: 'Jul 15-18, 2026',
-      location: 'San Francisco, USA'
-    },
-    {
-      id: 3,
-      title: 'International Energy Conference',
-      date: 'Aug 10-13, 2026',
-      location: 'New York, USA'
-    }
-  ];
+  // ── API Data ──────────────────────────────────────────────
+  const apiStats = overviewData?.data?.stats;
+  const featuredEvents = overviewData?.data?.headerEvents || [];
+  const recentEvents = overviewData?.data?.recentEvents || [];
+  const latestOrganizers = overviewData?.data?.latestOrganizers || [];
 
   const stats = [
-    { label: 'Total Events', value: '2K', icon: Calendar },
-    { label: 'Ongoing Events', value: '2K', icon: TrendingUp },
-    { label: 'Total Organizers', value: '81', icon: Users },
-    { label: 'Total Participants', value: '102K', icon: UserPlus }
+    { label: 'Total Events',       value: apiStats?.totalEvents       ?? '—', icon: Calendar },
+    { label: 'Ongoing Events',     value: apiStats?.ongoingEvents      ?? '—', icon: TrendingUp },
+    { label: 'Total Organizers',   value: apiStats?.totalOrganizers    ?? '—', icon: Users },
+    { label: 'Total Participants', value: apiStats?.totalParticipants  ?? '—', icon: UserPlus }
   ];
-
-  const recentEvents = [
-    {
-      id: 1,
-      title: '18th Lithium Supply & Battery Raw Materials Confer...',
-      date: 'Jun 22-25, 2026',
-      location: 'Las Vegas, USA'
-    },
-    {
-      id: 2,
-      title: '18th Lithium Supply & Battery Raw Materials Confer...',
-      date: 'Jun 22-25, 2026',
-      location: 'Las Vegas, USA'
-    },
-    {
-      id: 3,
-      title: '18th Lithium Supply & Battery Raw Materials Confer...',
-      date: 'Jun 22-25, 2026',
-      location: 'Las Vegas, USA'
-    }
-  ];
-
-  const latestOrganizers = [
-    {
-      id: 1,
-      name: 'Dr. Sarah Johnson',
-      event: '18th Lithium Supply & Battery Raw Materials Conference',
-      date: 'Jun 22-25, 2026'
-    },
-    {
-      id: 2,
-      name: 'Dr. Sarah Johnson',
-      event: '18th Lithium Supply & Battery Raw Materials Conference',
-      date: 'Jun 22-25, 2026'
-    },
-    {
-      id: 3,
-      name: 'Dr. Sarah Johnson',
-      event: '18th Lithium Supply & Battery Raw Materials Conference',
-      date: 'Jun 22-25, 2026'
-    }
-  ];
+  // ─────────────────────────────────────────────────────────
 
   const monthlyData = [
     { label: 'Jan', events: 2500 },
@@ -125,24 +69,18 @@ export default function DashboardOverview() {
   ];
 
   const getData = () => {
-    switch(selectedMonth) {
-      case 'Weekly':
-        return weeklyData;
-      case 'Yearly':
-        return yearlyData;
-      default:
-        return monthlyData;
+    switch (selectedMonth) {
+      case 'Weekly': return weeklyData;
+      case 'Yearly': return yearlyData;
+      default:       return monthlyData;
     }
   };
 
   const getYAxisTicks = () => {
-    switch(selectedMonth) {
-      case 'Weekly':
-        return [0, 200, 400, 600, 800, 1000, 1200];
-      case 'Yearly':
-        return [0, 10000, 20000, 30000, 40000, 50000];
-      default:
-        return [0, 1000, 2000, 3000, 4000, 5000, 6000];
+    switch (selectedMonth) {
+      case 'Weekly': return [0, 200, 400, 600, 800, 1000, 1200];
+      case 'Yearly': return [0, 10000, 20000, 30000, 40000, 50000];
+      default:       return [0, 1000, 2000, 3000, 4000, 5000, 6000];
     }
   };
 
@@ -159,88 +97,66 @@ export default function DashboardOverview() {
     return null;
   };
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % featuredEvents.length);
-  };
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % featuredEvents.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + featuredEvents.length) % featuredEvents.length);
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + featuredEvents.length) % featuredEvents.length);
-  };
-
-  const addOrganizerEmail = () => {
-    setOrganizerEmails([...organizerEmails, '']);
-  };
-
-  const removeOrganizerEmail = (index) => {
-    setOrganizerEmails(organizerEmails.filter((_, i) => i !== index));
-  };
+  const addOrganizerEmail = () => setOrganizerEmails([...organizerEmails, '']);
+  const removeOrganizerEmail = (index) => setOrganizerEmails(organizerEmails.filter((_, i) => i !== index));
 
   const handleCreateEvent = () => {
     console.log('Creating event:', formData, organizerEmails);
     setShowCreateModal(false);
-    setFormData({
-      title: '',
-      website: '',
-      location: '',
-      googleMapLink: '',
-      startDate: '',
-      endDate: '',
-      expectedAttendee: '',
-      boothSlot: '',
-      details: ''
-    });
+    setFormData({ title: '', website: '', location: '', googleMapLink: '', startDate: '', endDate: '', expectedAttendee: '', boothSlot: '', details: '' });
     setOrganizerEmails(['example@email.com']);
   };
 
+  if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-500">Loading...</div>;
+  if (isError)   return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">Failed to load dashboard data.</div>;
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className=" ">
+      <div className="">
+
         {/* Featured Event Slider */}
-        <div className="bg-teal-600 rounded-lg shadow-lg mb-6 relative overflow-hidden">
-          <div className="p-8 mx-6 relative z-10">
-            <h1 className="text-2xl font-bold text-white mb-3">
-              {featuredEvents[currentSlide].title}
-            </h1>
-            <div className="flex items-center gap-6 text-white">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">{featuredEvents[currentSlide].date}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">{featuredEvents[currentSlide].location}</span>
+        {featuredEvents.length > 0 && (
+          <div className="bg-teal-600 rounded-lg shadow-lg mb-6 relative overflow-hidden">
+            <div className="p-8 mx-6 relative z-10">
+              <h1 className="text-2xl font-bold text-white mb-3">
+                {featuredEvents[currentSlide].title}
+              </h1>
+              <div className="flex items-center gap-6 text-white">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm">{featuredEvents[currentSlide].dateRange}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  <span className="text-sm">{featuredEvents[currentSlide].location}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 cursor-pointer -translate-y-1/2 w-10 h-10 bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-white transition-all z-20"
-          >
-            <ChevronLeft className="w-6 h-6 " />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 cursor-pointer -translate-y-1/2 w-10 h-10 bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-white transition-all z-20"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
+            <button onClick={prevSlide} className="absolute left-4 top-1/2 cursor-pointer -translate-y-1/2 w-10 h-10 bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-white transition-all z-20">
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button onClick={nextSlide} className="absolute right-4 top-1/2 cursor-pointer -translate-y-1/2 w-10 h-10 bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-white transition-all z-20">
+              <ChevronRight className="w-6 h-6" />
+            </button>
 
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
-          <div className="absolute bottom-0 right-20 w-40 h-40 bg-white opacity-5 rounded-full -mb-20"></div>
-          
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-            {featuredEvents.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  currentSlide === index ? 'bg-white w-6' : 'bg-white bg-opacity-50'
-                }`}
-              />
-            ))}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
+            <div className="absolute bottom-0 right-20 w-40 h-40 bg-white opacity-5 rounded-full -mb-20"></div>
+
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+              {featuredEvents.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${currentSlide === index ? 'bg-white w-6' : 'bg-white bg-opacity-50'}`}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-4 mb-6">
@@ -250,18 +166,23 @@ export default function DashboardOverview() {
                 <span className="text-sm text-gray-600">{stat.label}</span>
                 <stat.icon className="w-5 h-5 text-gray-400" />
               </div>
-              <div className="text-3xl font-bold text-gray-800">{stat.value}</div>
+              <div className="text-3xl font-bold text-gray-800">
+                {typeof stat.value === 'number' && stat.value >= 1000
+                  ? `${(stat.value / 1000).toFixed(0)}K`
+                  : stat.value}
+              </div>
             </div>
           ))}
         </div>
 
         {/* Quick Actions */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <h2 className="text-base font-semibold text-gray-800 mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-4">
-            <button 
+            <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-3 px-5 py-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+              className="flex items-center gap-3 px-5 py-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-100"
+            >
               <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-gray-600" />
               </div>
@@ -274,9 +195,9 @@ export default function DashboardOverview() {
               <span className="text-sm font-medium text-gray-700">Assign Organizer</span>
             </button>
           </div>
-        </div>
+        </div> */}
 
-        {/* Chart Section with Recharts */}
+        {/* Chart Section */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-base font-normal text-gray-700">New Events Trend</h2>
@@ -290,55 +211,38 @@ export default function DashboardOverview() {
               <option>Yearly</option>
             </select>
           </div>
-
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={getData()} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="49%" stopColor="#14b8a6" stopOpacity={0.6}/>
-                  <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.1}/>
+                  <stop offset="49%" stopColor="#14b8a6" stopOpacity={0.6} />
+                  <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="0" stroke="#f3f4f6" vertical={false} />
-              <XAxis 
-                dataKey="label" 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: '#9ca3af', fontSize: 11 }}
-                dy={5}
-              />
-              <YAxis 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: '#9ca3af', fontSize: 11 }}
-                tickFormatter={(value) => value >= 1000 ? `${value / 1000}k` : value}
-                ticks={getYAxisTicks()}
-              />
+              <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} dy={5} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} tickFormatter={(v) => v >= 1000 ? `${v / 1000}k` : v} ticks={getYAxisTicks()} />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#5eead4', strokeWidth: 1 }} />
-              <Area 
-                type="monotone" 
-                dataKey="events" 
-                stroke="#5eead4" 
-                strokeWidth={2}
-                fill="url(#colorEvents)"
-              />
+              <Area type="monotone" dataKey="events" stroke="#5eead4" strokeWidth={2} fill="url(#colorEvents)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         {/* Bottom Section */}
         <div className="grid grid-cols-2 gap-6">
+
           {/* Recent Events */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-gray-800">Recent Events</h2>
-              <button className="text-sm text-teal-600 hover:text-teal-700 font-medium">View All</button>
+              <Link to="/dashboard/admin-events" className="text-sm text-teal-600 hover:text-teal-700 font-medium">View All</Link>
+              
             </div>
             <div className="space-y-4">
               {recentEvents.map((event) => (
                 <div key={event.id} className="pb-4 border-b border-gray-100 last:border-b-0">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-sm font-medium text-gray-800 flex-1 pr-3">
+                    <h3 className="text-sm font-medium text-gray-800 flex-1 pr-3 truncate">
                       {event.title}
                     </h3>
                     <button className="text-teal-600 hover:text-teal-700 text-sm font-medium whitespace-nowrap">
@@ -348,11 +252,11 @@ export default function DashboardOverview() {
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      <span>{event.date}</span>
+                      <span>{event.dateRange}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
-                      <span>{event.location}</span>
+                      <span className="truncate max-w-[120px]">{event.location}</span>
                     </div>
                   </div>
                 </div>
@@ -364,7 +268,7 @@ export default function DashboardOverview() {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-gray-800">Latest Organizer</h2>
-              <button className="text-sm text-teal-600 hover:text-teal-700 font-medium">View All</button>
+              <Link to="/dashboard/user-management" className="text-sm text-teal-600 hover:text-teal-700 font-medium">View All</Link>
             </div>
             <div className="space-y-4">
               {latestOrganizers.map((organizer) => (
@@ -372,16 +276,16 @@ export default function DashboardOverview() {
                   <div className="flex items-start justify-between mb-1">
                     <div className="flex-1 pr-3">
                       <h3 className="text-sm font-medium text-gray-800 mb-1">
-                        {organizer.name}
+                        {organizer.email}
                       </h3>
-                      <p className="text-xs text-gray-500 leading-relaxed">{organizer.event}</p>
                     </div>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">{organizer.date}</span>
+                    <span className="text-xs text-gray-400 whitespace-nowrap">ID: {organizer.id.slice(-6)}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+
         </div>
 
         {/* Create Event Modal */}
@@ -390,37 +294,19 @@ export default function DashboardOverview() {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-800">Create Event</h2>
-                <button 
-                  onClick={() => setShowCreateModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
+                <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
               <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Event Title</label>
-                  <input
-                    type="text"
-                    placeholder="Enter event title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
+                  <input type="text" placeholder="Enter event title" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Event Website</label>
-                  <input
-                    type="url"
-                    placeholder="https://www.lnfb.org/"
-                    value={formData.website}
-                    onChange={(e) => setFormData({...formData, website: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
+                  <input type="url" placeholder="https://www.lnfb.org/" value={formData.website} onChange={(e) => setFormData({...formData, website: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Organizer Mail</label>
                   <div className="space-y-2">
@@ -428,117 +314,56 @@ export default function DashboardOverview() {
                       <div key={index} className="flex items-center gap-2">
                         <div className="flex-1 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded text-sm text-gray-700 flex items-center justify-between">
                           <span>{email || 'example@email.com'}</span>
-                          <button 
-                            onClick={() => removeOrganizerEmail(index)}
-                            className="text-gray-400 hover:text-gray-600 ml-2"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
+                          <button onClick={() => removeOrganizerEmail(index)} className="text-gray-400 hover:text-gray-600 ml-2"><X className="w-3 h-3" /></button>
                         </div>
                       </div>
                     ))}
-                    <input
-                      type="email"
-                      placeholder="Enter organizer mail"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                    <button 
-                      onClick={addOrganizerEmail}
-                      className="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1"
-                    >
-                      <span className="text-lg">+</span> Add
-                    </button>
+                    <input type="email" placeholder="Enter organizer mail" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                    <button onClick={addOrganizerEmail} className="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1"><span className="text-lg">+</span> Add</button>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Location/Venue</label>
-                    <input
-                      type="text"
-                      placeholder="Las Vegas, USA"
-                      value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
+                    <input type="text" placeholder="Las Vegas, USA" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Google map link</label>
-                    <input
-                      type="url"
-                      placeholder="https://maps.google.com/..."
-                      value={formData.googleMapLink}
-                      onChange={(e) => setFormData({...formData, googleMapLink: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
+                    <input type="url" placeholder="https://maps.google.com/..." value={formData.googleMapLink} onChange={(e) => setFormData({...formData, googleMapLink: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Start Date & Time</label>
-                    <input
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
+                    <input type="date" value={formData.startDate} onChange={(e) => setFormData({...formData, startDate: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">End Date & Time</label>
-                    <input
-                      type="date"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({...formData, endDate: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
+                    <input type="date" value={formData.endDate} onChange={(e) => setFormData({...formData, endDate: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Expected attendee</label>
-                    <input
-                      type="number"
-                      placeholder="10,000"
-                      value={formData.expectedAttendee}
-                      onChange={(e) => setFormData({...formData, expectedAttendee: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
+                    <input type="number" placeholder="10,000" value={formData.expectedAttendee} onChange={(e) => setFormData({...formData, expectedAttendee: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Booth Slot</label>
-                    <input
-                      type="number"
-                      placeholder="10"
-                      value={formData.boothSlot}
-                      onChange={(e) => setFormData({...formData, boothSlot: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
+                    <input type="number" placeholder="10" value={formData.boothSlot} onChange={(e) => setFormData({...formData, boothSlot: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Details</label>
-                  <textarea
-                    placeholder="Enter details"
-                    rows="4"
-                    value={formData.details}
-                    onChange={(e) => setFormData({...formData, details: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-                  />
+                  <textarea placeholder="Enter details" rows="4" value={formData.details} onChange={(e) => setFormData({...formData, details: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
                 </div>
-
-                <button 
-                  onClick={handleCreateEvent}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 rounded-lg transition-colors"
-                >
+                <button onClick={handleCreateEvent} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 rounded-lg transition-colors">
                   Create Event
                 </button>
               </div>
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

@@ -41,6 +41,7 @@ import AdminEventManagement from "../dashboard/sidebarMenu/AdminEventsManagement
 import DashboardOverview from "../dashboard/home/AdminOverview";
 import EventOverview from "../dashboard/home/EventOverview";
 import AdminRoute from "./AdminRoute";
+import AdminUserDetails from "../dashboard/sidebarMenu/AdminUserDetails";
 
 // Wrapper component to pass context to AdminEventManagement
 function AdminEventsWrapper() {
@@ -97,8 +98,8 @@ export const router = createBrowserRouter([
                 element: <UserDetailsPage />
             },
             {
-                path: "user-management/details",
-                element: <AdminRoute><UserDetailsPage /></AdminRoute>
+                path: "user-management/details/:id",
+                element:  < AdminUserDetails />
             },
             {
                 path: "admin-events",

@@ -139,7 +139,7 @@ const App = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => navigate("/dashboard/user-management/details")}
+                      onClick={() => navigate(`/dashboard/user-management/details/${user.id}`)}
                       className="px-3 py-1 bg-teal-500 text-white text-xs rounded-md hover:bg-teal-600 transition-colors"
                     >
                       Details

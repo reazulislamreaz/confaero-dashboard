@@ -41,8 +41,18 @@ detailUser: builder.query({
   providesTags: ["AdminUsers"],
 }),
 
+adminUserDetaisl: builder.query({
+  query: (userId) => ({
+    url: `/superAdmin/users/${userId}`,
+    method: "GET",
+  }),
+  providesTags: ["AdminUsers"],
+}),
 
-        adminLogin: builder.mutation({
+
+
+
+ adminLogin: builder.mutation({
             query: (data) => ({
                 url: `/auth/login`,
                 method: "POST",
@@ -63,5 +73,7 @@ export const {
     useDeleteUserMutation,
     useDetailUserQuery,
 
-    useAdminUsersQuery
+    useAdminUsersQuery,
+    useAdminUserDetaislQuery,
+
  } = userSlice;

@@ -29,9 +29,9 @@ const DashboardHome = () => {
         <AdminOverview />
       ) : (
         <>
-          <Cardd />
-          <OverviewChart />
-          <RejectedProductsPage />
+          <Cardd eventId={eventId} />
+          <OverviewChart eventId={eventId} />
+          <RejectedProductsPage eventId={eventId} />
         </>
       )}
     </div>
