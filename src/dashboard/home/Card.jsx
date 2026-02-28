@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { X, Upload, Bold, Italic, Underline, Strikethrough, Link, List, ListOrdered, Calendar, MapPin, User, CheckSquare, FileText, Store, Megaphone, Users, CheckCircle } from 'lucide-react';
-import { useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
+import { useEventOverviewQuery, useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
 
-export default function ConferenceDashboard() {
+export default function ConferenceDashboard({ eventId }) {
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [showReviewerModal, setShowReviewerModal] = useState(false);
-  
+
+  const { data: overviewData, isLoading: overviewLoading, isError: overviewError } = useEventOverviewQuery(eventId);
+
+  const eventInfo = overviewData?.data?.eventInfo;
+  const statsData = overviewData?.data?.stats;
+
   // Announcement form state
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementDescription, setAnnouncementDescription] = useState('');
   const [announcementImage, setAnnouncementImage] = useState(null);
-  
-   const { data: eventResponse, isLoading, isError } = useGetEventQuery();
-   
-   console.log(eventResponse)
+
+  const { data: eventResponse, isLoading, isError } = useGetEventQuery();
 
   // Reviewer form state
   const [reviewerEmail, setReviewerEmail] = useState('');
@@ -23,11 +26,36 @@ export default function ConferenceDashboard() {
     'Eng...'
   ]);
 
+  // Format date range
+  const formatDateRange = (start, end) => {
+    if (!start || !end) return 'N/A';
+    const s = new Date(start);
+    const e = new Date(end);
+    const opts = { month: 'short', day: 'numeric' };
+    return `${s.toLocaleDateString('en-US', opts)} - ${e.toLocaleDateString('en-US', { ...opts, year: 'numeric' })}`;
+  };
+
   const stats = [
-    { icon: <User className="w-6 h-6" />, value: '2K', label: 'Total Registrations' },
-    { icon: <CheckSquare className="w-6 h-6" />, value: '0', label: 'Checked In Attendees' },
-    { icon: <FileText className="w-6 h-6" />, value: '102', label: 'Pending Abstract Reviews' },
-    { icon: <Store className="w-6 h-6" />, value: '8', label: 'Pending Exhibitor Requests' }
+    {
+      icon: <User className="w-6 h-6" />,
+      value: statsData?.totalRegistrations?.toLocaleString() ?? '0',
+      label: 'Total Registrations'
+    },
+    {
+      icon: <CheckSquare className="w-6 h-6" />,
+      value: statsData?.checkedInAttendees?.toLocaleString() ?? '0',
+      label: 'Checked In Attendees'
+    },
+    {
+      icon: <FileText className="w-6 h-6" />,
+      value: statsData?.pendingRequests?.toLocaleString() ?? '0',
+      label: 'Pending Abstract Reviews'
+    },
+    {
+      icon: <Store className="w-6 h-6" />,
+      value: statsData?.exhibitors?.toLocaleString() ?? '0',
+      label: 'Pending Exhibitor Requests'
+    }
   ];
 
   const actions = [
@@ -37,14 +65,8 @@ export default function ConferenceDashboard() {
   ];
 
   const handleAnnouncementSubmit = () => {
-    const formData = {
-      title: announcementTitle,
-      description: announcementDescription,
-      image: announcementImage
-    };
+    const formData = { title: announcementTitle, description: announcementDescription, image: announcementImage };
     console.log('Announcement Form Data:', formData);
-    
-    // Reset form
     setAnnouncementTitle('');
     setAnnouncementDescription('');
     setAnnouncementImage(null);
@@ -52,45 +74,54 @@ export default function ConferenceDashboard() {
   };
 
   const handleReviewerAssign = () => {
-    const formData = {
-      reviewerEmail: reviewerEmail,
-      selectedFiles: selectedFiles
-    };
+    const formData = { reviewerEmail, selectedFiles };
     console.log('Reviewer Form Data:', formData);
-    
-    // Reset form
     setReviewerEmail('');
     setShowReviewerModal(false);
   };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setAnnouncementImage(file.name);
-    }
+    if (file) setAnnouncementImage(file.name);
   };
 
   const removeFile = (index) => {
     setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
   };
 
+  if (overviewLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading event overview...</p>
+      </div>
+    );
+  }
+
+  if (overviewError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-red-500">Failed to load event overview. Please try again.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="  bg-gray-50 p-6">
-      <div className=" ">
+    <div className="bg-gray-50 p-6">
+      <div className="">
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
           {/* Header */}
           <div className="bg-teal-600 text-white p-6">
             <h1 className="text-2xl font-semibold mb-3">
-              18th Lithium Supply & Battery Raw Materials Conference
+              {eventInfo?.title ?? 'N/A'}
             </h1>
             <div className="flex gap-6 text-sm">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                <span>Jun 22-25, 2026</span>
+                <span>{formatDateRange(eventInfo?.dateRange?.start, eventInfo?.dateRange?.end)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                <span>Las Vegas, USA</span>
+                <span>{eventInfo?.location ?? 'N/A'}</span>
               </div>
             </div>
           </div>
@@ -99,30 +130,22 @@ export default function ConferenceDashboard() {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               {stats.map((stat, index) => (
-                <div 
+                <div
                   key={index}
                   className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="text-gray-400">
-                      {stat.icon}
-                    </div>
-                    <div className="text-3xl font-bold text-gray-800">
-                      {stat.value}
-                    </div>
+                    <div className="text-gray-400">{stat.icon}</div>
+                    <div className="text-3xl font-bold text-gray-800">{stat.value}</div>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {stat.label}
-                  </div>
+                  <div className="text-sm text-gray-500">{stat.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Quick Actions */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                Quick Actions
-              </h2>
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Quick Actions</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {actions.map((action, index) => (
                   <button
@@ -142,44 +165,25 @@ export default function ConferenceDashboard() {
 
       {/* Announcement Modal */}
       {showAnnouncementModal && (
-        <div className="fixed inset-0 bg-black/80  flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-md">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Add announcements</h2>
-              <button 
-                onClick={() => setShowAnnouncementModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={() => setShowAnnouncementModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="p-4">
-              {/* Image Upload */}
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4 text-center">
-                <input 
-                  type="file" 
-                  id="imageUpload" 
-                  className="hidden" 
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
+                <input type="file" id="imageUpload" className="hidden" accept="image/*" onChange={handleImageUpload} />
                 <label htmlFor="imageUpload" className="cursor-pointer">
                   <Upload className="w-8 h-8 text-teal-600 mx-auto mb-2" />
                   <span className="text-teal-600 text-sm">Upload Image</span>
                 </label>
-                {announcementImage && (
-                  <p className="text-xs text-gray-500 mt-2">{announcementImage}</p>
-                )}
+                {announcementImage && <p className="text-xs text-gray-500 mt-2">{announcementImage}</p>}
               </div>
-
-              {/* Title Input */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Announcements Title
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Announcements Title</label>
                 <input
                   type="text"
                   placeholder="Write your question here..."
@@ -187,24 +191,16 @@ export default function ConferenceDashboard() {
                   onChange={(e) => setAnnouncementTitle(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
-                <p className="text-xs text-teal-600 text-right mt-1">
-                  Write at least 100 characters.
-                </p>
+                <p className="text-xs text-teal-600 text-right mt-1">Write at least 100 characters.</p>
               </div>
-
-              {/* Description */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   placeholder="Add your job description..."
                   value={announcementDescription}
                   onChange={(e) => setAnnouncementDescription(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-24"
                 />
-                
-                {/* Formatting Toolbar */}
                 <div className="flex items-center gap-2 mt-2 text-gray-500">
                   <button className="p-1 hover:text-gray-700"><Bold className="w-4 h-4" /></button>
                   <button className="p-1 hover:text-gray-700"><Italic className="w-4 h-4" /></button>
@@ -214,16 +210,9 @@ export default function ConferenceDashboard() {
                   <button className="p-1 hover:text-gray-700"><List className="w-4 h-4" /></button>
                   <button className="p-1 hover:text-gray-700"><ListOrdered className="w-4 h-4" /></button>
                 </div>
-                <p className="text-xs text-teal-600 text-right mt-1">
-                  Write at least 1000 characters.
-                </p>
+                <p className="text-xs text-teal-600 text-right mt-1">Write at least 1000 characters.</p>
               </div>
-
-              {/* Submit Button */}
-              <button
-                onClick={handleAnnouncementSubmit}
-                className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium"
-              >
+              <button onClick={handleAnnouncementSubmit} className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium">
                 Submit
               </button>
             </div>
@@ -235,24 +224,15 @@ export default function ConferenceDashboard() {
       {showReviewerModal && (
         <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-md">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Add Reviewer</h2>
-              <button 
-                onClick={() => setShowReviewerModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={() => setShowReviewerModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="p-4">
-              {/* Reviewer Email */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reviewer
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reviewer</label>
                 <input
                   type="email"
                   placeholder="Enter Reviewer email"
@@ -261,23 +241,13 @@ export default function ConferenceDashboard() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
-
-              {/* Files */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Files*
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Files*</label>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {selectedFiles.map((file, index) => (
-                    <span 
-                      key={index}
-                      className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 px-3 py-1 rounded-full text-sm"
-                    >
+                    <span key={index} className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 px-3 py-1 rounded-full text-sm">
                       {file}
-                      <button 
-                        onClick={() => removeFile(index)}
-                        className="hover:text-teal-900"
-                      >
+                      <button onClick={() => removeFile(index)} className="hover:text-teal-900">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -285,19 +255,14 @@ export default function ConferenceDashboard() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Enter free name"
+                  placeholder="Enter file name"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 mb-2"
                 />
                 <button className="flex items-center gap-1 text-teal-600 hover:text-teal-700 text-sm font-medium">
                   <span className="text-lg">+</span> Add
                 </button>
               </div>
-
-              {/* Assign Button */}
-              <button
-                onClick={handleReviewerAssign}
-                className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium"
-              >
+              <button onClick={handleReviewerAssign} className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium">
                 Assign
               </button>
             </div>

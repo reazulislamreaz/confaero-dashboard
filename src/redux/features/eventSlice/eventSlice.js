@@ -70,8 +70,63 @@ const eventApiSlice = apiSlice.injectEndpoints({
             }),
             invalidatesTags: [{type: "Events"}]
          }),
+
+         
+//Admin API hooks eventApiSlice endpoints
+
+getAdminEvent: builder.query({
+    query: ( ) => `/superAdmin/events`,
+    invalidatesTags: [{type: "Events"}]
+}),
+
+eventOverview: builder.query({
+    query: (eventId) => `/superAdmin/singleEvent/${eventId}/overview`,
+}),
+
+adminEventdetails: builder.query({
+    query: (eventId) => `/superAdmin/events/${eventId}`,
+    providesTags: (result, error, eventId) => [{ type: 'AdminEventDetails', id: eventId }],
+}),
+
+ adminCreateEvent: builder.mutation({
+    query: (eventData) => ({
+        url: `/superAdmin/create/event`,
+        method: 'POST',
+        body: eventData,
+    }),
+    invalidatesTags: [{type: "Events"}]
+
+}),
+
+adminUpdateEvent: builder.mutation({
+    query: ({ eventId, eventData }) => ({
+        url: `/superAdmin/events/${eventId}`,
+        method: 'PATCH',
+        body: eventData,
+    }),
+    invalidatesTags: [{type: "Events"}]
+
+}),
+
+adminDeleteEvent: builder.mutation({    
+    query: (eventId) => ({
+        url: `/superAdmin/events/${eventId}`,
+        method: 'DELETE',
+    }),
+    invalidatesTags: [{type: "Events"}]
+}),
+
+
+
+
+
+
     })
 });
+
+
+
+
 
 
 
@@ -84,6 +139,14 @@ export const {
     useUpdateEventMutation,
     useDeleteFloorMapMutation,
     useAddSessionByCsvfileMutation,
+
+    useGetAdminEventQuery,
+    useAdminEventdetailsQuery,
+    useAdminCreateEventMutation,
+    useAdminUpdateEventMutation,
+    useAdminDeleteEventMutation,
+    useEventOverviewQuery,
+
 } = eventApiSlice;
 
  

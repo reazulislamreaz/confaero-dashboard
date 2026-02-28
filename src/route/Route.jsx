@@ -80,7 +80,7 @@ export const router = createBrowserRouter([
                 element: <AdminRoute><DashboardOverview /></AdminRoute>
             },
             {
-                path: "admin-events/event-overview",
+                path: "admin-events/event-overview/:id",
                 element: <AdminRoute><EventOverview /></AdminRoute>
             },
             {
