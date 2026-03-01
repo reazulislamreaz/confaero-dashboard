@@ -762,10 +762,11 @@
 
 import React, { useState, useRef } from 'react';
 import { Plus, Upload, Edit, Trash2, Eye, X, MapPin, Calendar, Paperclip } from 'lucide-react';
-import { useAddSessionByCsvfileMutation, useAddSessionMutation, useDeleteFloorMapMutation, useDeleteSessionMutation, useGetEventQuery, useUpdateEventMutation, useUpdateSessionMutation } from '../../redux/features/eventSlice/eventSlice';
+import { useAddSessionByCsvfileMutation, useAddSessionMutation, useAdminEventdetailsQuery, useDeleteFloorMapMutation, useDeleteSessionMutation, useGetEventQuery, useUpdateEventMutation, useUpdateSessionMutation } from '../../redux/features/eventSlice/eventSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import toast from 'react-hot-toast';
 import { Popconfirm } from 'antd';
+import { useIsAdmin } from '../../hooks/useUserRole';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const formatDate = (iso) => {
@@ -790,16 +791,39 @@ export default function EventAgendaBuilder() {
   const [isUploadingCsv, setIsUploadingCsv]     = useState(false);
   const [csvFile, setCsvFile]                   = useState(null);
   const [csvFileName, setCsvFileName]           = useState('');
-
+ const isAdmin = useIsAdmin();
+ 
   const floorMapFileRef = useRef();
   const csvFileRef      = useRef();
 
   const { eventId, setEvent } = useSelectedEvent();
   console.log(eventId);
 
-  const { data: eventResponse, isLoading, isError } = useGetEventQuery();
+ 
 
-  const event = eventResponse?.data?.[0];
+const {
+  data: adminResponse,
+  isLoading: adminLoading,
+  isError: adminError,
+} = useAdminEventdetailsQuery(eventId, {
+  skip: !isAdmin,
+});
+
+const {
+  data: userResponse,
+  isLoading: userLoading,
+  isError: userError,
+} = useGetEventQuery(undefined, {
+  skip: isAdmin,
+});
+
+// Final unified response
+const eventResponse = isAdmin ? adminResponse : userResponse;
+const isLoading = isAdmin ? adminLoading : userLoading;
+const isError = isAdmin ? adminError : userError;
+
+  const event = eventResponse?.data;
+  console.log(eventResponse)
 
   React.useEffect(() => {
     if (event && !eventId) setEvent(event);

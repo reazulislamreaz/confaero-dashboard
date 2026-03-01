@@ -20,12 +20,10 @@ const resourcecSlice = apiSlice.injectEndpoints({
             providesTags: ['Resources']
         }),
 
-
-
-
+ 
         UploadDocument: builder.mutation({
             query: ({ eventId, body }) => ({
-                url: `/resource/${eventId}`,
+                url: `/document/${eventId}`,
                 method: 'POST',
                 body: body,
             }),
