@@ -172,6 +172,7 @@ const selectedEventSlice = createSlice({
             // Persist to localStorage
             try {
                 localStorage.setItem('selectedEventId', state.eventId);
+                localStorage.setItem('selectedEventName', action.payload.title || '');
             } catch (error) {
                 console.error('Error saving eventId to localStorage:', error);
             }
@@ -182,6 +183,7 @@ const selectedEventSlice = createSlice({
             // Clear from localStorage
             try {
                 localStorage.removeItem('selectedEventId');
+                localStorage.removeItem('selectedEventName');
             } catch (error) {
                 console.error('Error removing eventId from localStorage:', error);
             }
