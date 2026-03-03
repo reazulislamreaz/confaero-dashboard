@@ -17,7 +17,8 @@ const DashboardHome = () => {
   const { eventId, setEvent } = useSelectedEvent();
   console.log(eventId);
 
-  const event = eventResponse?.data?.[0];
+  const event = eventResponse?.data;
+  console.log(event);
 
   React.useEffect(() => {
     if (event && !eventId) setEvent(event);

@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { Upload, X, Image as ImageIcon, Edit } from 'lucide-react';
 import { RxCross2 } from 'react-icons/rx';
-import { useDeletePhotoMutation, useGetPhotosQuery } from '../../../redux/features/photos/photoSlice';
+import { useDeletePhotoMutation, useGetPhotosQuery, useUploadPhotoMutation } from '../../../redux/features/photos/photoSlice';
 import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
+import { useUploadFileMutation } from '../../../redux/features/fileUpload';
 
 export default function Photos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
+
+  // New states for Upload Modal
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedType, setSelectedType] = useState('event');
+  const [uploadPhoto] = useUploadPhotoMutation();
 
   const { eventId } = useSelectedEvent();
 
@@ -21,6 +27,7 @@ export default function Photos() {
   });
 
   const photos = photosData?.data ?? [];
+  
   const meta = photosData?.meta ?? { page: 1, limit: itemsPerPage, total: 0 };
   const totalPages = Math.ceil(meta.total / itemsPerPage);
 
@@ -37,7 +44,7 @@ export default function Photos() {
     ? photos
     : photos.filter(photo => photo.type?.toLowerCase() === selectedCategory.toLowerCase());
 
-    const [deletePhoto] = useDeletePhotoMutation();
+  const [deletePhoto] = useDeletePhotoMutation();
 
   const handleDelete = async(id) => {
       try {
@@ -53,16 +60,73 @@ export default function Photos() {
   const handleEdit = (id) => {
     console.log('Edit photo:', id);
   };
+   const [uploadChatAttachment] = useUploadFileMutation(); 
 
-  const handleUpload = (e) => {
+  // Updated Handle Upload to get File and Type
+  const handleUpload = async(e) => {
     e.preventDefault();
-    console.log('Photo uploaded');
+    
+    // Console log the file and type as requested
+    console.log('Selected File:', selectedFile);
+    console.log('Selected Type:', selectedType);
+
+     const fileFormData = new FormData();
+     fileFormData.append('file', selectedFile);
+     fileFormData.append('type', selectedType);
+
+      const attachmentResult = await uploadChatAttachment(fileFormData).unwrap();
+
+      if (!attachmentResult?.success || !attachmentResult?.data?.url) {
+        toast.error(attachmentResult?.message || 'File upload failed.');
+        return;
+      }
+
+      const documentUrl = attachmentResult.data.url;
+      console.log(documentUrl)
+
+
+
+    if (!selectedFile) {
+      toast.error('Please select a file');
+      return;
+    }
+ 
+    try {
+     const res = await uploadPhoto({ 
+        eventId,  
+        body: {
+          imageUrl: documentUrl, // Use the URL from the file upload response
+          type: selectedType,
+        }
+      }).unwrap();
+      if (res?.success === true) {
+        toast.success('Photo uploaded successfully');
+      } else {
+        toast.error(res?.message || 'Photo upload failed');
+      }
+ 
+    setSelectedFile(null);
+    setSelectedType('event');
     setIsModalOpen(false);
+
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      toast.error('Failed to upload photo');
+      return;
+    } 
+
   };
 
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
     setCurrentPage(1);
+  };
+
+  // Helper to close modal and reset form
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedFile(null);
+    setSelectedType('event');
   };
 
   return (
@@ -205,25 +269,38 @@ export default function Photos() {
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Add Photo</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                 <X size={24} />
               </button>
             </div>
 
             <form onSubmit={handleUpload}>
               <div className="mb-6">
-                <div className="border-2 border-dashed border-teal-300 rounded-lg p-8 text-center hover:border-teal-400 transition-colors cursor-pointer">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Upload File</label>
+                <div className="border-2 border-dashed border-teal-300 rounded-lg p-8 text-center hover:border-teal-400 transition-colors cursor-pointer relative">
                   <div className="flex flex-col items-center">
                     <ImageIcon size={32} className="text-teal-500 mb-2" />
-                    <span className="text-sm text-gray-600">Upload Image</span>
-                    <input type="file" className="hidden" accept="image/*" />
+                    <span className="text-sm text-gray-600">
+                      {selectedFile ? selectedFile.name : 'Click to Upload Image'}
+                    </span>
+                    {/* Hidden Input triggered by the box logic or visible */}
+                    <input 
+                      type="file" 
+                      className="absolute inset-0 opacity-0 cursor-pointer" 
+                      accept="image/*" 
+                      onChange={(e) => setSelectedFile(e.target.files[0])}
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category Type</label>
+                <select 
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                >
                   <option value="event">Events</option>
                   <option value="booth">Booth gallery</option>
                   <option value="floor">Floor map</option>
@@ -235,7 +312,7 @@ export default function Photos() {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={closeModal}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel

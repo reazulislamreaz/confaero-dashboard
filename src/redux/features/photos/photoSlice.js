@@ -9,7 +9,7 @@ const photoSlice = apiSlice.injectEndpoints({
         }),
         UploadPhoto: builder.mutation({
             query: ({ eventId, body }) => ({
-                url: `/photo/${eventId}`,
+                url: `/photo/events/${eventId}/photos`,
                 method: 'POST',
                 body: body,
             }),
