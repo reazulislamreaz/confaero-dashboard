@@ -142,7 +142,7 @@ export const router = createBrowserRouter([
                 element: <CreateJobPost />
             },
             {
-                path: "resources/job-posts/editjob",
+                path: "resources/job-posts/editjob/:id",
                 element: <EditJobPost />
             },
             {
