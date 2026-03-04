@@ -3,6 +3,7 @@ import { Plus, Search, Filter, X, Check, Eye, Edit2, FileText, ChevronLeft, Chev
 import { useNavigate } from 'react-router-dom';
 import { useGetJobsQuery, useDeleteJobMutation } from '../../../redux/features/jobSlice/jobSlice';
 import toast from 'react-hot-toast';
+import { Popconfirm } from 'antd';
 
 export default function JobPostManagement() {
     const navigate = useNavigate();
@@ -26,17 +27,15 @@ export default function JobPostManagement() {
     
     console.log('API Jobs:', apiJobs);
 
-    const handleDelete = async(id) => {
-        if (window.confirm('Are you sure you want to delete this job?')) {
-            try {
-                const result = await deleteJob(id).unwrap();
-                if (result.success) {
-                    toast.success('Job deleted successfully');
-                    refetch();
-                }
-            } catch (error) {
-                toast.error(error?.data?.message || 'Failed to delete job');
+    const handleDelete = async (id) => {
+        try {
+            const result = await deleteJob(id).unwrap();
+            if (result.success) {
+                toast.success('Job deleted successfully');
+                refetch();
             }
+        } catch (error) {
+            toast.error(error?.data?.message || 'Failed to delete job');
         }
     };
 
@@ -195,13 +194,21 @@ export default function JobPostManagement() {
                                                         >
                                                             <Edit className="w-5 h-5" />
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleDelete(job._id)}
-                                                            className="p-1 text-gray-600 hover:text-red-600 transition-colors"
-                                                            title="Delete"
+                                                        <Popconfirm
+                                                            title="Delete Job"
+                                                            description="Are you sure you want to delete this job?"
+                                                            onConfirm={() => handleDelete(job._id)}
+                                                            okText="Yes, Delete"
+                                                            cancelText="Cancel"
+                                                            okButtonProps={{ danger: true }}
                                                         >
-                                                            <X className="w-5 h-5" />
-                                                        </button>
+                                                            <button
+                                                                className="p-1 text-gray-600 hover:text-red-600 transition-colors"
+                                                                title="Delete"
+                                                            >
+                                                                <X className="w-5 h-5" />
+                                                            </button>
+                                                        </Popconfirm>
                                                     </div>
                                                 </td>
                                             </tr>

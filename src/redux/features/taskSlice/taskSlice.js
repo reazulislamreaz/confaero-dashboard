@@ -9,7 +9,7 @@ const taskSlice = apiSlice.injectEndpoints({
         }),
 
         getTaskById: builder.query({
-        query:(id) => `/volunteer/${id}`
+        query: (id) => `/volunteer/${id}`
      }),
 
         assignTask: builder.mutation({

@@ -9,7 +9,7 @@ const jobSlice = apiSlice.injectEndpoints({
         }),
         getJobById: builder.query({
             query: (id) => `/job/my/${id}`,
-            providesTags: ['Jobs']
+            providesTags: (result, error, id) => [{ type: 'Jobs', id }]
         }),
         createJob: builder.mutation({
             query: ( body) => ({
@@ -20,12 +20,12 @@ const jobSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Jobs'],
         }),
         updateJob: builder.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, data }) => ({
                 url: `/job/${id}`,
                 method: 'PATCH',
-                body: body,
+                body: data,
             }),
-            invalidatesTags: ['Jobs'],
+            invalidatesTags: (result, error, { id }) => [{ type: 'Jobs', id }, { type: 'Jobs', id: 'LIST' }],
         }),
 
         deleteJob: builder.mutation({
