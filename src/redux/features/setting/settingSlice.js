@@ -1,23 +1,24 @@
 import { apiSlice } from "../../api/apiSlice";
 
-const settingSlice = apiSlice.injectEndpoints({
+const appContentSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Get settings
-    getSettings: builder.query({
-      query: (eventId) => `/settings/${eventId}`,
-      providesTags: ["Settings"],
+    // Get content by type
+    getAppContent: builder.query({
+      query: (type) => `/appContent/${type}`,
+      providesTags: ["AppContent"],
     }),
 
-    // Update settings
-    updateSettings: builder.mutation({
-      query: ({ eventId, body }) => ({
-        url: `/settings/${eventId}`,
-        method: "PATCH",
-        body: body,
+    // CREATE + UPDATE (same route)
+    saveAppContent: builder.mutation({
+      query: (body) => ({
+        url: `/appContent/create`,
+        method: "POST",
+        body,
       }),
-      invalidatesTags: ["Settings"],
+      invalidatesTags: ["AppContent"],
     }),
   }),
 });
 
-export const { useGetSettingsQuery, useUpdateSettingsMutation } = settingSlice;
+export const { useGetAppContentQuery, useSaveAppContentMutation } =
+  appContentSlice;

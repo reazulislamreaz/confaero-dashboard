@@ -91,7 +91,7 @@ const EditProfile = () => {
               {/* Left Profile Card */}
               <div className="lg:w-1/3 bg-gradient-to-br from-gray-50 to-blue-50 border-r border-gray-100">
                 <div className="flex flex-col justify-center items-center p-8 gap-8">
-                  <div className="relative group">
+                  {/* <div className="relative group">
                     <div className="rounded-full overflow-hidden h-48 w-48 mx-auto shadow-2xl ring-4 ring-white">
                       <Upload
                         showUploadList={false}
@@ -115,12 +115,39 @@ const EditProfile = () => {
                     >
                       Change Picture
                     </Button>
+                  </div> */}
+                  <div className="relative group">
+                    <Upload
+                      showUploadList={false}
+                      onChange={handleUploadChange}
+                    >
+                      <div className="relative cursor-pointer">
+                        <div className="rounded-full overflow-hidden h-48 w-48 mx-auto shadow-2xl ring-4 ring-white">
+                          <img
+                            src={
+                              imageUrl
+                                ? imageUrl
+                                : "https://randomuser.me/api/portraits/men/57.jpg"
+                            }
+                            className="w-full h-full object-cover"
+                            alt="Profile"
+                          />
+                        </div>
+
+                        <Button
+                          icon={<LuImagePlus />}
+                          className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-white shadow-md"
+                        >
+                          Change Picture
+                        </Button>
+                      </div>
+                    </Upload>
                   </div>
 
                   <div className="text-center space-y-2">
-                    <div className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-cyan-100 text-emerald-700 rounded-full text-sm font-semibold uppercase">
+                    {/* <div className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-cyan-100 text-emerald-700 rounded-full text-sm font-semibold uppercase">
                       admin
-                    </div>
+                    </div> */}
 
                     <h2 className="text-3xl font-bold text-gray-800">
                       {user?.name || "Admin"}
