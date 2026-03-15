@@ -1,192 +1,187 @@
+import { ArrowLeft } from "lucide-react";
 import { Button, Form, Input, Upload } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LuImagePlus } from "react-icons/lu";
-import { MdOutlineKeyboardArrowLeft } from "react-icons/md";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import { useNavigate } from "react-router-dom";
- 
- 
- 
+import { Link, useNavigate } from "react-router-dom";
 
-const EditProfiel = () => {
+import {
+  useFetchUserProfileQuery,
+  useUpdateProfileMutation,
+} from "../../../redux/features/userSlice/userSlice";
+
+const EditProfile = () => {
   const navigate = useNavigate();
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [form] = Form.useForm();
+
+  const { data: profileData } = useFetchUserProfileQuery();
+  const [updateProfile] = useUpdateProfileMutation();
+
+  const user = profileData?.data;
+
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [fileList, setFileList] = useState([]);
-  
-  
- 
   const [imageUrl, setImageUrl] = useState();
- 
-//  console.log(profile?.data?.attributes);
- 
-//  const initialValues = {
-//   name: profile?.data?.attributes?.name ||'',
-//   email: profile?.data?.attributes?.email ||'',
-//   phoneNumber: profile?.data?.attributes?.phoneNumber ||'',
-// };
 
-// useEffect(() => {
-//   if (profile?.data?.attributes) {
-//     setPhoneNumber(profile.data.attributes.phoneNumber || '');
-//     const existingImageUrl = url + profile?.data?.attributes?.image;
-//     if (existingImageUrl) {
-//       setImageUrl(existingImageUrl);
-//     }
-//     initialValues.fullName = profile.data.attributes.fullName || '';
-//     initialValues.email = profile.data.attributes.email || '';
-//   }
-// }, [profile]);
+  useEffect(() => {
+    if (user) {
+      form.setFieldsValue({
+        name: user.name,
+        email: user.email,
+      });
 
+      setPhoneNumber(user.phone || "");
 
-
+      if (user.avatar) {
+        setImageUrl(user.avatar);
+      }
+    }
+  }, [user, form]);
 
   const handleUploadChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
+
     if (newFileList[0]?.originFileObj) {
       const reader = new FileReader();
       reader.readAsDataURL(newFileList[0].originFileObj);
       reader.onload = () => setImageUrl(reader.result);
     }
   };
-//  console.log("fileeeeeeeeeeeeeeeeeeeee", imageUrl);
-//  console.log(fileList, phoneNumber);
- 
- 
+
   const handleUpdateProfile = async (values) => {
-    console.log(values); 
-    
-    
-    // const formData = new FormData();
-    // formData.append("name", values?.name); 
-    // formData.append("phoneNumber", phoneNumber);
-    // if (fileList[0]?.originFileObj) {
-    //   formData.append("image", fileList[0].originFileObj);
-    //   // formData.append("image", imageUrl);
-    // }
-    // try{
-    //   const res = await updateProfile(formData).unwrap();
-    //   console.log(res);
-    //   if(res?.code === 200){
-    //     toast.success(res?.message)
-    //   }
-    //   setTimeout(() => {
-    //     navigate('/dashboard/profile')
-    //   }, 1000);
-      
-    // }catch(error){
-    //   console.log(error?.data);
-       
-    // }
-     
+    try {
+      const payload = {
+        data: {
+          name: values.name,
+          phone: phoneNumber,
+        },
+        image: fileList[0]?.originFileObj,
+      };
+
+      await updateProfile(payload).unwrap();
+
+      navigate("/dashboard/settings/profile");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
-    <div className="">
-      {/* <Toaster /> */}
-      <div
-        onClick={() => navigate("/dashboard/settings/profile")}
-        className="flex items-center cursor-pointer ml-6 mt-10 mb-16"
-      >
-        <MdOutlineKeyboardArrowLeft size={30} />
-        <h1 className="text-x  font-medium ml-2">Edit Profile</h1>
-      </div>
+    <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+      <div>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-12">
+          <div className="flex items-center gap-4">
+            <button className="p-3 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
+              <Link to="/dashboard/settings/profile">
+                <ArrowLeft className="w-6 h-6 text-[#0FC3C2]" />
+              </Link>
+            </button>
 
-      <div className="mx-6 p-9 rounded-xl bg-white shadow-md">
-        <Form
-          layout="vertical"
-          // initialValues={initialValues}
-          autoComplete="off"
-          onFinish={handleUpdateProfile}
-        >
-          <div className="flex flex-col lg:flex-row gap-10">
-            <div className="flex flex-col items-center w-full lg:w-1/3 border-dotted border">
-              <div className="relative w-56 h-56 rounded-full flex justify-center items-center mt-5 bg-gray-50 border">
-                <Upload
-                  name="avatar"
+            <h1 className="text-3xl md:text-4xl font-semibold text-gray-800">
+              Edit Profile
+            </h1>
+          </div>
+        </div>
 
-                  showUploadList={false}
-                  onChange={handleUploadChange}
-                 
-                >
-                  <img
-                    className="w-44 h-44 rounded-full"
-                    src={imageUrl}
-                    in
-                    alt="Profile"
-                  />
-                  <Button
-                    className="border-none text-md text-blue-500 absolute bottom-6 flex items-center"
-                    icon={<LuImagePlus size={20} className="mr-2" />}
-                  >
-                    Change Picture
-                  </Button>
-                </Upload>
+        <Form form={form} layout="vertical" onFinish={handleUpdateProfile}>
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div className="lg:flex md:flex">
+              {/* Left Profile Card */}
+              <div className="lg:w-1/3 bg-gradient-to-br from-gray-50 to-blue-50 border-r border-gray-100">
+                <div className="flex flex-col justify-center items-center p-8 gap-8">
+                  <div className="relative group">
+                    <div className="rounded-full overflow-hidden h-48 w-48 mx-auto shadow-2xl ring-4 ring-white">
+                      <Upload
+                        showUploadList={false}
+                        onChange={handleUploadChange}
+                      >
+                        <img
+                          src={
+                            imageUrl
+                              ? imageUrl
+                              : "https://randomuser.me/api/portraits/men/57.jpg"
+                          }
+                          className="w-full h-full object-cover cursor-pointer"
+                          alt="Profile"
+                        />
+                      </Upload>
+                    </div>
 
+                    <Button
+                      icon={<LuImagePlus />}
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-white shadow-md"
+                    >
+                      Change Picture
+                    </Button>
+                  </div>
+
+                  <div className="text-center space-y-2">
+                    <div className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-cyan-100 text-emerald-700 rounded-full text-sm font-semibold uppercase">
+                      admin
+                    </div>
+
+                    <h2 className="text-3xl font-bold text-gray-800">
+                      {user?.name || "Admin"}
+                    </h2>
+
+                    <div className="h-1 w-16 bg-gradient-to-r from-[#0FC3C2] to-[#0BC5EA] rounded-full mx-auto"></div>
+                  </div>
+                </div>
               </div>
 
-
-              <div className="text-center mt-6">
-                <p className="text-lg">{'admin'}</p>
-                <h1 className="text-2xl font-medium">{"absayed"}</h1>
-              </div>
-            </div>
-
-            <div className="flex-1 w-full lg:w-2/3">
-              <div className="flex flex-col gap-6">
+              {/* Right Form */}
+              <div className="lg:w-2/3 p-8 lg:p-12 space-y-8">
                 <Form.Item
-                  label={<span className="text-lg font-medium">Name</span>}
+                  label={<span className="text-xl font-semibold">Name</span>}
                   name="name"
-                  rules={[{ required: true, message: "Please input your name!" }]}
-                  // initialValue={"absayed"}
+                  rules={[
+                    { required: true, message: "Please input your name!" },
+                  ]}
                 >
                   <Input
+                    className="p-5 text-lg rounded-xl"
                     placeholder="Name"
-                    className="p-4 rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </Form.Item>
 
                 <Form.Item
-                  label={<span className="text-lg font-medium">Email</span>}
+                  label={<span className="text-xl font-semibold">Email</span>}
                   name="email"
-                  
-                  rules={[{ required: true, message: "Please input your email!" }]}
-                  // initialValue={"ab@gamil.com"}
                 >
                   <Input
-                    placeholder="Email"
                     readOnly
-                    className="p-4 rounded-lg border-gray-300 bg-gray-100"
-                   
+                    className="p-5 text-lg rounded-xl bg-gray-100"
                   />
                 </Form.Item>
 
-                <div className="flex flex-col">
-                  <label className="text-lg font-medium mb-2">Phone Number</label>
+                <div>
+                  <label className="text-xl font-semibold block mb-3">
+                    Phone Number
+                  </label>
+
                   <PhoneInput
-                    placeholder="Enter phone number"
                     international
-                    // defaultCountry="us"
                     value={phoneNumber}
                     onChange={setPhoneNumber}
-                    className="p-2 rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    style={{ height: '50px',  }}
+                    className="p-4 rounded-xl border"
                   />
                 </div>
+
+                <Button
+                  htmlType="submit"
+                  className="w-full h-14 mt-8 !bg-[#0FC3C2] text-lg font-semibold rounded-xl"
+                >
+                  Update Profile
+                </Button>
               </div>
             </div>
           </div>
-
-          <Button
-            htmlType="submit"
-            className="w-full mt-12 h-14 !bg-[#0FC3C2] rounded-lg text-lg font-medium"
-          >
-            Update Profile
-          </Button>
         </Form>
       </div>
     </div>
   );
 };
 
-export default EditProfiel;
+export default EditProfile;

@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAdminLoginMutation } from '../redux/features/authSlice/authSlice';
-import toast, { Toaster } from 'react-hot-toast';
+import React, { useState } from "react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAdminLoginMutation } from "../redux/features/authSlice/authSlice";
+import toast, { Toaster } from "react-hot-toast";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
- const navigate = useNavigate();
+  const navigate = useNavigate();
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -21,13 +21,13 @@ const Login = () => {
     const newErrors = {};
 
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!validateEmail(email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = "Please enter a valid email";
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -36,27 +36,30 @@ const Login = () => {
     }
 
     const data = {
-     email:email,
-      password:password
-    }
+      email: email,
+      password: password,
+    };
     console.log(data);
 
     try {
       const response = await login(data).unwrap();
 
-      console.log('Login response:', response);
+      console.log("Login response:", response);
 
-      if(response.success === true){
-        localStorage.setItem('token', response.data.accessToken);
-        localStorage.setItem('userRole', response.data.activeRole);
-        console.log('Saved userRole:', response.data.activeRole);
-        console.log('Current localStorage userRole:', localStorage.getItem('userRole'));
-        toast.success(response.message)
+      if (response.success === true) {
+        localStorage.setItem("token", response.data.accessToken);
+        localStorage.setItem("userRole", response.data.activeRole);
+        console.log("Saved userRole:", response.data.activeRole);
+        console.log(
+          "Current localStorage userRole:",
+          localStorage.getItem("userRole"),
+        );
+        toast.success(response.message);
       }
-      navigate('/dashboard/home');
+      navigate("/dashboard/home");
     } catch (error) {
-      console.error('Login error:', error);
-      setErrors({ general: 'Invalid email or password' });
+      console.error("Login error:", error);
+      setErrors({ general: "Invalid email or password" });
     }
   };
 
@@ -67,15 +70,18 @@ const Login = () => {
         <div className="flex flex-col md:flex-row">
           {/* Left Side - Logo and Branding */}
           <div className="md:w-1/2  p-12 border-r border-[#20BFA9] flex flex-col justify-center items-center text-white">
-          <img className=' ' src="/public/image/logo.png" alt="Logo" />
-            
+            <img className=" " src="/public/image/logo.png" alt="Logo" />
           </div>
 
           {/* Right Side - Login Form */}
           <div className="md:w-1/2 p-8 md:p-12">
             <div className="max-w-md mx-auto">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Login to Account!</h1>
-              <p className="text-gray-600 mb-8">Please enter your email and password to continue.</p>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                Login to Account!
+              </h1>
+              <p className="text-gray-600 mb-8">
+                Please enter your email and password to continue.
+              </p>
 
               <div className="space-y-6">
                 {/* Email Field */}
@@ -92,11 +98,11 @@ const Login = () => {
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value);
-                        setErrors({ ...errors, email: '' });
+                        setErrors({ ...errors, email: "" });
                       }}
                       placeholder="smithshel@gamil.com"
                       className={`w-full pl-10 pr-4 py-3 border ${
-                        errors.email ? 'border-red-500' : 'border-gray-300'
+                        errors.email ? "border-red-500" : "border-gray-300"
                       } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition`}
                     />
                   </div>
@@ -115,15 +121,15 @@ const Login = () => {
                       <Lock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
-                        setErrors({ ...errors, password: '' });
+                        setErrors({ ...errors, password: "" });
                       }}
                       placeholder="••••••••"
                       className={`w-full pl-10 pr-12 py-3 border ${
-                        errors.password ? 'border-red-500' : 'border-gray-300'
+                        errors.password ? "border-red-500" : "border-gray-300"
                       } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition`}
                     />
                     <button
@@ -139,7 +145,9 @@ const Login = () => {
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
@@ -152,11 +160,13 @@ const Login = () => {
                       onChange={(e) => setRememberMe(e.target.checked)}
                       className="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Remember me</span>
+                    <span className="ml-2 text-sm text-gray-700">
+                      Remember me
+                    </span>
                   </label>
                   <button
                     type="button"
-                    onClick={() => navigate('/forgotpassword')}
+                    onClick={() => navigate("/forgotpassword")}
                     className="text-sm text-cyan-500 cursor-pointer hover:text-cyan-600 font-medium"
                   >
                     Forgot password?
@@ -172,8 +182,6 @@ const Login = () => {
                   Sign in
                 </button>
               </div>
-
-              
             </div>
           </div>
         </div>
