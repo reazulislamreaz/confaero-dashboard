@@ -23,6 +23,10 @@ import {
   useAssignReviewerMutation,
   useReAssignReviewerMutation,
   useSearchReviewerQuery,
+  useReviewImageMutation,
+  useApproveDocumentMutation,
+  useRejectDocumentMutation,
+  useReviseDocumentMutation,
 } from "../../redux/features/reviwer/reviewerSlice";
 
 import { useSelectedEvent } from "../../hooks/useSelectedEvent";
@@ -96,6 +100,14 @@ export default function ReviewerManagement() {
 
   const [assignReviewer] = useAssignReviewerMutation();
   const [reAssignReviewer] = useReAssignReviewerMutation();
+  const [reviewImage, { isLoading: isSubmittingReview }] = useReviewImageMutation();
+  const [approveDocument, { isLoading: isApproving }] = useApproveDocumentMutation();
+  const [rejectDocument, { isLoading: isRejecting }] = useRejectDocumentMutation();
+  const [reviseDocument, { isLoading: isRevising }] = useReviseDocumentMutation();
+
+  // Image review score state
+  const defaultScores = { originality: 1, scientificRigor: 1, clarity: 1, visualDesign: 1, impact: 1, presentation: 1, overall: true };
+  const [scores, setScores] = useState(defaultScores);
   // Search reviewer by email
   const { data: searchReviewerData, isFetching: isSearching } = useSearchReviewerQuery(
     { eventId, search: debouncedSearch },
@@ -133,6 +145,7 @@ export default function ReviewerManagement() {
     _id: reviewer?._id || reviewer?.id,
     name: reviewer?.name || "Unknown",
     email: reviewer?.email || "No Email",
+    avatar: reviewer?.profileImage || reviewer?.avatar || "/image/review.png",
     assigned: Number(reviewer?.assigned) || 0,
     completed: Number(reviewer?.completed) || 0,
     avgScore: reviewer?.avgScore ? Number(reviewer.avgScore).toFixed(1) : "0.0",
@@ -155,7 +168,6 @@ export default function ReviewerManagement() {
   console.log("unassigned raw:", rawFiles);
 
   const files = rawFiles.flatMap((item) => {
-    // If an item has an attachments array, spread them out individually
     const attachments = item?.attachments || item?.documentFiles || [];
     
     if (attachments.length > 0) {
@@ -163,33 +175,36 @@ export default function ReviewerManagement() {
         id: att._id || att.id || Math.random().toString(36).substring(7),
         title: item?.title || item?.name || "Untitled",
         fileName: att?.name || "Unknown File",
+        // authorName mapping: prioritze author?.name
         authorName: item?.author?.name || item?.authorDetails?.name || item?.user?.name || "N/A",
-        submitted: item?.submitted || item?.createdAt ? new Date(item.submitted || item.createdAt).toLocaleDateString() : "N/A",
-        dueDate: item?.dueDate || item?.assignedDate ? new Date(item.dueDate || item.assignedDate).toLocaleDateString() : "N/A",
-        type: att?.type || item?.type || (activeTab === "Documents" ? "pdf" : activeTab === "Posters" ? "image" : "unknown"),
-        status: att?.reviewStatus || item?.status || (activeTab === "Unassigned Files" ? "Pending" : "Assigned"),
-        reviewerEmail: att?.reviewerEmail || item?.reviewerEmail || item?.reviewer?.email || null,
-        reviewerName: att?.reviewerName || item?.reviewerName || item?.reviewer?.name || null,
+        authEmail : item?.author.email ,
+        // Mapping rules: submitted -> createdAt / submitted
+        submitted: att?.submittedAt || item?.submittedAt || item?.submitted || item?.createdAt,
+        dueDate: item?.dueDate || item?.assignedDate,
+        type: att?.type || item?.type || (activeTab === "Documents" ? "pdf" : "image"),
+        // status -> reviewStatus / status
+        status: att?.reviewStatus || item?.file?.reviewStatus || item?.status || "Pending",
+        // score -> reviewerScore / score (fallback 0)
+        score: att?.reviewScore || att?.score || item?.file?.score || item?.reviewerScore || 0,
+        
         posterId: item?.posterId || item?._id || item?.id || null,
         attachmentId: att?._id || att?.id || null,
         url: att?.url || null,
         originalData: { ...item, _attachmentData: att }
       }));
     } else {
-        // Fallback for flat structures (like reported files or non-nested systems)
-        // If they already come pre-flattened from API somehow
-        // 1. Correct Data Mapping - Fix for missing fields
         return [{
             id: item?._id || item?.id || Math.random().toString(36).substring(7),
             title: item?.title || item?.name || "Untitled",
-            fileName: item?.fileName || item?.file?.name || "Unknown File", // Handle nested file struct
-            authorName: item?.author?.name || item?.author?.author?.name || item?.authorDetails?.name || item?.user?.name || "N/A", // Account for varying author depths 
-            submitted: item?.submitted || item?.createdAt ? new Date(item.submitted || item.createdAt).toLocaleDateString() : "N/A",
-            dueDate: item?.dueDate || item?.assignedDate ? new Date(item.dueDate || item.assignedDate).toLocaleDateString() : "N/A",
-            type: item?.type || item?.fileType || item?.file?.type || (activeTab === "Documents" ? "pdf" : "image"), // Read type correctly from reported
-            status: item?.status || item?.reviewType || "Pending",
-            reviewerEmail: null,
-            reviewerName: null,
+            fileName: item?.fileName || item?.file?.name || "Unknown File",
+            authorName: item?.author?.name || item?.author?.author?.name || item?.authorDetails?.name || item?.user?.name || "N/A",
+            authEmail : item?.author.email ,  
+            submitted: item?.submittedAt || item?.submitted || item?.createdAt,
+            dueDate: item?.dueDate || item?.assignedDate,
+            type: item?.type || item?.fileType || item?.file?.type || (activeTab === "Documents" ? "pdf" : "image"),
+            status: item?.status || item?.reviewType || item?.reviewStatus || "Pending",
+            score: item?.score || item?.reviewerScore || item?.file?.score || 0,
+            
             posterId: item?.posterId || item?._id || item?.id || null,
             attachmentId: item?.attachmentId || item?.fileId || item?.documentId || item?._id || null,
             url: item?.url || item?.file?.url || null,
@@ -205,7 +220,10 @@ export default function ReviewerManagement() {
   // Pagination Logic
   const totalPages = Math.max(1, Math.ceil(files.length / itemsPerPage));
   const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
-  const paginatedFiles = files.slice((validCurrentPage - 1) * itemsPerPage, validCurrentPage * itemsPerPage);
+  
+  const start = (validCurrentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const paginatedFiles = files.slice(start, end);
 
   // Toggle file selection
   const toggleFileSelection = (fileSelected) => {
@@ -327,7 +345,37 @@ export default function ReviewerManagement() {
 
   const handleViewFile = (file) => {
     setSelectedFile(file);
+    setScores(defaultScores);
     setShowFileDetailsModal(true);
+  };
+
+  // Handle PDF document action (approve/reject/revise)
+  const handleDocumentAction = async (action) => {
+    const attachmentId = selectedFile?.attachmentId;
+    if (!attachmentId) { toast.error("Attachment ID missing"); return; }
+    try {
+      let result;
+      if (action === "approve") result = await approveDocument(attachmentId).unwrap();
+      else if (action === "reject") result = await rejectDocument(attachmentId).unwrap();
+      else if (action === "revise") result = await reviseDocument(attachmentId).unwrap();
+      toast.success(result?.message || `Document ${action}d successfully!`);
+      setShowFileDetailsModal(false);
+    } catch (err) {
+      toast.error(err?.data?.message || `Failed to ${action} document`);
+    }
+  };
+
+  // Handle image (poster) review score submit
+  const handleImageReview = async () => {
+    const attachmentId = selectedFile?.attachmentId;
+    if (!attachmentId) { toast.error("Attachment ID missing"); return; }
+    try {
+      const result = await reviewImage({ attachmentId, body: scores }).unwrap();
+      toast.success(result?.message || "Poster reviewed successfully!");
+      setShowFileDetailsModal(false);
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to submit review");
+    }
   };
 
   const handleAssign = (file) => {
@@ -375,13 +423,20 @@ export default function ReviewerManagement() {
                 className="bg-white rounded-lg shadow-sm p-4 min-w-60 flex-shrink-0"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-16 h-16 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600 font-semibold">
-                    <img src="/image/review.png" alt="" />
+                  <div className="w-16 h-16 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600 font-semibold overflow-hidden">
+                    <img 
+                      src={reviewer.avatar } 
+                      alt={reviewer.name}
+                      onError={(e) => (e.currentTarget.src = "/image/review.png")}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
-                  <button className="text-gray-400 cursor-pointer hover:text-gray-600">
+                  {/* Unuse edit btn */}
+
+                  {/* <button className="text-gray-400 cursor-pointer hover:text-gray-600">
                     <Edit />
-                  </button>
+                  </button> */}
                 </div>
 
                 <h3 className="font-semibold text-gray-800 mb-1 truncate" title={reviewer.name}>
@@ -458,19 +513,31 @@ export default function ReviewerManagement() {
                   <th className="w-16 px-4 py-3 text-sm font-semibold text-gray-700 text-center">
                     {/* Select All Checkbox Placeholder */}
                   </th>
-                  <th className="w-[10%] px-2 py-3 text-sm font-semibold text-gray-700">
+                  <th className="w-[8%] px-2 py-3 text-sm font-semibold text-gray-700">
                     Type
                   </th>
-                  <th className="w-[35%] px-4 py-3 text-sm font-semibold text-gray-700">
+                  <th className="w-[32%] px-4 py-3 text-sm font-semibold text-gray-700">
                     Title
                   </th>
-                  <th className="w-[20%] px-4 py-3 text-sm font-semibold text-gray-700">
+                  <th className="w-[18%] px-4 py-3 text-sm font-semibold text-gray-700">
                     Author
                   </th>
-                  <th className="w-[10%] px-2 py-3 text-sm font-semibold text-gray-700">
-                    Submitted
-                  </th>
-                  <th className="w-[10%] px-2 py-3 text-sm font-semibold text-gray-700">
+                  {activeTab === "Unassigned Files" && (
+                    <th className="w-[12%] px-2 py-3 text-sm font-semibold text-gray-700">
+                      Submitted
+                    </th>
+                  )}
+                  {activeTab === "Posters" && (
+                    <th className="w-[12%] px-2 py-3 text-sm font-semibold text-gray-700 text-center">
+                      Score
+                    </th>
+                  )}
+                  {(activeTab === "Documents" || activeTab === "Reported Files") && (
+                    <th className="w-[12%] px-2 py-3 text-sm font-semibold text-gray-700 text-center">
+                      Status
+                    </th>
+                  )}
+                  <th className="w-[12%] px-2 py-3 text-sm font-semibold text-gray-700">
                     Due
                   </th>
                   <th className="w-[15%] px-4 py-3 text-sm font-semibold text-gray-700 text-right">
@@ -523,15 +590,39 @@ export default function ReviewerManagement() {
                       </td>
 
                       <td className="px-4 py-4 text-sm text-gray-600 truncate" title={file.authorName}>
-                        {file.authorName}
+                        {file.authEmail || file.authorName}
                       </td>
 
-                      <td className="px-2 py-4 text-sm text-gray-500 whitespace-nowrap">
-                        {file.submitted}
-                      </td>
+                      {activeTab === "Unassigned Files" && (
+                        <td className="px-2 py-4 text-sm text-gray-500 whitespace-nowrap">
+                          {file.submitted ? new Date(file.submitted).toLocaleDateString() : "N/A"}
+                        </td>
+                      )}
+
+                      {activeTab === "Posters" && (
+                        <td className="px-2 py-4 text-sm font-semibold text-gray-700 text-center">
+                          <span className="text-teal-600">
+                            {typeof file.score === 'object' ? Object.values(file.score)[0] || 0 : file.score || 0}
+                          </span>
+                        </td>
+                      )}
+
+                      {(activeTab === "Documents" || activeTab === "Reported Files") && (
+                        <td className="px-2 py-4 text-center">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            file.status?.toLowerCase() === 'completed' || file.status?.toLowerCase() === 'reviewed'
+                              ? 'bg-green-100 text-green-700'
+                              : file.status?.toLowerCase() === 'rejected' || file.status?.toLowerCase() === 'revised'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {file.status || "Pending"}
+                          </span>
+                        </td>
+                      )}
 
                       <td className="px-2 py-4 text-sm text-gray-500 whitespace-nowrap">
-                        {file.dueDate}
+                        {file.dueDate ? new Date(file.dueDate).toLocaleDateString() : "N/A"}
                       </td>
 
                       <td className="px-4 py-4 text-right">
@@ -885,14 +976,95 @@ export default function ReviewerManagement() {
 
               </div>
 
-              {/* Modal Footer */}
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50/50 flex justify-end shrink-0">
-                  <button 
-                    onClick={() => setShowFileDetailsModal(false)}
-                    className="px-6 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-medium rounded-lg transition-colors shadow-sm"
-                  >
-                      Close Default View
-                  </button>
+              {/* Modal Footer — Conditional Review Actions */}
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50/50 flex flex-col gap-3 shrink-0">
+
+                {/* IMAGE / POSTER: Score Form */}
+                {(selectedFile.type?.toLowerCase() === "image" ||
+                  selectedFile.type?.toLowerCase() === "jpg" ||
+                  selectedFile.type?.toLowerCase() === "png") && (
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-800 mb-3">Submit Review Scores</h4>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      {["originality", "scientificRigor", "clarity", "visualDesign", "impact", "presentation"].map((field) => (
+                        <div key={field}>
+                          <label className="block text-xs font-medium text-gray-600 mb-1 capitalize">
+                            {field.replace(/([A-Z])/g, " $1")}
+                          </label>
+                          <input
+                            type="number"
+                            min={1} max={10}
+                            value={scores[field]}
+                            onChange={(e) => setScores((s) => ({ ...s, [field]: Number(e.target.value) }))}
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <input
+                        id="overall-check"
+                        type="checkbox"
+                        checked={scores.overall}
+                        onChange={(e) => setScores((s) => ({ ...s, overall: e.target.checked }))}
+                        className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                      />
+                      <label htmlFor="overall-check" className="text-sm text-gray-700 font-medium">Overall Approved</label>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <button
+                        onClick={() => setShowFileDetailsModal(false)}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                      >Close</button>
+                      <button
+                        onClick={handleImageReview}
+                        disabled={isSubmittingReview}
+                        className="px-6 py-2 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 shadow-sm"
+                      >{isSubmittingReview ? "Submitting…" : "Submit Review"}</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* PDF / DOCUMENT: Approve / Reject / Revise */}
+                {selectedFile.type?.toLowerCase() === "pdf" && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Document Decision</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowFileDetailsModal(false)}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                      >Cancel</button>
+                      <button
+                        onClick={() => handleDocumentAction("revise")}
+                        disabled={isRevising}
+                        className="px-4 py-2 text-sm font-medium border border-amber-400 text-amber-700 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
+                      >{isRevising ? "…" : "Revise"}</button>
+                      <button
+                        onClick={() => handleDocumentAction("reject")}
+                        disabled={isRejecting}
+                        className="px-4 py-2 text-sm font-medium border border-red-400 text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      >{isRejecting ? "…" : "Reject"}</button>
+                      <button
+                        onClick={() => handleDocumentAction("approve")}
+                        disabled={isApproving}
+                        className="px-4 py-2 text-sm font-medium bg-teal-600 text-white hover:bg-teal-700 rounded-lg transition-colors disabled:opacity-50 shadow-sm"
+                      >{isApproving ? "…" : "Approve"}</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Fallback close button for other types */}
+                {selectedFile.type?.toLowerCase() !== "pdf" &&
+                  selectedFile.type?.toLowerCase() !== "image" &&
+                  selectedFile.type?.toLowerCase() !== "jpg" &&
+                  selectedFile.type?.toLowerCase() !== "png" && (
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setShowFileDetailsModal(false)}
+                      className="px-6 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-medium rounded-lg transition-colors shadow-sm"
+                    >Close</button>
+                  </div>
+                )}
               </div>
            </div>
         </div>

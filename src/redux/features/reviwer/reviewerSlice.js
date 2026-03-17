@@ -72,6 +72,43 @@ export const reviewerSlice = apiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
+
+    // review poster/image (scoring)
+    reviewImage: builder.mutation({
+      query: ({ attachmentId, body }) => ({
+        url: `/reviewer/attachments/${attachmentId}/image-review`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Files"],
+    }),
+
+    // approve document (PDF)
+    approveDocument: builder.mutation({
+      query: (attachmentId) => ({
+        url: `/reviewer/attachments/${attachmentId}/approve`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Files"],
+    }),
+
+    // reject document (PDF)
+    rejectDocument: builder.mutation({
+      query: (attachmentId) => ({
+        url: `/reviewer/attachments/${attachmentId}/reject`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Files"],
+    }),
+
+    // revise document (PDF)
+    reviseDocument: builder.mutation({
+      query: (attachmentId) => ({
+        url: `/reviewer/attachments/${attachmentId}/revise`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Files"],
+    }),
   }),
 });
 
@@ -86,4 +123,8 @@ export const {
   useAssignReviewerMutation,
   useReAssignReviewerMutation,
   useSendReminderMutation,
+  useReviewImageMutation,
+  useApproveDocumentMutation,
+  useRejectDocumentMutation,
+  useReviseDocumentMutation,
 } = reviewerSlice;
