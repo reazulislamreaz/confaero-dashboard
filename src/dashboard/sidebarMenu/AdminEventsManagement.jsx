@@ -1,47 +1,61 @@
-import React, { useState } from 'react';
-import { Search, Calendar, MapPin, ExternalLink, Plus, Edit2, Trash2, X } from 'lucide-react';
-import { TiPinOutline } from 'react-icons/ti';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setSelectedEvent, useAdminCreateEventMutation, useGetAdminEventQuery } from '../../redux/features/eventSlice/eventSlice';
-import toast from 'react-hot-toast';
+import React, { useState } from "react";
+import {
+  Search,
+  Calendar,
+  MapPin,
+  ExternalLink,
+  Plus,
+  Edit2,
+  Trash2,
+  X,
+} from "lucide-react";
+import { TiPinOutline } from "react-icons/ti";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import {
+  setSelectedEvent,
+  useAdminCreateEventMutation,
+  useGetAdminEventQuery,
+} from "../../redux/features/eventSlice/eventSlice";
+import toast from "react-hot-toast";
 
 export default function AdminEventManagement({ onEventSelect }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('Recently');
-  const [eventDate, setEventDate] = useState('Recently');
-  const [condition, setCondition] = useState('Upcoming');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("Recently");
+  const [eventDate, setEventDate] = useState("Recently");
+  const [condition, setCondition] = useState("Upcoming");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [organizerEmailInput, setOrganizerEmailInput] = useState('');
+  const [organizerEmailInput, setOrganizerEmailInput] = useState("");
   const [organizerEmails, setOrganizerEmails] = useState([]);
 
   const { data: adminEvents, isLoading, isError } = useGetAdminEventQuery();
-  const [createEvent, { isLoading: isCreating, error: createError }] = useAdminCreateEventMutation();
+  const [createEvent, { isLoading: isCreating, error: createError }] =
+    useAdminCreateEventMutation();
 
   const events = adminEvents?.data || [];
 
   const [formData, setFormData] = useState({
-    title: '',
-    website: '',
-    location: '',
-    googleMapLink: '',
-    startDate: '',
-    endDate: '',
-    expectedAttendee: '',
-    boothSlot: '',
-    details: ''
+    title: "",
+    website: "",
+    location: "",
+    googleMapLink: "",
+    startDate: "",
+    endDate: "",
+    expectedAttendee: "",
+    boothSlot: "",
+    details: "",
   });
 
   const [selectedEvent, setSelectedEventLocal] = useState(null);
-  const [formError, setFormError] = useState('');
+  const [formError, setFormError] = useState("");
 
   const formatDate = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const options = { month: 'short', day: 'numeric' };
-    return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', { ...options, year: 'numeric' })}`;
+    const options = { month: "short", day: "numeric" };
+    return `${start.toLocaleDateString("en-US", options)} - ${end.toLocaleDateString("en-US", { ...options, year: "numeric" })}`;
   };
 
   const handleEventClick = (event) => {
@@ -52,10 +66,10 @@ export default function AdminEventManagement({ onEventSelect }) {
 
   const addOrganizerEmail = () => {
     const trimmed = organizerEmailInput.trim();
-    if (!trimmed || !trimmed.includes('@')) return;
+    if (!trimmed || !trimmed.includes("@")) return;
     if (organizerEmails.includes(trimmed)) return;
     setOrganizerEmails([...organizerEmails, trimmed]);
-    setOrganizerEmailInput('');
+    setOrganizerEmailInput("");
   };
 
   const removeOrganizerEmail = (index) => {
@@ -69,29 +83,29 @@ export default function AdminEventManagement({ onEventSelect }) {
 
   const resetForm = () => {
     setFormData({
-      title: '',
-      website: '',
-      location: '',
-      googleMapLink: '',
-      startDate: '',
-      endDate: '',
-      expectedAttendee: '',
-      boothSlot: '',
-      details: ''
+      title: "",
+      website: "",
+      location: "",
+      googleMapLink: "",
+      startDate: "",
+      endDate: "",
+      expectedAttendee: "",
+      boothSlot: "",
+      details: "",
     });
     setOrganizerEmails([]);
-    setOrganizerEmailInput('');
-    setFormError('');
+    setOrganizerEmailInput("");
+    setFormError("");
   };
 
   const handleCreateEvent = async () => {
-    setFormError('');
+    setFormError("");
 
     // Basic validation
-    if (!formData.title.trim()) return setFormError('Event title is required.');
-    if (!formData.startDate) return setFormError('Start date is required.');
-    if (!formData.endDate) return setFormError('End date is required.');
-    if (!formData.location.trim()) return setFormError('Location is required.');
+    if (!formData.title.trim()) return setFormError("Event title is required.");
+    if (!formData.startDate) return setFormError("Start date is required.");
+    if (!formData.endDate) return setFormError("End date is required.");
+    if (!formData.location.trim()) return setFormError("Location is required.");
 
     const payload = {
       title: formData.title,
@@ -101,9 +115,11 @@ export default function AdminEventManagement({ onEventSelect }) {
       googleMapLink: formData.googleMapLink,
       startDate: formData.startDate,
       endDate: formData.endDate,
-      expectedAttendee: formData.expectedAttendee ? Number(formData.expectedAttendee) : undefined,
+      expectedAttendee: formData.expectedAttendee
+        ? Number(formData.expectedAttendee)
+        : undefined,
       boothSlot: formData.boothSlot ? Number(formData.boothSlot) : undefined,
-      details: formData.details
+      details: formData.details,
     };
 
     console.log(payload);
@@ -112,25 +128,31 @@ export default function AdminEventManagement({ onEventSelect }) {
       const res = await createEvent(payload).unwrap();
       console.log(res);
       if (res.success === true) {
-        toast.success('Event created successfully!');
+        toast.success("Event created successfully!");
 
-      setShowCreateModal(false);
-      resetForm();
-      } 
+        setShowCreateModal(false);
+        resetForm();
+      }
     } catch (err) {
-      setFormError(err?.data?.message || 'Failed to create event. Please try again.');
+      setFormError(
+        err?.data?.message || "Failed to create event. Please try again.",
+      );
       console.log(err);
     }
   };
-
+  console.log("this is my", events);
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="">
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Event Management</h1>
-            <p className="text-sm text-gray-600">Create event, assign to Organizer and Manage Event</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              Event Management
+            </h1>
+            <p className="text-sm text-gray-600">
+              Create event, assign to Organizer and Manage Event
+            </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -145,7 +167,9 @@ export default function AdminEventManagement({ onEventSelect }) {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="grid grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By:</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Sort By:
+              </label>
               <div className="relative">
                 <input
                   type="text"
@@ -158,24 +182,42 @@ export default function AdminEventManagement({ onEventSelect }) {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Created</label>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Created
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white"
+              >
                 <option>Recently</option>
                 <option>Oldest</option>
                 <option>Most Popular</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Event date</label>
-              <select value={eventDate} onChange={(e) => setEventDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Event date
+              </label>
+              <select
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white"
+              >
                 <option>Recently</option>
                 <option>This Month</option>
                 <option>Next Month</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Condition</label>
-              <select value={condition} onChange={(e) => setCondition(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Condition
+              </label>
+              <select
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white"
+              >
                 <option>Upcoming</option>
                 <option>Ongoing</option>
                 <option>Completed</option>
@@ -185,29 +227,39 @@ export default function AdminEventManagement({ onEventSelect }) {
         </div>
 
         {/* Loading / Error States */}
-        {isLoading && <div className="text-center py-12 text-gray-500">Loading events...</div>}
-        {isError && <div className="text-center py-12 text-red-500">Failed to load events. Please try again.</div>}
+        {isLoading && (
+          <div className="text-center py-12 text-gray-500">
+            Loading events...
+          </div>
+        )}
+        {isError && (
+          <div className="text-center py-12 text-red-500">
+            Failed to load events. Please try again.
+          </div>
+        )}
 
         {/* Event Cards */}
         {!isLoading && !isError && (
           <div className="space-y-4">
             {events.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">No events found.</div>
+              <div className="text-center py-12 text-gray-500">
+                No events found.
+              </div>
             ) : (
               events.map((event) => (
                 <div
                   key={event._id}
                   className={`bg-white rounded-lg ${
                     selectedEvent && selectedEvent._id === event._id
-                      ? 'border-teal-500 ring-2 ring-teal-300'
-                      : 'border-[#32A69A]'
+                      ? "border-teal-500 ring-2 ring-teal-300"
+                      : "border-[#32A69A]"
                   } h-48 shadow-sm overflow-hidden cursor-pointer`}
                   onClick={() => handleEventClick(event)}
                 >
                   <div className="flex items-start gap-4 p-5">
                     <div className="flex-shrink-0">
                       <img
-                        src={event.image || '/public/image/event.png'}
+                        src={event.bannerImageUrl || "/public/image/event.png"}
                         alt={event.title}
                         className="w-48 h-40 object-cover rounded-lg"
                       />
@@ -216,13 +268,19 @@ export default function AdminEventManagement({ onEventSelect }) {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-base font-semibold text-gray-900">{event.title}</h3>
-                            <span className="text-sm text-gray-500">ID: {event._id}</span>
+                            <h3 className="text-base font-semibold text-gray-900">
+                              {event.title}
+                            </h3>
+                            <span className="text-sm text-gray-500">
+                              ID: {event._id}
+                            </span>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-600">
                             <div className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
-                              <span>{formatDate(event.startDate, event.endDate)}</span>
+                              <span>
+                                {formatDate(event.startDate, event.endDate)}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <MapPin className="w-4 h-4" />
@@ -230,7 +288,13 @@ export default function AdminEventManagement({ onEventSelect }) {
                             </div>
                             <div className="flex items-center gap-1">
                               <ExternalLink className="w-4 h-4" />
-                              <a href={event.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline" onClick={(e) => e.stopPropagation()}>
+                              <a
+                                href={event.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {event.website}
                               </a>
                             </div>
@@ -240,21 +304,29 @@ export default function AdminEventManagement({ onEventSelect }) {
                       <div className="flex items-center gap-8 text-sm mt-20">
                         <div>
                           <span className="text-gray-500">Expected</span>
-                          <span className="ml-2 font-semibold text-gray-900">{event.expectedAttendee?.toLocaleString() || 'N/A'}</span>
+                          <span className="ml-2 font-semibold text-gray-900">
+                            {event.expectedAttendee?.toLocaleString() || "N/A"}
+                          </span>
                         </div>
                         <div>
                           <span className="text-gray-500">Booth Slots</span>
-                          <span className="ml-2 font-semibold text-gray-900">{event.boothSlot ?? 'N/A'}</span>
+                          <span className="ml-2 font-semibold text-gray-900">
+                            {event.boothSlot ?? "N/A"}
+                          </span>
                         </div>
                         <div>
                           <span className="text-gray-500">Organizers</span>
-                          <span className="ml-2 font-semibold text-gray-900">{event.organizers ?? 'N/A'}</span>
+                          <span className="ml-2 font-semibold text-gray-900">
+                            {event.organizers ?? "N/A"}
+                          </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 ml-4">
                       <button className="hover:text-red-500 flex justify-end transition-colors">
-                        <TiPinOutline className={`w-6 h-6 cursor-pointer ${selectedEvent && selectedEvent._id === event._id ? 'text-teal-500' : 'text-gray-400'}`} />
+                        <TiPinOutline
+                          className={`w-6 h-6 cursor-pointer ${selectedEvent && selectedEvent._id === event._id ? "text-teal-500" : "text-gray-400"}`}
+                        />
                       </button>
                       <button
                         onClick={(e) => goOverview(e, event._id)}
@@ -263,10 +335,16 @@ export default function AdminEventManagement({ onEventSelect }) {
                         View Overview
                       </button>
                       <div className="flex gap-2 mt-6">
-                        <button onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors text-sm">
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-1 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors text-sm"
+                        >
                           <Edit2 className="w-3.5 h-3.5" /> Edit
                         </button>
-                        <button onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm">
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm"
+                        >
                           <Trash2 className="w-3.5 h-3.5" /> Delete
                         </button>
                       </div>
@@ -283,14 +361,21 @@ export default function AdminEventManagement({ onEventSelect }) {
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-800">Create Event</h2>
-                <button onClick={() => { setShowCreateModal(false); resetForm(); }} className="text-gray-400 hover:text-gray-600">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Create Event
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    resetForm();
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="p-6 space-y-4">
-
                 {/* Error Message */}
                 {formError && (
                   <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-2 rounded-lg">
@@ -299,38 +384,54 @@ export default function AdminEventManagement({ onEventSelect }) {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Title <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Event Title <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     placeholder="Enter event title"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Website</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Event Website
+                  </label>
                   <input
                     type="url"
                     placeholder="https://www.example.org/"
                     value={formData.website}
-                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, website: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
 
                 {/* Organizer Emails */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Organizer Emails</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Organizer Emails
+                  </label>
                   <div className="space-y-2">
                     {/* Added email tags */}
                     {organizerEmails.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {organizerEmails.map((email, index) => (
-                          <span key={index} className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 px-3 py-1 rounded-full text-sm">
+                          <span
+                            key={index}
+                            className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 px-3 py-1 rounded-full text-sm"
+                          >
                             {email}
-                            <button onClick={() => removeOrganizerEmail(index)} className="text-teal-400 hover:text-teal-700 ml-1">
+                            <button
+                              onClick={() => removeOrganizerEmail(index)}
+                              className="text-teal-400 hover:text-teal-700 ml-1"
+                            >
                               <X className="w-3 h-3" />
                             </button>
                           </span>
@@ -344,7 +445,12 @@ export default function AdminEventManagement({ onEventSelect }) {
                         placeholder="Enter organizer email"
                         value={organizerEmailInput}
                         onChange={(e) => setOrganizerEmailInput(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addOrganizerEmail(); } }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addOrganizerEmail();
+                          }
+                        }}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                       <button
@@ -360,22 +466,33 @@ export default function AdminEventManagement({ onEventSelect }) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Location/Venue <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Location/Venue <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       placeholder="Las Vegas, USA"
                       value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Google Map Link</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Google Map Link
+                    </label>
                     <input
                       type="url"
                       placeholder="https://maps.google.com/..."
                       value={formData.googleMapLink}
-                      onChange={(e) => setFormData({ ...formData, googleMapLink: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          googleMapLink: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
@@ -383,20 +500,28 @@ export default function AdminEventManagement({ onEventSelect }) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Start Date <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="date"
                       value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, startDate: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      End Date <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="date"
                       value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, endDate: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
@@ -404,34 +529,49 @@ export default function AdminEventManagement({ onEventSelect }) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Expected Attendee</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Expected Attendee
+                    </label>
                     <input
                       type="number"
                       placeholder="10000"
                       value={formData.expectedAttendee}
-                      onChange={(e) => setFormData({ ...formData, expectedAttendee: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          expectedAttendee: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Booth Slot</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Booth Slot
+                    </label>
                     <input
                       type="number"
                       placeholder="50"
                       value={formData.boothSlot}
-                      onChange={(e) => setFormData({ ...formData, boothSlot: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, boothSlot: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Details</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Details
+                  </label>
                   <textarea
                     placeholder="Enter event details"
                     rows="4"
                     value={formData.details}
-                    onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, details: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                   />
                 </div>
@@ -443,17 +583,32 @@ export default function AdminEventManagement({ onEventSelect }) {
                 >
                   {isCreating ? (
                     <>
-                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
                       </svg>
                       Creating...
                     </>
                   ) : (
-                    'Create Event'
+                    "Create Event"
                   )}
                 </button>
-
               </div>
             </div>
           </div>

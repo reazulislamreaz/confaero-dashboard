@@ -59,7 +59,12 @@ const Login = () => {
       navigate("/dashboard/home");
     } catch (error) {
       console.error("Login error:", error);
-      setErrors({ general: "Invalid email or password" });
+
+      const message = error?.data?.message || "Invalid email or password";
+
+      setErrors({ general: message });
+
+      toast.error(message);
     }
   };
 

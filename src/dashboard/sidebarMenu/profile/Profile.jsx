@@ -46,7 +46,7 @@ const Profile = () => {
                       src={
                         user?.avatar
                           ? user.avatar
-                          : "https://randomuser.me/api/portraits/men/57.jpg"
+                          : "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff%22"
                       }
                       alt="Profile"
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
@@ -59,7 +59,6 @@ const Profile = () => {
 
                 {/* User Info */}
                 <div className="flex flex-col justify-center items-center text-center space-y-3">
-
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-800">
                     {user?.name || "Admin"}
                   </h2>

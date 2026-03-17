@@ -30,7 +30,7 @@ const UpdateOrganizerGuideline = () => {
       isActive: true,
     });
 
-    navigate("/dashboard/settings/about");
+    navigate("/dashboard/settings/organizer-guideline");
   };
 
   return (

@@ -14,7 +14,7 @@ export default function UploadPage() {
       formData.append("file", file);
 
       const response = await fetch(
-        `https://reaz8080.syedbipul.me/api/v1/upload/chat-attachment`,
+        `http://206.162.244.11:8078/api/v1/upload/chat-attachment`,
         {
           method: "POST",
           body: formData,

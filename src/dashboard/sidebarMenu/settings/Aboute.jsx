@@ -3,6 +3,7 @@ import { FaCircleArrowLeft } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import { useGetAppContentQuery } from "../../../redux/features/setting/settingSlice";
+import { useIsAdmin } from "../../../hooks/useUserRole";
 
 const About = () => {
   const navigate = useNavigate();
@@ -16,6 +17,9 @@ const About = () => {
     }
   }, [data]);
 
+  //Check userRole
+  const isAdmin = useIsAdmin();
+  console.log(isAdmin);
   return (
     <div className=" mt-8 mx-6">
       <Link to="/dashboard/settings" className="flex items-center gap-2">
@@ -28,12 +32,14 @@ const About = () => {
       </div>
 
       <div className=" text-right mt-16">
-        <Button
-          onClick={() => navigate(`/dashboard/settings/editabout`)}
-          className="!h-[44px] w-[260px] !bg-[#0FC3C2] !text-white rounded-[8px]"
-        >
-          Edit
-        </Button>
+        {isAdmin && (
+          <Button
+            onClick={() => navigate(`/dashboard/settings/editabout`)}
+            className="!h-[44px] w-[260px] !bg-[#0FC3C2] !text-white rounded-[8px]"
+          >
+            Edit
+          </Button>
+        )}
       </div>
     </div>
   );

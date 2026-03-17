@@ -22,3 +22,4 @@ const appContentSlice = apiSlice.injectEndpoints({
 
 export const { useGetAppContentQuery, useSaveAppContentMutation } =
   appContentSlice;
+

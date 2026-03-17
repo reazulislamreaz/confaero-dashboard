@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaCircleArrowLeft } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import { useGetAppContentQuery } from "../../../redux/features/setting/settingSlice";
+import { useIsAdmin } from "../../../hooks/useUserRole";
 
 const TermCondition = () => {
   const [content, setContent] = useState("");
@@ -15,7 +16,8 @@ const TermCondition = () => {
       setContent(data.data.content);
     }
   }, [data]);
-
+  const isAdmin = useIsAdmin();
+  console.log(isAdmin);
   return (
     <div className=" mt-8 mx-6">
       <Link to="/dashboard/settings" className="flex items-center gap-2">
@@ -28,12 +30,14 @@ const TermCondition = () => {
       </div>
 
       <div className=" text-right mt-16">
-        <button
-          onClick={() => navigate(`/dashboard/settings/edittermcondition`)}
-          className="!h-[44px] w-[260px] !bg-[#0FC3C2] !text-white rounded-[8px]"
-        >
-          Edit
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => navigate(`/dashboard/settings/edittermcondition`)}
+            className="!h-[44px] w-[260px] !bg-[#0FC3C2] !text-white rounded-[8px]"
+          >
+            Edit
+          </button>
+        )}
       </div>
     </div>
   );

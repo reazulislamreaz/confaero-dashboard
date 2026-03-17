@@ -4,7 +4,7 @@ export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
     // baseUrl: "http://206.162.244.11:8078/api/v1",
-    baseUrl: "http://10.10.11.30:8081/api/v1",
+    baseUrl: "http://10.10.11.30:8080/api/v1",
     prepareHeaders: (headers, { getState }) => {
       const token = localStorage.getItem("token");
       //   console.log("9 baseApi", token);
@@ -22,6 +22,8 @@ export const apiSlice = createApi({
     "Resources",
     "Jobs",
     "AppContent",
+    "Files",
+    "Reviewer",
   ],
 
   endpoints: () => ({}),
