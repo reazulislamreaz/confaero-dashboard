@@ -181,7 +181,7 @@ export default function QAPolls() {
     <div className="bg-gray-50 min-h-screen">
       <div className="">
         {/* Header */}
-        <div className='flex items-center justify-between mb-5'>
+        <div className='px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between mb-5'>
           <div className="">
             <h1 className="text-2xl font-semibold text-gray-800 mb-1">
               {activeTab === 'Survey' ? 'Survey Results - Event Feedback' : 'Q&A & Polls'}

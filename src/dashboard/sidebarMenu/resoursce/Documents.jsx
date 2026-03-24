@@ -637,8 +637,8 @@ export default function DocumentManagement() {
     <div className="min-h-screen bg-gray-50">
       <div className="">
 
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-1">Documents</h1>
+        <div className="px-4 sm:px-6 lg:px-8 py-4 mb-6">
+          <h1 className=" text-2xl font-semibold text-gray-800 mb-1">Documents</h1>
           <p className="text-gray-500 text-sm">Upload and manage event documents</p>
         </div>
 
