@@ -213,9 +213,9 @@ export default function ReviewerManagement() {
         id: att._id || att.id || Math.random().toString(36).substring(7),
         title: item?.title || item?.name || "-",
         fileName: att?.name || "-",
-        // authorName mapping: prioritze author?.name
-        authorName: item?.author?.name || item?.authorDetails?.name || item?.user?.name || "-",
-        authEmail : item?.author?.email || "-",
+        // authorName mapping: try all possible keys including fullName
+        authorName: item?.author?.name || item?.author?.fullName || item?.authorDetails?.name || item?.authorDetails?.fullName || item?.user?.name || item?.user?.fullName || item?.submittedBy?.name || item?.submittedBy?.fullName || "-",
+        authEmail: item?.author?.email || item?.authorDetails?.email || item?.user?.email || "-",
         // Mapping rules: submitted -> createdAt / submitted
         submitted: att?.submittedAt || item?.submittedAt || item?.submitted || item?.createdAt || null,
         dueDate: item?.dueDate || item?.assignedDate || null,
@@ -236,8 +236,8 @@ export default function ReviewerManagement() {
             id: item?._id || item?.id || Math.random().toString(36).substring(7),
             title: item?.title || item?.name || "-",
             fileName: item?.fileName || item?.file?.name || "-",
-            authorName: item?.author?.name || item?.author?.author?.name || item?.authorDetails?.name || item?.user?.name || "-",
-            authEmail : item?.author?.email || "-",  
+            authorName: item?.author?.name || item?.author?.fullName || item?.author?.author?.name || item?.authorDetails?.name || item?.authorDetails?.fullName || item?.user?.name || item?.user?.fullName || item?.submittedBy?.name || item?.createdBy?.name || "-",
+            authEmail: item?.author?.email || item?.authorDetails?.email || item?.user?.email || "-",  
             submitted: item?.submittedAt || item?.submitted || item?.createdAt || null,
             dueDate: item?.dueDate || item?.assignedDate || null,
             type: item?.type || item?.fileType || item?.file?.type || (activeTab === "Documents" ? "pdf" : "image"),
@@ -658,7 +658,7 @@ export default function ReviewerManagement() {
                       </td>
 
                       <td className="px-4 py-4 text-sm text-gray-600 truncate" title={file.authorName}>
-                        {file.authEmail || file.authorName}
+                        {file.authorName !== "-" ? file.authorName : (file.authEmail !== "-" ? file.authEmail : "-")}
                       </td>
 
                       {activeTab === "Unassigned Files" && (
