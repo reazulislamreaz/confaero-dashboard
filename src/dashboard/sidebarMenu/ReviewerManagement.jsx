@@ -32,13 +32,38 @@ import {
 
 import { useSelectedEvent } from "../../hooks/useSelectedEvent";
 import { useGetEventQuery } from "../../redux/features/eventSlice/eventSlice";
+import { useIsAdmin } from "../../hooks/useUserRole";
 import toast from "react-hot-toast";
 
 export default function ReviewerManagement() {
+  const isAdmin = useIsAdmin();
+  
+  const safeArray = (data) => Array.isArray(data) ? data : [];
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return date.toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+  };
+
   const [activeTab, setActiveTab] = useState("Unassigned Files");
   const [showAddReviewerModal, setShowAddReviewerModal] = useState(false);
   const [showFileDetailsModal, setShowFileDetailsModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  
+  const getStatusColorClass = (statusStr) => {
+    const s = (statusStr || "").toLowerCase();
+    if (s === "approved" || s === "completed" || s === "reviewed") return "bg-green-100 text-green-700";
+    if (s === "rejected") return "bg-red-100 text-red-700";
+    if (s.includes("revis")) return "bg-amber-100 text-amber-700";
+    if (s.includes("flag")) return "bg-purple-100 text-purple-700";
+    if (s === "assigned" || s === "pending" || s === "-") return "bg-gray-100 text-gray-700";
+    return "bg-blue-100 text-blue-700";
+  };
   
   // Action Modal State
   const [actionModalConfig, setActionModalConfig] = useState({ isOpen: false, action: null });
@@ -73,26 +98,33 @@ export default function ReviewerManagement() {
   });
 
   // Unassigned files
-  const { data: unassignedFiles } = useGetUnassignFilesQuery(eventId, {
+  const { data: unassignedFiles, refetch: refetchUnassigned } = useGetUnassignFilesQuery(eventId, {
     skip: !eventId,
   });
   console.log(unassignedFiles)
   // Assigned documents
-  const { data: assignedDocs } = useGetAssignedDocumentsQuery(
+  const { data: assignedDocs, refetch: refetchDocs } = useGetAssignedDocumentsQuery(
     { eventId, type: "pdf" },
     { skip: !eventId },
   );
 
   // Assigned posters
-  const { data: assignedPosters } = useGetAssignedPostersQuery(
+  const { data: assignedPosters, refetch: refetchPosters } = useGetAssignedPostersQuery(
     { eventId, type: "image" },
     { skip: !eventId },
   );
 
   // Reported files
-  const { data: reportedFiles } = useGetReportedFilesQuery(eventId, {
+  const { data: reportedFiles, refetch: refetchReported } = useGetReportedFilesQuery(eventId, {
     skip: !eventId,
   });
+
+  const refreshAllData = () => {
+    refetchUnassigned();
+    refetchDocs();
+    refetchPosters();
+    refetchReported();
+  };
 
   // Debounced search logic for Reviewer Search
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -147,7 +179,7 @@ export default function ReviewerManagement() {
   }
 
   // Normalize reviewer stats to avoid undefined issues
-  const reviewers = (reviewerStats?.data || []).map((reviewer) => ({
+  const reviewers = safeArray(reviewerStats?.data).map((reviewer) => ({
     _id: reviewer?._id || reviewer?.id,
     name: reviewer?.name || "Unknown",
     email: reviewer?.email || "No Email",
@@ -161,13 +193,13 @@ export default function ReviewerManagement() {
   // Resolve raw files based on active tab
   let rawFiles = [];
   if (activeTab === "Unassigned Files") {
-    rawFiles = unassignedFiles?.data || [];
+    rawFiles = safeArray(unassignedFiles?.data);
   } else if (activeTab === "Documents") {
-    rawFiles = assignedDocs?.data || [];
+    rawFiles = safeArray(assignedDocs?.data);
   } else if (activeTab === "Posters") {
-    rawFiles = assignedPosters?.data || [];
+    rawFiles = safeArray(assignedPosters?.data);
   } else if (activeTab === "Reported Files") {
-    rawFiles = reportedFiles?.data || [];
+    rawFiles = safeArray(reportedFiles?.data);
   }
 
   // Normalize all responses into one consistent format for table rendering
@@ -179,19 +211,20 @@ export default function ReviewerManagement() {
     if (attachments.length > 0) {
       return attachments.map(att => ({
         id: att._id || att.id || Math.random().toString(36).substring(7),
-        title: item?.title || item?.name || "Untitled",
-        fileName: att?.name || "Unknown File",
+        title: item?.title || item?.name || "-",
+        fileName: att?.name || "-",
         // authorName mapping: prioritze author?.name
-        authorName: item?.author?.name || item?.authorDetails?.name || item?.user?.name || "N/A",
-        authEmail : item?.author.email ,
+        authorName: item?.author?.name || item?.authorDetails?.name || item?.user?.name || "-",
+        authEmail : item?.author?.email || "-",
         // Mapping rules: submitted -> createdAt / submitted
-        submitted: att?.submittedAt || item?.submittedAt || item?.submitted || item?.createdAt,
-        dueDate: item?.dueDate || item?.assignedDate,
+        submitted: att?.submittedAt || item?.submittedAt || item?.submitted || item?.createdAt || null,
+        dueDate: item?.dueDate || item?.assignedDate || null,
         type: att?.type || item?.type || (activeTab === "Documents" ? "pdf" : "image"),
         // status -> reviewStatus / status
-        status: att?.reviewStatus || item?.file?.reviewStatus || item?.status || "Pending",
+        status: att?.reviewStatus || item?.file?.reviewStatus || item?.status || "-",
         // score -> reviewerScore / score (fallback 0)
-        score: att?.reviewScore || att?.score || item?.file?.score || item?.reviewerScore || 0,
+        score: att?.reviewScore || att?.score || item?.file?.score || item?.reviewerScore || null,
+        flagReason: att?.reason || att?.flagReason || att?.reportReason || att?.reviewerComment || item?.reason || item?.flagReason || item?.reportReason || item?.reviewerComment || item?.reviewerNote || "-",
         
         posterId: item?.posterId || item?._id || item?.id || null,
         attachmentId: att?._id || att?.id || null,
@@ -201,15 +234,16 @@ export default function ReviewerManagement() {
     } else {
         return [{
             id: item?._id || item?.id || Math.random().toString(36).substring(7),
-            title: item?.title || item?.name || "Untitled",
-            fileName: item?.fileName || item?.file?.name || "Unknown File",
-            authorName: item?.author?.name || item?.author?.author?.name || item?.authorDetails?.name || item?.user?.name || "N/A",
-            authEmail : item?.author.email ,  
-            submitted: item?.submittedAt || item?.submitted || item?.createdAt,
-            dueDate: item?.dueDate || item?.assignedDate,
+            title: item?.title || item?.name || "-",
+            fileName: item?.fileName || item?.file?.name || "-",
+            authorName: item?.author?.name || item?.author?.author?.name || item?.authorDetails?.name || item?.user?.name || "-",
+            authEmail : item?.author?.email || "-",  
+            submitted: item?.submittedAt || item?.submitted || item?.createdAt || null,
+            dueDate: item?.dueDate || item?.assignedDate || null,
             type: item?.type || item?.fileType || item?.file?.type || (activeTab === "Documents" ? "pdf" : "image"),
-            status: item?.status || item?.reviewType || item?.reviewStatus || "Pending",
-            score: item?.score || item?.reviewerScore || item?.file?.score || 0,
+            status: item?.status || item?.reviewType || item?.reviewStatus || "-",
+            score: item?.score || item?.reviewerScore || item?.file?.score || null,
+            flagReason: item?.reason || item?.flagReason || item?.reportReason || item?.reviewerComment || item?.reviewerNote || item?.file?.reason || item?.file?.flagReason || item?.file?.reportReason || "-",
             
             posterId: item?.posterId || item?._id || item?.id || null,
             attachmentId: item?.attachmentId || item?.fileId || item?.documentId || item?._id || null,
@@ -364,6 +398,7 @@ export default function ReviewerManagement() {
       try {
         const result = await approveDocument(attachmentId).unwrap();
         toast.success(result?.message || `Document approved successfully!`);
+        refreshAllData();
         setShowFileDetailsModal(false);
       } catch (err) {
         toast.error(err?.data?.message || `Failed to approve document`);
@@ -388,6 +423,7 @@ export default function ReviewerManagement() {
       else if (action === "flagAdmin") result = await flagAdminDocument({ attachmentId, reason: actionReason }).unwrap();
       
       toast.success(result?.message || `Document ${action === "flagAdmin" ? "flagged to admin" : action + "d"} successfully!`);
+      refreshAllData();
       setActionModalConfig({ isOpen: false, action: null });
       setActionReason("");
       setShowFileDetailsModal(false);
@@ -403,6 +439,7 @@ export default function ReviewerManagement() {
     try {
       const result = await reviewImage({ attachmentId, body: scores }).unwrap();
       toast.success(result?.message || "Poster reviewed successfully!");
+      refreshAllData();
       setShowFileDetailsModal(false);
     } catch (err) {
       toast.error(err?.data?.message || "Failed to submit review");
@@ -448,7 +485,7 @@ export default function ReviewerManagement() {
         {/* Reviewer Cards */}
         <div className="mb-6">
           <div className="grid md:grid-cols-4 gap-4">
-            {reviewers.map((reviewer, index) => (
+            {reviewers?.map((reviewer, index) => (
               <div
                 key={index}
                 className="bg-white rounded-lg shadow-sm p-4 min-w-60 flex-shrink-0"
@@ -633,21 +670,15 @@ export default function ReviewerManagement() {
                       {activeTab === "Posters" && (
                         <td className="px-2 py-4 text-sm font-semibold text-gray-700 text-center">
                           <span className="text-teal-600">
-                            {typeof file.score === 'object' ? Object.values(file.score)[0] || 0 : file.score || 0}
+                            {typeof file.score === 'object' && file.score !== null ? Object.values(file.score)[0] || 0 : file.score || 0}
                           </span>
                         </td>
                       )}
 
                       {(activeTab === "Documents" || activeTab === "Reported Files") && (
                         <td className="px-2 py-4 text-center">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            file.status?.toLowerCase() === 'completed' || file.status?.toLowerCase() === 'reviewed'
-                              ? 'bg-green-100 text-green-700'
-                              : file.status?.toLowerCase() === 'rejected' || file.status?.toLowerCase() === 'revised'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-amber-100 text-amber-700'
-                          }`}>
-                            {file.status || "Pending"}
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColorClass(file.status)}`}>
+                            {file.status || "-"}
                           </span>
                         </td>
                       )}
@@ -839,13 +870,13 @@ export default function ReviewerManagement() {
                             {/* Dropdown Menu */}
                             {isDropdownOpen && searchEmail.length >= 3 && (
                                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                    {!isSearching && (!searchReviewerData?.data || searchReviewerData.data.length === 0) ? (
+                                    {!isSearching && (safeArray(searchReviewerData?.data).length === 0) ? (
                                         <div className="p-4 text-center text-sm text-gray-500">
                                             No reviewer found matching "{searchEmail}"
                                         </div>
                                     ) : (
                                         <ul className="py-1">
-                                            {(searchReviewerData?.data || []).map((rev) => (
+                                            {safeArray(searchReviewerData?.data).map((rev) => (
                                                 <li 
                                                     key={rev.reviewerId || rev._id || rev.id}
                                                     onClick={() => selectSearchResult(rev)}
@@ -927,37 +958,43 @@ export default function ReviewerManagement() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6 mb-8 bg-gray-50 border border-gray-100 rounded-xl p-5">
                       <div className="col-span-1 md:col-span-2 lg:col-span-3">
                           <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider mb-1">Title</p>
-                          <p className="text-gray-800 font-medium leading-snug">{selectedFile.title || "N/A"}</p>
+                          <p className="text-gray-800 font-medium leading-snug">{selectedFile.title || "-"}</p>
                       </div>
                       <div>
                           <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider mb-1">File Name</p>
-                          <p className="text-gray-800 text-sm truncate" title={selectedFile.fileName}>{selectedFile.fileName || "N/A"}</p>
+                          <p className="text-gray-800 text-sm truncate" title={selectedFile.fileName}>{selectedFile.fileName || "-"}</p>
                       </div>
                       <div>
                           <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider mb-1">Author</p>
                           <p className="text-gray-800 text-sm flex items-center gap-2">
                              <User className="w-4 h-4 text-gray-400" />
-                             {selectedFile.authorName || "N/A"}
+                             {selectedFile.authorName || "-"}
                           </p>
                       </div>
                       <div>
                           <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider mb-1">Status</p>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                              selectedFile.status?.toLowerCase() === "pending" 
-                                ? "bg-amber-100 text-amber-800" 
-                                : "bg-teal-100 text-teal-800"
-                          }`}>
-                              {selectedFile.status || "N/A"}
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColorClass(selectedFile.status)}`}>
+                              {selectedFile.status || "-"}
                           </span>
                       </div>
                       <div>
                           <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider mb-1">Submitted Date</p>
-                          <p className="text-gray-800 text-sm">{selectedFile.submitted}</p>
+                          <p className="text-gray-800 text-sm">{formatDate(selectedFile.submitted)}</p>
                       </div>
                       <div>
                           <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider mb-1">Due Date</p>
-                          <p className="text-gray-800 text-sm">{selectedFile.dueDate}</p>
+                          <p className="text-gray-800 text-sm">{formatDate(selectedFile.dueDate)}</p>
                       </div>
+                      
+                      {/* Flag Reason Conditionally Displayed */}
+                      {(activeTab === "Reported Files" || (selectedFile.flagReason && selectedFile.flagReason !== "-")) && (
+                        <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-red-50 p-4 rounded-lg border border-red-100 flex items-start gap-3 mt-2">
+                             <div>
+                                 <p className="text-xs text-red-600 uppercase font-bold tracking-wider mb-1">Reason for Flag / Report</p>
+                                 <p className="text-red-900 text-sm leading-snug">{selectedFile.flagReason || "-"}</p>
+                             </div>
+                        </div>
+                      )}
                   </div>
 
                   {/* Section 2: Assignment Link */}
@@ -1042,65 +1079,71 @@ export default function ReviewerManagement() {
                       />
                       <label htmlFor="overall-check" className="text-sm text-gray-700 font-medium">Overall Approved</label>
                     </div>
-                    <div className="flex justify-end gap-3">
-                      <button
-                        onClick={() => setShowFileDetailsModal(false)}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-                      >Close</button>
+                    <div className="flex justify-end gap-3 border-b border-gray-100 pb-4 mb-4">
                       <button
                         onClick={handleImageReview}
                         disabled={isSubmittingReview}
                         className="px-6 py-2 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 shadow-sm"
-                      >{isSubmittingReview ? "Submitting…" : "Submit Review"}</button>
+                      >{isSubmittingReview ? "Submitting…" : "Submit Review Scores"}</button>
                     </div>
                   </div>
                 )}
 
-                {/* PDF / DOCUMENT: Approve / Reject / Revise / Flag Admin */}
+                {/* DOCUMENT: Approve / Reject / Revise / Flag Admin */}
                 {selectedFile.type?.toLowerCase() === "pdf" && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Document Decision</span>
+                    <span className="text-sm text-gray-600 font-bold">Document Decision</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowFileDetailsModal(false)}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                      >Cancel</button>
+                      {!isAdmin && (
+                        <button
+                          onClick={() => handleDocumentAction("flagAdmin")}
+                          disabled={isFlagging}
+                          className="px-4 py-2 text-sm font-medium bg-purple-500 text-white hover:bg-purple-600 rounded-lg transition-colors disabled:opacity-50 border-transparent"
+                        >{isFlagging ? "…" : "Flag to Admin"}</button>
+                      )}
+                      <button
+                        onClick={() => handleDocumentAction("revise")}
+                        disabled={isRevising}
+                        className="px-4 py-2 text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 rounded-lg transition-colors disabled:opacity-50 border-transparent"
+                      >{isRevising ? "…" : "Revise"}</button>
+                      <button
+                        onClick={() => handleDocumentAction("reject")}
+                        disabled={isRejecting}
+                        className="px-4 py-2 text-sm font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 border-transparent"
+                      >{isRejecting ? "…" : "Reject"}</button>
+                      <button
+                        onClick={() => handleDocumentAction("approve")}
+                        disabled={isApproving}
+                        className="px-4 py-2 text-sm font-medium bg-green-500 text-white hover:bg-green-600 rounded-lg transition-colors disabled:opacity-50 shadow-sm border-transparent"
+                      >{isApproving ? "…" : "Approve"}</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* POSTER: Reject only (Approve handled by Score Form) */}
+                {(selectedFile.type?.toLowerCase() === "image" ||
+                  selectedFile.type?.toLowerCase() === "jpg" ||
+                  selectedFile.type?.toLowerCase() === "png") && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 font-bold">Poster Decision</span>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setShowFileDetailsModal(false)}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
                       >Cancel</button>
                       <button
-                        onClick={() => handleDocumentAction("flagAdmin")}
-                        disabled={isFlagging}
-                        className="px-4 py-2 text-sm font-medium border border-purple-400 text-purple-700 hover:bg-purple-50 rounded-lg transition-colors disabled:opacity-50"
-                      >{isFlagging ? "…" : "Flag to Admin"}</button>
-                      <button
-                        onClick={() => handleDocumentAction("revise")}
-                        disabled={isRevising}
-                        className="px-4 py-2 text-sm font-medium border border-amber-400 text-amber-700 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
-                      >{isRevising ? "…" : "Revise"}</button>
-                      <button
                         onClick={() => handleDocumentAction("reject")}
                         disabled={isRejecting}
-                        className="px-4 py-2 text-sm font-medium border border-red-400 text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        className="px-4 py-2 text-sm font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 border-transparent"
                       >{isRejecting ? "…" : "Reject"}</button>
-                      <button
-                        onClick={() => handleDocumentAction("approve")}
-                        disabled={isApproving}
-                        className="px-4 py-2 text-sm font-medium bg-teal-600 text-white hover:bg-teal-700 rounded-lg transition-colors disabled:opacity-50 shadow-sm"
-                      >{isApproving ? "…" : "Approve"}</button>
                     </div>
                   </div>
                 )}
 
-                {/* Fallback close button for other types */}
-                {selectedFile.type?.toLowerCase() !== "pdf" &&
-                  selectedFile.type?.toLowerCase() !== "image" &&
-                  selectedFile.type?.toLowerCase() !== "jpg" &&
-                  selectedFile.type?.toLowerCase() !== "png" && (
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => setShowFileDetailsModal(false)}
-                      className="px-6 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-medium rounded-lg transition-colors shadow-sm"
-                    >Close</button>
-                  </div>
-                )}
               </div>
            </div>
         </div>
