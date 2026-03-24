@@ -94,18 +94,30 @@ export const reviewerSlice = apiSlice.injectEndpoints({
 
     // reject document (PDF)
     rejectDocument: builder.mutation({
-      query: (attachmentId) => ({
+      query: ({ attachmentId, reason }) => ({
         url: `/reviewer/attachments/${attachmentId}/reject`,
         method: "PATCH",
+        body: { reason },
       }),
       invalidatesTags: ["Files"],
     }),
 
     // revise document (PDF)
     reviseDocument: builder.mutation({
-      query: (attachmentId) => ({
+      query: ({ attachmentId, reason }) => ({
         url: `/reviewer/attachments/${attachmentId}/revise`,
         method: "PATCH",
+        body: { reason },
+      }),
+      invalidatesTags: ["Files"],
+    }),
+
+    // flag admin document (PDF)
+    flagAdminDocument: builder.mutation({
+      query: ({ attachmentId, reason }) => ({
+        url: `/reviewer/attachments/${attachmentId}/flag-admin`,
+        method: "PATCH",
+        body: { reason },
       }),
       invalidatesTags: ["Files"],
     }),
@@ -127,4 +139,5 @@ export const {
   useApproveDocumentMutation,
   useRejectDocumentMutation,
   useReviseDocumentMutation,
+  useFlagAdminDocumentMutation,
 } = reviewerSlice;

@@ -27,6 +27,7 @@ import {
   useApproveDocumentMutation,
   useRejectDocumentMutation,
   useReviseDocumentMutation,
+  useFlagAdminDocumentMutation,
 } from "../../redux/features/reviwer/reviewerSlice";
 
 import { useSelectedEvent } from "../../hooks/useSelectedEvent";
@@ -38,6 +39,10 @@ export default function ReviewerManagement() {
   const [showAddReviewerModal, setShowAddReviewerModal] = useState(false);
   const [showFileDetailsModal, setShowFileDetailsModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  
+  // Action Modal State
+  const [actionModalConfig, setActionModalConfig] = useState({ isOpen: false, action: null });
+  const [actionReason, setActionReason] = useState("");
   
   // Search state
   const [searchEmail, setSearchEmail] = useState("");
@@ -104,6 +109,7 @@ export default function ReviewerManagement() {
   const [approveDocument, { isLoading: isApproving }] = useApproveDocumentMutation();
   const [rejectDocument, { isLoading: isRejecting }] = useRejectDocumentMutation();
   const [reviseDocument, { isLoading: isRevising }] = useReviseDocumentMutation();
+  const [flagAdminDocument, { isLoading: isFlagging }] = useFlagAdminDocumentMutation();
 
   // Image review score state
   const defaultScores = { originality: 1, scientificRigor: 1, clarity: 1, visualDesign: 1, impact: 1, presentation: 1, overall: true };
@@ -349,19 +355,44 @@ export default function ReviewerManagement() {
     setShowFileDetailsModal(true);
   };
 
-  // Handle PDF document action (approve/reject/revise)
+  // Handle PDF document action (approve/reject/revise/flagAdmin)
   const handleDocumentAction = async (action) => {
     const attachmentId = selectedFile?.attachmentId;
     if (!attachmentId) { toast.error("Attachment ID missing"); return; }
+    
+    if (action === "approve") {
+      try {
+        const result = await approveDocument(attachmentId).unwrap();
+        toast.success(result?.message || `Document approved successfully!`);
+        setShowFileDetailsModal(false);
+      } catch (err) {
+        toast.error(err?.data?.message || `Failed to approve document`);
+      }
+    } else {
+      // For reject, revise, and flagAdmin, open the reason modal
+      setActionModalConfig({ isOpen: true, action });
+      setActionReason("");
+    }
+  };
+
+  const handleSubmitAction = async () => {
+    const { action } = actionModalConfig;
+    const attachmentId = selectedFile?.attachmentId;
+    if (!attachmentId) { toast.error("Attachment ID missing"); return; }
+    if (!actionReason.trim()) { toast.error("Reason is required"); return; }
+
     try {
       let result;
-      if (action === "approve") result = await approveDocument(attachmentId).unwrap();
-      else if (action === "reject") result = await rejectDocument(attachmentId).unwrap();
-      else if (action === "revise") result = await reviseDocument(attachmentId).unwrap();
-      toast.success(result?.message || `Document ${action}d successfully!`);
+      if (action === "reject") result = await rejectDocument({ attachmentId, reason: actionReason }).unwrap();
+      else if (action === "revise") result = await reviseDocument({ attachmentId, reason: actionReason }).unwrap();
+      else if (action === "flagAdmin") result = await flagAdminDocument({ attachmentId, reason: actionReason }).unwrap();
+      
+      toast.success(result?.message || `Document ${action === "flagAdmin" ? "flagged to admin" : action + "d"} successfully!`);
+      setActionModalConfig({ isOpen: false, action: null });
+      setActionReason("");
       setShowFileDetailsModal(false);
     } catch (err) {
-      toast.error(err?.data?.message || `Failed to ${action} document`);
+      toast.error(err?.data?.message || `Failed to submit action`);
     }
   };
 
@@ -1025,7 +1056,7 @@ export default function ReviewerManagement() {
                   </div>
                 )}
 
-                {/* PDF / DOCUMENT: Approve / Reject / Revise */}
+                {/* PDF / DOCUMENT: Approve / Reject / Revise / Flag Admin */}
                 {selectedFile.type?.toLowerCase() === "pdf" && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Document Decision</span>
@@ -1034,6 +1065,11 @@ export default function ReviewerManagement() {
                         onClick={() => setShowFileDetailsModal(false)}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
                       >Cancel</button>
+                      <button
+                        onClick={() => handleDocumentAction("flagAdmin")}
+                        disabled={isFlagging}
+                        className="px-4 py-2 text-sm font-medium border border-purple-400 text-purple-700 hover:bg-purple-50 rounded-lg transition-colors disabled:opacity-50"
+                      >{isFlagging ? "…" : "Flag to Admin"}</button>
                       <button
                         onClick={() => handleDocumentAction("revise")}
                         disabled={isRevising}
@@ -1065,6 +1101,55 @@ export default function ReviewerManagement() {
                     >Close</button>
                   </div>
                 )}
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Action Modal (Reject / Revise / Flag Admin) */}
+      {actionModalConfig.isOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+           <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+              <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold text-gray-800 capitalize">
+                  {actionModalConfig.action === "flagAdmin" ? "Flag to Admin" : actionModalConfig.action} Document
+                </h3>
+                <button 
+                  onClick={() => setActionModalConfig({ isOpen: false, action: null })} 
+                  className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                    <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {actionModalConfig.action === "reject" && "Reason"}
+                    {actionModalConfig.action === "revise" && "Revision Reason"}
+                    {actionModalConfig.action === "flagAdmin" && "Flag Reason"}
+                    <span className="text-red-500 ml-1">*</span>
+                 </label>
+                 <textarea
+                    rows={4}
+                    value={actionReason}
+                    onChange={(e) => setActionReason(e.target.value)}
+                    placeholder={`Enter ${actionModalConfig.action === "flagAdmin" ? "flag" : actionModalConfig.action} reason...`}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 resize-none"
+                 />
+              </div>
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+                 <button 
+                    onClick={() => setActionModalConfig({ isOpen: false, action: null })}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                 >
+                     Cancel
+                 </button>
+                 <button 
+                    onClick={handleSubmitAction}
+                    disabled={isRejecting || isRevising || isFlagging}
+                    className="px-6 py-2 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm disabled:opacity-50"
+                  >
+                     Confirm {actionModalConfig.action === "flagAdmin" ? "Flag" : actionModalConfig.action.charAt(0).toUpperCase() + actionModalConfig.action.slice(1)}
+                  </button>
               </div>
            </div>
         </div>
