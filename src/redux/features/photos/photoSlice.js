@@ -4,7 +4,13 @@ const photoSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         ///// Photos
         getPhotos: builder.query({
-            query: ({eventId,page, limit = 10}) => `/photo/events/${eventId}/photos?page=${page}&limit=${limit}`,
+            query: ({ eventId, page, limit = 10, type }) => {
+                let url = `/photo/events/${eventId}/photos?page=${page}&limit=${limit}`;
+                if (type && type !== 'all') {
+                    url += `&type=${type}`;
+                }
+                return url;
+            },
             providesTags: ['Photos']
         }),
         UploadPhoto: builder.mutation({

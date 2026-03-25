@@ -20,10 +20,13 @@ export default function Photos() {
 
   const { eventId } = useSelectedEvent();
 
+  const [isUploading, setIsUploading] = useState(false);
+
   const { data: photosData, isLoading, isError } = useGetPhotosQuery({
     eventId,
     page: currentPage,
-    limit: itemsPerPage
+    limit: itemsPerPage,
+    type: selectedCategory !== 'all' ? selectedCategory : undefined
   });
 
   const photos = photosData?.data ?? [];
@@ -40,9 +43,7 @@ export default function Photos() {
     { id: 'other',    name: "Other's" }
   ];
 
-  const filteredPhotos = selectedCategory === 'all'
-    ? photos
-    : photos.filter(photo => photo.type?.toLowerCase() === selectedCategory.toLowerCase());
+  const filteredPhotos = photos;
 
   const [deletePhoto] = useDeletePhotoMutation();
 
@@ -65,6 +66,12 @@ export default function Photos() {
   // Updated Handle Upload to get File and Type
   const handleUpload = async(e) => {
     e.preventDefault();
+    if (!selectedFile) {
+      toast.error('Please select a file');
+      return;
+    }
+    
+    setIsUploading(true);
     
     // Console log the file and type as requested
     console.log('Selected File:', selectedFile);
@@ -74,25 +81,19 @@ export default function Photos() {
      fileFormData.append('file', selectedFile);
      fileFormData.append('type', selectedType);
 
+    try {
       const attachmentResult = await uploadChatAttachment(fileFormData).unwrap();
 
       if (!attachmentResult?.success || !attachmentResult?.data?.url) {
         toast.error(attachmentResult?.message || 'File upload failed.');
+        setIsUploading(false);
         return;
       }
 
       const documentUrl = attachmentResult.data.url;
       console.log(documentUrl)
-
-
-
-    if (!selectedFile) {
-      toast.error('Please select a file');
-      return;
-    }
  
-    try {
-     const res = await uploadPhoto({ 
+      const res = await uploadPhoto({ 
         eventId,  
         body: {
           imageUrl: documentUrl, // Use the URL from the file upload response
@@ -105,16 +106,16 @@ export default function Photos() {
         toast.error(res?.message || 'Photo upload failed');
       }
  
-    setSelectedFile(null);
-    setSelectedType('event');
-    setIsModalOpen(false);
+      setSelectedFile(null);
+      setSelectedType('event');
+      setIsModalOpen(false);
 
     } catch (error) {
       console.error('Error uploading photo:', error);
       toast.error('Failed to upload photo');
-      return;
-    } 
-
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleCategoryChange = (categoryId) => {
@@ -195,13 +196,13 @@ export default function Photos() {
                     onError={(e) => { e.target.src = '/public/image/photo.png'; }}
                   />
                   <div className="absolute top-2 right-2 flex gap-1">
-                    <button
+                    {/* <button
                       onClick={() => handleEdit(photo._id)}
                       className="bg-white/80 hover:bg-white p-1 rounded-full transition-colors"
                       title="Edit"
                     >
                       <Edit size={16} className="text-gray-600" />
-                    </button>
+                    </button> */}
                     <Popconfirm
                       title="Are you sure you want to delete this photo?"
                       onConfirm={() => handleDelete(photo._id)}
@@ -319,9 +320,10 @@ export default function Photos() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                  disabled={isUploading}
+                  className="flex-1 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Submit
+                  {isUploading ? 'Uploading...' : 'Submit'}
                 </button>
               </div>
             </form>
