@@ -242,56 +242,91 @@ const VolunteerManagementPage = () => {
           volunteers.map((volunteer) => (
             <div key={volunteer.volunteer.accountId} className="bg-white rounded-lg shadow-sm border border-gray-200">
               {/* Volunteer Header */}
-              <div className="p-4 flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold text-gray-900">{volunteer.volunteer.name}</h3>
-                  <p className="text-sm text-gray-700">{volunteer.assignedArea}</p>
-                  <p className="text-xs text-gray-500 mt-1">{volunteer.volunteer.email}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
+              <div className="p-5 pb-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-[15px]">{volunteer.volunteer.name}</h3>
+                    <p className="text-[13px] text-gray-500 mt-1">{volunteer.assignedArea}</p>
+                    
+                    <div className="flex items-center gap-3 mt-4">
+                      <span className="px-3 py-1 text-[11px] rounded-full bg-[#e3eceb] text-[#5a7974] font-medium">
+                        Assigned
+                      </span>
+                      <span className="text-[12px] text-gray-600">{volunteer.reportsCount} Reports submitted</span>
+                    </div>
+                  </div>
+                  <div>
+                     <span className={`px-3 py-1.5 text-[11px] rounded-full font-medium ${
                       volunteer.taskStatus === 'Pending'
-                        ? 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-[#eef4bd] text-[#55691d]'
                         : volunteer.taskStatus === 'Completed'
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-[#cbe6d2] text-[#3c7852]'
                         : 'bg-blue-100 text-blue-800'
                     }`}>
                       {volunteer.taskStatus}
                     </span>
-                    <span className="text-xs text-gray-500">• {volunteer.reportsCount} Reports submitted</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Expand Toggle */}
+              <div className="relative flex items-center justify-center my-1 pb-1">
+                <div className="absolute w-full h-px bg-gray-100"></div>
                 <button
                   onClick={() => handleToggleExpand(volunteer.volunteer.accountId)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                  className="relative bg-white border border-gray-200 hover:bg-gray-50 text-gray-400 hover:text-gray-600 transition-colors rounded-full p-0.5 z-10"
                 >
                   {expandedVolunteerId === volunteer.volunteer.accountId ? (
-                    <ChevronUp className="w-5 h-5" />
+                    <ChevronUp className="w-4 h-4" />
                   ) : (
-                    <ChevronDown className="w-5 h-5" />
+                    <ChevronDown className="w-4 h-4" />
                   )}
                 </button>
               </div>
 
               {/* Expanded Section */}
               {expandedVolunteerId === volunteer.volunteer.accountId && (
-                <div className="border-t border-gray-200 p-4 pt-3">
-                  <h4 className="text-sm font-medium text-gray-800 mb-3">Recent Reports</h4>
+                <div className="p-5 pt-2">
+                  <h4 className="text-[13px] font-medium text-gray-500 mb-3">All Tasks</h4>
+                  {volunteer.tasks && volunteer.tasks.length > 0 ? (
+                    volunteer.tasks.map((task) => (
+                      <div
+                        key={task._id}
+                        className="bg-[#eef8f5] rounded-xl p-4 mb-3 flex justify-between items-center"
+                      >
+                        <div>
+                          <h5 className="font-semibold text-gray-900 text-sm mb-1">{task.title}</h5>
+                          <p className="text-xs text-gray-600 mt-1">{task.date} - {task.time}</p>
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-1">{task.instruction}</p>
+                        </div>
+                        <span className={`px-3 py-1.5 text-[11px] rounded-full font-medium ${
+                          task.status === 'COMPLETED' ? 'bg-[#cbe6d2] text-[#3c7852]' : 'bg-[#eef4bd] text-[#55691d]'
+                        }`}>
+                          {task.status === 'COMPLETED' ? 'Completed' : 'Pending'}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 italic mb-4">No tasks.</p>
+                  )}
+
+                  <h4 className="text-[13px] font-medium text-gray-500 mb-3 mt-5">Recent Reports</h4>
                   {volunteer.recentReports && volunteer.recentReports.length > 0 ? (
                     volunteer.recentReports.map((report) => (
                       <div
                         key={report._id}
-                        className="bg-teal-50 border border-teal-200 rounded-md p-3 mb-3 flex justify-between items-start"
+                        className="bg-[#eef8f5] rounded-xl p-4 mb-3 flex justify-between items-center"
                       >
                         <div>
-                          <h5 className="font-semibold text-gray-900 text-sm">{report.title}</h5>
-                          <p className="text-xs text-gray-700 mt-1 line-clamp-2">{report.summary}</p>
-                          <p className="text-xs text-gray-500 mt-1">{report.date}</p>
+                          <h5 className="font-semibold text-gray-900 text-[14px]">{report.title}</h5>
+                          <p className="text-[13px] text-gray-500 mt-1 line-clamp-1">{report.summary}</p>
+                          <p className="text-[12px] text-gray-400 mt-2">{report.date}</p>
                         </div>
                         <button
                           onClick={() => handleViewReport(report._id)}
-                          className="text-teal-600 hover:text-teal-800 text-sm font-medium px-3 py-1 rounded border border-teal-300"
+                          className="bg-white text-gray-700 hover:text-gray-900 text-[13px] font-medium px-4 py-2 rounded-lg border border-gray-200 shadow-sm transition-colors"
                         >
-                          View Report
+                          View Reports
                         </button>
                       </div>
                     ))
@@ -324,19 +359,33 @@ const VolunteerManagementPage = () => {
           <span>of {meta.total}</span>
         </div>
         <div className="flex gap-1">
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((pageNum) => (
+          <button 
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1 bg-white border border-gray-200 hover:bg-gray-50 rounded text-gray-500 disabled:opacity-50"
+          >
+            &lt;
+          </button>
+          {Array.from({ length: Math.min(5, totalPages || 1) }, (_, i) => i + 1).map((pageNum) => (
             <button
               key={pageNum}
               onClick={() => setPage(pageNum)}
               className={`px-3 py-1 rounded ${
                 page === pageNum
                   ? 'bg-teal-500 text-white'
-                  : 'bg-white border border-gray-300 hover:bg-gray-50'
+                  : 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-600'
               }`}
             >
               {pageNum}
             </button>
           ))}
+          <button 
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages || totalPages === 0}
+            className="px-3 py-1 bg-white border border-gray-200 hover:bg-gray-50 rounded text-gray-500 disabled:opacity-50"
+          >
+            &gt;
+          </button>
         </div>
       </div>
 
@@ -410,7 +459,7 @@ const VolunteerManagementPage = () => {
                       disabled={isUploading}
                       className="mt-2 w-full px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 disabled:opacity-50 transition-colors"
                     >
-                      {isUploading ? 'Uploading...' : 'Upload Image to Server'}
+                      {isUploading ? 'Uploading...' : 'Upload Image'}
                     </button>
                   )}
                   
