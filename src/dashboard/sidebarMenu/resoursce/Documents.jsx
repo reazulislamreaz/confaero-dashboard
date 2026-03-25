@@ -472,7 +472,7 @@ import {
   useGetDocumentsQuery,
   useGetPendingDocumentsQuery,
   useUploadDocumentMutation,
- 
+  useUpdateDocumentStatusMutation
 } from '../../../redux/features/resourcec/resourcesSlice';
 import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
 import { Popconfirm } from 'antd';
@@ -506,13 +506,14 @@ export default function DocumentManagement() {
     { skip: !eventId || activeFilter !== 'All' }
   );
   const { data: pendingDocumentsData, isLoading: pendingLoading, isError: pendingError } = useGetPendingDocumentsQuery(
-    { eventId },
+    { eventId, page: currentPage, limit: itemsPerPage },
     { skip: !eventId || activeFilter !== 'Pending' }
   );
 
   const [uploadChatAttachment] = useUploadFileMutation(); // ← STEP 1 mutation
   const [uploadDocument]       = useUploadDocumentMutation();       // ← STEP 2 mutation
   const [deleteDocument]       = useDeleteDocumentMutation();
+  const [updateDocumentStatus] = useUpdateDocumentStatusMutation();
 
   const activeData = activeFilter === 'Pending' ? pendingDocumentsData : documentsData;
   const documents  = activeData?.data?.data ?? [];
@@ -566,6 +567,15 @@ export default function DocumentManagement() {
     }
   };
 
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      const res = await updateDocumentStatus({ id, status }).unwrap();
+      if (res.success === true) toast.success(`Document ${status} successfully`);
+    } catch (err) {
+      toast.error('Failed to update document status.');
+    }
+  };
+
   const handleView         = (id) => { setDocumentId(id); setShowDetailsModal(true); };
   const handleCloseDetails = ()   => { setShowDetailsModal(false); setDocumentId(null); };
   const handleFilterChange = (filter) => { setActiveFilter(filter); setCurrentPage(1); };
@@ -573,7 +583,13 @@ export default function DocumentManagement() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     e.target.value = '';
-    if (file) setUploadForm((p) => ({ ...p, documentFile: file }));
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast.error('Only PDF files are allowed');
+        return;
+      }
+      setUploadForm((p) => ({ ...p, documentFile: file }));
+    }
   };
 
   const resetForm = () => setUploadForm({ documentType: 'Events', documentName: '', documentFile: null });
@@ -713,6 +729,16 @@ export default function DocumentManagement() {
                     <td className="px-6 py-4"><span className="text-sm text-gray-600">{formatDate(doc.createdAt)}</span></td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
+                        {doc.status === 'pending' && (
+                          <>
+                            <button onClick={() => handleStatusUpdate(doc._id, 'rejected')} className="p-1 text-gray-600 hover:text-red-600 transition-colors" title="Reject">
+                              <XCircle className="w-5 h-5" />
+                            </button>
+                            <button onClick={() => handleStatusUpdate(doc._id, 'approved')} className="p-1 text-gray-600 hover:text-teal-600 transition-colors" title="Approve">
+                              <CheckCircle className="w-5 h-5" />
+                            </button>
+                          </>
+                        )}
                         <Popconfirm title="Are you sure you want to delete this document?" onConfirm={() => handleDelete(doc._id)} okText="Yes" cancelText="No">
                           <button className="p-1 text-gray-600 hover:text-red-600 transition-colors"><Trash2 className="w-5 h-5" /></button>
                         </Popconfirm>
@@ -736,29 +762,33 @@ export default function DocumentManagement() {
               </select>
               <span>of {meta.total}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed">
-                <ChevronLeft className="w-5 h-5" />
+            <div className="flex gap-1">
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 bg-white border border-gray-200 hover:bg-gray-50 rounded text-gray-500 disabled:opacity-50"
+              >
+                &lt;
               </button>
-              {[...Array(totalPages)].map((_, i) => {
-                const page = i + 1;
-                if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
-                  return (
-                    <button key={page} onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
-                        currentPage === page ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-                      }`}>
-                      {page}
-                    </button>
-                  );
-                }
-                if (page === currentPage - 2 || page === currentPage + 2) return <span key={page} className="px-1 text-gray-400">...</span>;
-                return null;
-              })}
-              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0}
-                className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed">
-                <ChevronRight className="w-5 h-5" />
+              {Array.from({ length: Math.min(5, totalPages || 1) }, (_, i) => i + 1).map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`px-3 py-1 rounded text-sm ${
+                    currentPage === pageNum
+                      ? 'bg-[#5BB8AE] text-white font-medium'
+                      : 'text-gray-600 hover:bg-gray-50 border border-gray-200 bg-white'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="px-3 py-1 bg-white border border-gray-200 hover:bg-gray-50 rounded text-gray-500 disabled:opacity-50"
+              >
+                &gt;
               </button>
             </div>
           </div>
@@ -807,7 +837,7 @@ export default function DocumentManagement() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   File <span className="text-red-500">*</span>
                 </label>
-                <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
+                <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
                 {uploadForm.documentFile ? (
                   <div className="flex items-center gap-2 px-3 py-2.5 border border-teal-200 bg-teal-50 rounded-lg">
                     <div className="w-7 h-7 bg-red-100 rounded flex items-center justify-center shrink-0">

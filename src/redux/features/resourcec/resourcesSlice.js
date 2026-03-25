@@ -39,10 +39,11 @@ const resourcecSlice = apiSlice.injectEndpoints({
 
         }),
 
-        approveDocument: builder.mutation({
-            query: ({id, eventId}) => ({   
-                url: `/document/approve/${id}/${eventId}`,
+        updateDocumentStatus: builder.mutation({
+            query: ({id, status}) => ({   
+                url: `/document/status/${id}`,
                 method: 'PATCH',
+                body: { status }
             }), 
             invalidatesTags: ['Resources'],
         }),
@@ -56,5 +57,5 @@ export const {
     useGetPendingDocumentsQuery,
     useUploadDocumentMutation,
     useDeleteDocumentMutation,
-    useApproveDocumentMutation,
+    useUpdateDocumentStatusMutation,
 } = resourcecSlice;
