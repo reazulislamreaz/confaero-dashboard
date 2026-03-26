@@ -4,7 +4,11 @@ const jobSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         ///// Jobs  
         getJobs: builder.query({
-            query: ({page, limit = 10}) => `job/my?page=${page}&limit=${limit}`,
+            query: ({page, limit = 10, search, type}) => {
+                const endpoint = type === 'Review Job Post' ? 'job/review' : 'job/my';
+                const searchParam = search ? `&search=${search}` : '';
+                return `${endpoint}?page=${page}&limit=${limit}${searchParam}`;
+            },
             providesTags: ['Jobs']
         }),
         getJobById: builder.query({
@@ -27,6 +31,14 @@ const jobSlice = apiSlice.injectEndpoints({
             }),
             invalidatesTags: (result, error, { id }) => [{ type: 'Jobs', id }, { type: 'Jobs', id: 'LIST' }],
         }),
+        updateJobStatus: builder.mutation({
+            query: ({ id, status }) => ({
+                url: `/job/${id}/status`,
+                method: 'PATCH',
+                body: { status },
+            }),
+            invalidatesTags: ['Jobs'],
+        }),
 
         deleteJob: builder.mutation({
             query: (id) => ({
@@ -44,4 +56,5 @@ export const {
     useCreateJobMutation,
     useUpdateJobMutation,
     useDeleteJobMutation,
+    useUpdateJobStatusMutation,
 } = jobSlice;

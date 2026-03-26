@@ -1,5 +1,3 @@
-
- 
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, Dropdown, Avatar, Badge, Button, Modal, Form, Input } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
@@ -11,7 +9,7 @@ import './header.css'
 import Swal from "sweetalert2";
 import { useState } from "react";
 import { MessageCircle, MessageCircleCodeIcon, MessageSquareMore } from "lucide-react";
-  
+import { useFetchUserProfileQuery } from "../redux/features/userSlice/userSlice";
  
  
  
@@ -24,10 +22,24 @@ const Header = () => {
  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [error, setError] = useState('')
+  const [imageLoading, setImageLoading] = useState(true);
+const [imageError, setImageError] = useState(false);
+  const [error, setError] = useState('');
+
+  // Fetch logged in user profile
+  const { data: userProfileResponse } = useFetchUserProfileQuery();
+  const user = userProfileResponse?.data;
+  const userName = user?.name;
+  const storedRole = localStorage.getItem("userRole");
+  const baseRole = storedRole || user?.activeRole || "Organizer";
+  const userRole = baseRole ? (baseRole.charAt(0).toUpperCase() + baseRole.slice(1) + " Panel") : "";
+  const userImage = user?.avatar ;
   const openModal = () => {
     setIsModalOpen(true);
   };
+
+
+  console.log(user);
 
   const handleLogOut = () => {
     Swal.fire({
@@ -85,12 +97,46 @@ const handleMenuVisibility = (visible) => {
   return (
     <div className=" flex justify-between items-center shadow-md mb-[24px] p-[16px] rounded-md bg-[#FFF]"> 
     {/* <Toaster /> */}
-     <div className="flex items-center gap-1.5
-     ">
-      <img className="h-12 rounded-full" src="https://randomuser.me/api/portraits/men/57.jpg" alt=""/>
-      <h1 className=" font-bold">AbSayed  <br /><span className="text-#2E978C font-normal">Organizer Panel</span></h1>
+    <div className="flex items-center gap-1.5">
+  <div className="relative h-12 w-12">
+    
+    {/* Skeleton */}
+    {imageLoading && (
+      <div className="absolute inset-0 rounded-full bg-gray-300 animate-pulse"></div>
+    )}
+
+    {/* Profile Image */}
+    <img
+      className={`h-12 w-12 object-cover rounded-full border border-gray-200 ${
+        imageLoading ? "opacity-0" : "opacity-100"
+      }`}
+      src={
+        imageError
+          ? "https://randomuser.me/api/portraits/men/57.jpg"
+          : userImage
+      }
+      alt={userName}
+      onLoad={() => setImageLoading(false)}
+      onError={() => {
+        setImageError(true);
+        setImageLoading(false);
+      }}
+    />
+  </div>
+
+  <h1 className="font-bold">
+    {userName}
+    <br />
+    <span className="text-gray-500 text-sm font-normal">
+      {userRole}
+    </span>
+  </h1>
+</div>
+     {/* <div className="flex items-center gap-1.5">
+      <img className="h-12 w-12 object-cover rounded-full border border-gray-200" src={userImage} alt={userName} />
+      <h1 className=" font-bold">{userName}  <br /><span className="text-#2E978C text-gray-500 text-sm font-normal">{userRole}</span></h1>
        
-     </div>
+     </div> */}
 
       <div className="flex gap-5 items-center">
         {/* <Dropdown overlay={menu} placement="bottomRight" arrow> */}

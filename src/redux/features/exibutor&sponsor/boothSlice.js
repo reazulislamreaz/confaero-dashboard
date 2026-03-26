@@ -35,6 +35,7 @@ const boothSlice = apiSlice.injectEndpoints({
 
     sponsorDetails: builder.query({
         query: (sponsorshipId) =>`/organizerSponsor/sponsor/${sponsorshipId}`,
+        providesTags: ['Sponsors'],
     }),
 
     acceptSponsorshipRequest: builder.mutation({

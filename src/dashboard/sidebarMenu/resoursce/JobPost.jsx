@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, X, Check, Eye, Edit2, FileText, ChevronLeft, ChevronRight, Edit, Delete } from 'lucide-react';
+import { Plus, Search, Filter, X, Check, Eye, Edit2, FileText, ChevronLeft, ChevronRight, Edit, Delete, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useGetJobsQuery, useDeleteJobMutation } from '../../../redux/features/jobSlice/jobSlice';
+import { useGetJobsQuery, useDeleteJobMutation, useUpdateJobStatusMutation } from '../../../redux/features/jobSlice/jobSlice';
 import toast from 'react-hot-toast';
 import { Popconfirm } from 'antd';
 
@@ -16,10 +16,13 @@ export default function JobPostManagement() {
 
     const { data: jobsData, isLoading: jobsLoading, refetch } = useGetJobsQuery({ 
         page: currentPage, 
-        limit: itemsPerPage 
+        limit: itemsPerPage,
+        type: activeTab,
+        search: searchQuery
     });
     
-    const [deleteJob] = useDeleteJobMutation();
+    const [deleteJob]       = useDeleteJobMutation();
+    const [updateJobStatus] = useUpdateJobStatusMutation();
 
     // Extract jobs from API response
     const apiJobs = jobsData?.data?.data || [];
@@ -39,9 +42,15 @@ export default function JobPostManagement() {
         }
     };
 
-    const handleApprove = (id) => {
-        console.log('Approve job:', id);
-        toast.success('Job approved successfully');
+    const handleUpdateStatus = async (id, status) => {
+        try {
+            const result = await updateJobStatus({ id, status }).unwrap();
+            if (result.success) {
+                toast.success(`Job ${status.toLowerCase()} successfully`);
+            }
+        } catch (error) {
+            toast.error(error?.data?.message || `Failed to update job status`);
+        }
     };
 
     const handleEdit = (id) => {
@@ -54,15 +63,8 @@ export default function JobPostManagement() {
         setShowReviewModal(true);
     };
 
-    // Filter jobs based on search
-    const filteredJobs = apiJobs.filter(job =>
-        job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.location?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const totalPages = Math.ceil((meta.total || filteredJobs.length) / itemsPerPage);
-    const displayedJobs = filteredJobs;
+    const totalPages = Math.ceil((meta.total || apiJobs.length || 0) / itemsPerPage);
+    const displayedJobs = apiJobs;
 
     const getStatusColor = (status) => {
         return status === 'APPROVED' ? 'text-teal-600' : 'text-orange-600';
@@ -180,33 +182,30 @@ export default function JobPostManagement() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => handleViewDetails(job)}
-                                                            className="p-1 text-gray-600 hover:text-teal-600 transition-colors"
-                                                            title="View Details"
-                                                        >
+                                                        <button onClick={() => handleViewDetails(job)} className="p-1 text-gray-600 hover:text-teal-600 transition-colors" title="View Details">
                                                             <Eye className="w-5 h-5" />
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleEdit(job._id)}
-                                                            className="p-1 text-gray-600 hover:text-blue-600 transition-colors"
-                                                            title="Edit"
-                                                        >
-                                                            <Edit className="w-5 h-5" />
-                                                        </button>
-                                                        <Popconfirm
-                                                            title="Delete Job"
-                                                            description="Are you sure you want to delete this job?"
-                                                            onConfirm={() => handleDelete(job._id)}
-                                                            okText="Yes, Delete"
-                                                            cancelText="Cancel"
-                                                            okButtonProps={{ danger: true }}
-                                                        >
-                                                            <button
-                                                                className="p-1 text-gray-600 hover:text-red-600 transition-colors"
-                                                                title="Delete"
-                                                            >
-                                                                <X className="w-5 h-5" />
+
+                                                        {activeTab === 'Review Job Post' && job.status === 'PENDING' && (
+                                                            <>
+                                                                <button onClick={() => handleUpdateStatus(job._id, 'APPROVED')} className="p-1 text-gray-600 hover:text-teal-600 transition-colors" title="Approve">
+                                                                    <Check className="w-5 h-5" />
+                                                                </button>
+                                                                <button onClick={() => handleUpdateStatus(job._id, 'REJECTED')} className="p-1 text-gray-600 hover:text-orange-600 transition-colors" title="Reject">
+                                                                    <X className="w-5 h-5" />
+                                                                </button>
+                                                            </>
+                                                        )}
+
+                                                        {activeTab === 'My Job' && job.status === 'PENDING' && (
+                                                            <button onClick={() => handleEdit(job._id)} className="p-1 text-gray-600 hover:text-blue-600 transition-colors" title="Edit">
+                                                                <Edit className="w-5 h-5" />
+                                                            </button>
+                                                        )}
+
+                                                        <Popconfirm title="Delete Job" description="Are you sure you want to delete this job?" onConfirm={() => handleDelete(job._id)} okText="Yes, Delete" cancelText="Cancel" okButtonProps={{ danger: true }}>
+                                                            <button className="p-1 text-gray-600 hover:text-red-600 transition-colors" title="Delete">
+                                                                <Trash2 className="w-5 h-5" />
                                                             </button>
                                                         </Popconfirm>
                                                     </div>
