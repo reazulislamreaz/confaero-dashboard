@@ -1,72 +1,84 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Bell, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Bell, AlertCircle, RefreshCw } from 'lucide-react';
+import { useGetNotificationsQuery, useMarkAsReadMutation } from '../../../redux/features/notificationSlice/notificationSlice';
+import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
+import moment from 'moment';
 
 export default function NotificationsPage() {
   const [expandedNotifications, setExpandedNotifications] = useState({});
+  const { eventId } = useSelectedEvent();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
 
-  const notifications = [
-    {
-      id: 1,
-      title: "New Session has been Created!",
-      message: "New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer.",
-      time: "2 min ago",
-      type: "info"
-    },
-    {
-      id: 2,
-      title: "New Session has been Created!",
-      message: "New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer.",
-      time: "2 min ago",
-      type: "info"
-    },
-    {
-      id: 3,
-      title: "New Session has been Created!",
-      message: "New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer. New Session has been Created for the event by Organizer.",
-      time: "January 1, 2024",
-      type: "info"
-    },
-    {
-      id: 4,
-      title: "Event Reminder: Conference Starts Tomorrow",
-      message: "Your scheduled conference is starting tomorrow at 9:00 AM. Please prepare your presentation materials and arrive 15 minutes early.",
-      time: "1 hour ago",
-      type: "warning"
-    },
-    {
-      id: 5,
-      title: "Payment Confirmation",
-      message: "Your payment of $250.00 for Event Registration has been successfully processed. Thank you for your participation!",
-      time: "Yesterday",
-      type: "success"
-    },
-    {
-      id: 6,
-      title: "System Update Scheduled",
-      message: "The system will be undergoing maintenance tonight from 10:00 PM to 2:00 AM. Please save your work before then.",
-      time: "3 days ago",
-      type: "info"
-    }
-  ];
+  const { data: notificationsRes, isLoading, isFetching, refetch } = useGetNotificationsQuery({
+    eventId,
+    page: currentPage,
+    limit: itemsPerPage
+  }, { skip: !eventId });
 
-  const toggleExpand = (id) => {
+  const [markAsRead] = useMarkAsReadMutation();
+
+  const notifications = notificationsRes?.data?.data || [];
+  const meta = notificationsRes?.data?.meta || {};
+  const totalItems = meta.total || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+  const handleExpandAndRead = async (notification) => {
+    // Toggle expand state
     setExpandedNotifications(prev => ({
       ...prev,
-      [id]: !prev[id]
+      [notification._id]: !prev[notification._id]
     }));
+
+    // If not read, mark as read
+    if (!notification.isRead) {
+      try {
+       await markAsRead({
+  notificationId: notification._id,
+  eventId: eventId
+}).unwrap();
+        // Since we invalidate tags in RTK query, the list will automatically refetch
+      } catch (error) {
+        console.error("Failed to mark notification as read", error);
+      }
+    }
+  };
+
+  const getIconForType = (type) => {
+    switch (type) {
+      case 'warning':
+      case 'Alert':
+        return <AlertCircle size={18} className="text-yellow-500" />;
+      case 'success':
+      case 'Approval':
+        return (
+          <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+        );
+      default:
+        return <Bell size={18} className="text-blue-500" />;
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className=" px-4 sm:px-6 lg:px-8">
+        <div className=" px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-semibold text-gray-900">Notifications</h1>
               <p className="text-sm text-gray-500">All the notifications related to the Events and App</p>
             </div>
-            
+            <button 
+              onClick={() => refetch()} 
+              disabled={isFetching}
+              className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50"
+              title="Refresh notifications"
+            >
+              <RefreshCw size={18} className={`text-gray-600 ${isFetching ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </header>
@@ -74,103 +86,146 @@ export default function NotificationsPage() {
       {/* Main Content */}
       <div className="  px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-4">
-          {notifications.map(notification => (
-            <div 
-              key={notification.id} 
-              className="bg-white rounded-lg shadow-sm p-4 border border-gray-200"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    {notification.type === 'warning' && (
-                      <AlertCircle size={18} className="text-yellow-500" />
-                    )}
-                    {notification.type === 'success' && (
-                      <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                    <h3 className="font-medium text-gray-900">{notification.title}</h3>
+          {isLoading ? (
+            <div className="text-center py-12 text-gray-500">Loading notifications...</div>
+          ) : notifications.length === 0 ? (
+            <div className="text-center py-12 text-gray-500 bg-white rounded-lg shadow-sm border border-gray-200">
+              <Bell className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+              <p>No notifications found.</p>
+            </div>
+          ) : (
+            notifications.map(notification => (
+              <div 
+                key={notification._id} 
+                className={`rounded-lg shadow-sm p-4 border transition-colors ${
+                  !notification.isRead 
+                    ? 'bg-blue-50/50 border-teal-200 shadow-teal-100/50' 
+                    : 'bg-white border-gray-200'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 cursor-pointer" onClick={() => handleExpandAndRead(notification)}>
+                    <div className="flex items-center gap-2 mb-2">
+                      {getIconForType(notification.type)}
+                      <h3 className={`font-medium ${!notification.isRead ? 'text-teal-800' : 'text-gray-900'}`}>
+                        {notification.title}
+                        {!notification.isRead && (
+                          <span className="ml-2 inline-block w-2.5 h-2.5 bg-teal-500 rounded-full"></span>
+                        )}
+                      </h3>
+                    </div>
+                    
+                    <p className="text-gray-600 mb-3 line-clamp-2">
+                      {notification.message}
+                    </p>
+                    
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        {moment(notification.createdAt).fromNow()}
+                      </span>
+                    </div>
                   </div>
                   
-                  <p className="text-gray-600 mb-3 line-clamp-2">
-                    {notification.message}
-                  </p>
-                  
-                  <div className="flex items-center gap-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      notification.type === 'warning' 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : notification.type === 'success'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {notification.time}
-                    </span>
-                    <div className='flex justify-center items-center'>
-
-                      <button
-                  onClick={() => toggleExpand(notification.id)}
-                  className="ml-2 p-1 text-gray-400 bg-amber-50 cursor-pointer hover:text-gray-600 transition-colors"
-                >
-                  {expandedNotifications[notification.id] ? (
-                    <ChevronUp size={20} />
-                  ) : (
-                    <ChevronDown size={20} />
-                  )}
-                </button>
-                    </div>
-
+                  <div className='flex justify-center items-center ml-4'>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleExpandAndRead(notification);
+                      }}
+                      className="p-1 text-gray-400 bg-gray-50 rounded-full cursor-pointer hover:text-gray-600 transition-colors"
+                    >
+                      {expandedNotifications[notification._id] ? (
+                        <ChevronUp size={20} />
+                      ) : (
+                        <ChevronDown size={20} />
+                      )}
+                    </button>
                   </div>
                 </div>
                 
-              
-              </div>
-              
-              {/* Details Section */}
-              {expandedNotifications[notification.id] && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Details</h4>
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-800">
-                      {notification.message}
-                    </p>
+                {/* Details Section */}
+                {expandedNotifications[notification._id] && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Details</h4>
+                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                        {notification.message}
+                      </p>
+                      {notification.type && (
+                        <div className="mt-3 text-xs text-gray-500">
+                          <strong>Type:</strong> {notification.type.replace(/_/g, ' ')}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
       {/* Pagination */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Showing</span>
-            <select className="border border-gray-300 rounded px-2 py-1 text-sm">
-              <option>6</option>
-              <option>12</option>
-              <option>24</option>
-            </select>
-            <span className="text-sm text-gray-600">of 50</span>
-          </div>
-          <div className="flex gap-1">
-            {[1, 2, 3, 4, 5].map(page => (
-              <button
-                key={page}
-                className={`px-3 py-1 rounded text-sm ${
-                  page === 1
-                    ? 'bg-teal-500 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
+      {!isLoading && notifications.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Showing</span>
+              <select 
+                title="Limit"
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
-                {page}
+                <option value={6}>6</option>
+                <option value={12}>12</option>
+                <option value={24}>24</option>
+                <option value={50}>50</option>
+              </select>
+              <span>of {totalItems}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 bg-white border border-gray-200 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Prev
               </button>
-            ))}
+              {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                // simple pagination logic to show up to 5 surrounding pages
+                // For a real app, you might want more complex ellipsis logic
+                let pageNum = Math.max(1, currentPage - 2) + idx;
+                if (pageNum > totalPages) return null;
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`min-w-[32px] px-3 py-1 rounded text-sm ${
+                      currentPage === pageNum
+                        ? 'bg-teal-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 bg-white border border-gray-200 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
