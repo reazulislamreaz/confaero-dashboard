@@ -27,6 +27,7 @@ import {
   useApproveDocumentMutation,
   useRejectDocumentMutation,
   useReviseDocumentMutation,
+  useFlagAdminDocumentMutation,
 } from "../../redux/features/reviwer/reviewerSlice";
 
 import { useSelectedEvent } from "../../hooks/useSelectedEvent";

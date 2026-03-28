@@ -150,12 +150,12 @@ const handleMenuVisibility = (visible) => {
           onClick={(e) => navigate("/dashboard/notification")}
           className="relative flex items-center"
         >
-          <Badge style={{ backgroundColor: "red", marginTop:'10px', marginRight:'5px' }} count={2}>
+          {/* <Badge style={{ backgroundColor: "red", marginTop:'10px', marginRight:'5px' }} count={2}> */}
             <IoIosNotificationsOutline
               style={{ cursor: "pointer" }}
               className={` bg-primary w-[52px] h-[52px] rounded-full p-2 `}
             />
-          </Badge>
+          {/* </Badge> */}
         </div>
         {/* </Dropdown> */}
         {/* <div
