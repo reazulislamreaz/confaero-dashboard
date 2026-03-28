@@ -7,13 +7,18 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  // server: {
+  //   host: '0.0.0.0',
+  //   port: 3060,
+  //   allowedHosts: [
+  //     'sayedbro3060.syedbipul.me',
+  //     'reazul3060.suplify.life'
+  //   ],
+  //   open: true,
+  // },
   server: {
-    host: '0.0.0.0',
-    port: 3060,
-    allowedHosts: [
-      'sayedbro3060.syedbipul.me',
-      'reazul3060.suplify.life'
-    ],
-    open: true,
-  },
+  host: '0.0.0.0',
+  port: 3060,
+  allowedHosts: 'all'
+}
 })
