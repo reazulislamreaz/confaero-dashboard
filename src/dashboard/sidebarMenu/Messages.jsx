@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, Users, MessageCircle, Mail } from 'lucide-react';
+import { Search, Send, Users, MessageCircle, Mail, Paperclip, FileText, X, Loader2 } from 'lucide-react';
 import { 
   useGetConversationsQuery, 
   useGetMessagesQuery, 
   getSocketInstance, 
   useMarkMessagesSeenMutation,
-  useGetChatStatsQuery
+  useGetChatStatsQuery,
+  useUploadChatAttachmentMutation
 } from '../../redux/features/messageSlice/messageSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { useFetchUserProfileQuery } from '../../redux/features/userSlice/userSlice';
@@ -15,6 +16,8 @@ export default function MessagingSystem() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [attachment, setAttachment] = useState(null);
+  const [uploadChatAttachment, { isLoading: isUploading }] = useUploadChatAttachmentMutation();
   
   const { eventId } = useSelectedEvent();
   const { data: userProfileResponse } = useFetchUserProfileQuery();
@@ -51,20 +54,54 @@ export default function MessagingSystem() {
     }
   };
 
-  const handleSendMessage = () => {
-    if (messageInput.trim() && selectedUser) {
+  const handleSendMessage = async () => {
+    if ((messageInput.trim() || attachment) && selectedUser) {
       const socket = getSocketInstance();
-      if (socket) {
-        socket.emit('send-message', {
-          receiverId: selectedUser.profile.accountId,
-          text: messageInput.trim()
-        });
-        setMessageInput('');
-      } else {
+      if (!socket) {
         console.error("Socket not connected");
+        return;
       }
+      
+      let finalAttachments = [];
+      if (attachment) {
+         try {
+           const formData = new FormData();
+           formData.append("file", attachment);
+           const res = await uploadChatAttachment(formData).unwrap();
+           const uploadedUrl = res?.data?.url || res?.url || res?.data || res?.secure_url;
+           if (uploadedUrl && typeof uploadedUrl === 'string') {
+             finalAttachments.push({
+               url: uploadedUrl,
+               name: attachment.name,
+               size: attachment.size,
+               mimeType: attachment.type
+             });
+           }
+         } catch (error) {
+           console.error("Failed to upload attachment", error);
+           return;
+         }
+      }
+
+      socket.emit('send-message', {
+        receiverId: selectedUser.profile.accountId,
+        text: messageInput.trim(),
+        ...(finalAttachments.length > 0 && { attachments: finalAttachments })
+      });
+      setMessageInput('');
+      setAttachment(null);
     }
   };
+
+  useEffect(() => {
+    // Optimistically mark as seen dynamically if the new message arrives while opened.
+    if (selectedUser && eventId) {
+      const conv = conversations.find(c => c._id === selectedUser._id);
+      if (conv && conv.unreadCount > 0) {
+        markMessagesSeen({ conversationId: selectedUser._id, eventId }).catch(console.error);
+      }
+    }
+  }, [messages, selectedUser, conversations, eventId, markMessagesSeen]);
 
   const filteredConversations = conversations.filter(conv =>
     conv.profile?.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -149,9 +186,21 @@ export default function MessagingSystem() {
                         {conv.lastMessageAt ? moment(conv.lastMessageAt).format("LT") : ""}
                       </span>
                     </div>
-                    <p className="text-[13px] text-gray-400 truncate leading-tight">
-                      {conv.lastMessage?.text || "Started a conversation"}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className={`text-[13px] truncate leading-tight ${conv.unreadCount > 0 ? 'text-gray-800 font-semibold' : 'text-gray-400'}`}>
+                        {(() => {
+                           if (typeof conv.lastMessage === 'string' && conv.lastMessage.trim() !== '') return conv.lastMessage;
+                           if (conv.lastMessage?.text) return conv.lastMessage.text;
+                           if (conv.lastMessage?.attachments?.length > 0) return "📎 Attachment";
+                           return "Started a conversation";
+                        })()}
+                      </p>
+                      {conv.unreadCount > 0 && (
+                        <div className="bg-[#0FC3C2] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 ml-2">
+                          {conv.unreadCount}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -174,10 +223,17 @@ export default function MessagingSystem() {
                   />
                   <div>
                     <h3 className="text-[17px] font-semibold text-gray-700 leading-tight">{selectedUser.profile?.name}</h3>
-                    <p className="text-[12px] text-gray-400 font-medium">
-                      {selectedUser.profile?.lastSeen 
-                        ? `Active ${moment(selectedUser.profile.lastSeen).fromNow()}` 
-                        : "Active recently"}
+                    <p className="text-[12px] text-gray-400 font-medium flex items-center gap-1.5">
+                      {selectedUser.profile?.isOnline ? (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                          <span className="text-green-500">Active now</span>
+                        </>
+                      ) : (
+                        selectedUser.profile?.lastSeen 
+                          ? `Active ${moment(selectedUser.profile.lastSeen).fromNow()}` 
+                          : "Active recently"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -190,60 +246,160 @@ export default function MessagingSystem() {
                 ) : (
                   <div className="space-y-4">
                     {messages.map((msg, index) => {
-                       const isMe = msg.senderId === user?.accountId || msg.senderId === user?._id;
-                       
-                       // Determine if we should show a time separator
-                       let showTimeSeparator = false;
-                       if (index === 0) {
-                         showTimeSeparator = true;
-                       } else {
-                         const prevMsg = messages[index - 1];
-                         const duration = moment(msg.createdAt).diff(moment(prevMsg.createdAt), 'hours');
-                         if (duration >= 1 || moment(msg.createdAt).format("L") !== moment(prevMsg.createdAt).format("L")) {
-                           showTimeSeparator = true;
-                         }
-                       }
+  const currentUser = user || {};
 
-                       return (
-                        <React.Fragment key={msg._id || index}>
-                          {showTimeSeparator && (
-                            <div className="flex justify-center my-6">
-                              <span className="text-[10px] text-gray-400 font-semibold tracking-wide">
-                                {moment(msg.createdAt).calendar(null, {
-                                  sameDay: '[Today], h:mm A',
-                                  lastDay: '[Yesterday], h:mm A',
-                                  lastWeek: 'dddd, h:mm A',
-                                  sameElse: 'MMM D, YYYY, h:mm A'
-                                }).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-                          <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                            <div
-                              className={`max-w-[70%] px-5 py-3 ${
-                                isMe
-                                  ? 'bg-[#0FC3C2] text-white rounded-t-xl rounded-bl-xl rounded-br-sm shadow-md shadow-teal-100'
-                                  : 'bg-gray-100 text-gray-700 rounded-t-xl rounded-br-xl rounded-bl-sm'
-                              }`}
-                            >
-                              <p className="text-[14.5px] font-medium leading-[1.6] whitespace-pre-wrap">{msg.text}</p>
-                            </div>
-                          </div>
-                        </React.Fragment>
-                      );
-                    })}
+  console.log("MESSAGE:", msg);
+  console.log("USER:", currentUser);
+
+  // Extract sender id safely
+  let senderId = null;
+
+  if (msg.senderId) {
+    if (typeof msg.senderId === "object") {
+      senderId = msg.senderId.accountId || msg.senderId._id;
+    } else {
+      senderId = msg.senderId;
+    }
+  }
+
+  // Current user ids
+  const currentMongoId = currentUser._id;
+  const currentAccountId = currentUser.accountId;
+
+  // Final sender check explicitly targeting accountId
+  const isMe = Boolean(
+    senderId && 
+    currentAccountId && 
+    String(senderId) === String(currentAccountId)
+  );
+
+  console.log("ALIGN DEBUG:", {
+    senderId,
+    currentMongoId,
+    currentAccountId,
+    isMe,
+    text: msg.text
+  });
+
+  // Time separator logic
+  let showTimeSeparator = false;
+  if (index === 0) {
+    showTimeSeparator = true;
+  } else {
+    const prevMsg = messages[index - 1];
+    const duration = moment(msg.createdAt).diff(moment(prevMsg.createdAt), 'hours');
+    if (
+      duration >= 1 ||
+      moment(msg.createdAt).format("L") !== moment(prevMsg.createdAt).format("L")
+    ) {
+      showTimeSeparator = true;
+    }
+  }
+
+  return (
+    <React.Fragment key={msg._id || index}>
+      {showTimeSeparator && (
+        <div className="flex justify-center my-6">
+          <span className="text-[10px] text-gray-400 font-semibold tracking-wide">
+            {moment(msg.createdAt)
+              .calendar(null, {
+                sameDay: '[Today], h:mm A',
+                lastDay: '[Yesterday], h:mm A',
+                lastWeek: 'dddd, h:mm A',
+                sameElse: 'MMM D, YYYY, h:mm A'
+              })
+              .toUpperCase()}
+          </span>
+        </div>
+      )}
+
+      {/* MESSAGE ALIGNMENT */}
+      {/* <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}> */}
+      <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+        <div
+  className={`max-w-[70%] px-5 py-3 ${
+    isMe
+      ? "bg-[#0FC3C2] text-white rounded-t-xl rounded-bl-xl rounded-br-sm"
+      : "bg-gray-100 text-gray-700 rounded-t-xl rounded-br-xl rounded-bl-sm"
+  }`}
+>
+        {/* <div
+          className={`max-w-[70%] px-5 py-3 ${
+            isMe
+              ? "bg-[#0FC3C2] text-white rounded-t-xl rounded-bl-xl rounded-br-sm shadow-md shadow-teal-100"
+              : "bg-gray-100 text-gray-700 rounded-t-xl rounded-br-xl rounded-bl-sm"
+          }`}
+        > */}
+          {/* Attachments */}
+          {msg.attachments && msg.attachments.length > 0 && (
+            <div className="mb-2 space-y-2">
+              {msg.attachments.map((att, i) => {
+                const isImg =
+                  att.mimeType?.startsWith("image/") ||
+                  att.url?.match(/\.(jpeg|jpg|gif|png)$/i);
+
+                return isImg ? (
+                  <img
+                    key={i}
+                    src={att.url}
+                    alt={att.name || "attachment"}
+                    className="rounded-lg max-w-full h-auto object-cover max-h-[200px]"
+                  />
+                ) : (
+                  <a
+                    key={i}
+                    href={att.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex items-center gap-2 p-2 rounded bg-white bg-opacity-20 ${
+                      isMe ? "text-white" : "text-gray-800"
+                    }`}
+                  >
+                    <FileText className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-sm truncate max-w-[150px]">
+                      {att.name || "View Attachment"}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Message Text */}
+          {msg.text && (
+            <p className="text-[14.5px] font-medium leading-[1.6] whitespace-pre-wrap break-words">
+              {msg.text}
+            </p>
+          )}
+        </div>
+      </div>
+    </React.Fragment>
+  );
+})}
                     <div ref={messagesEndRef} />
                   </div>
                 )}
               </div>
 
               {/* Message Input */}
-              <div className="p-5 px-6 border-t border-gray-100 flex gap-4 items-center bg-white">
-                <button className="flex-shrink-0 p-3 bg-[#0FC3C2] text-white rounded-full hover:bg-teal-500 transition-colors shadow-md shadow-teal-100 focus:outline-none">
-                  <svg className="w-[18px] h-[18px] transform -rotate-45" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                  </svg>
-                </button>
+              <div className="p-5 px-6 border-t border-gray-100 flex gap-4 items-center bg-white relative">
+                 {attachment && (
+                  <div className="absolute bottom-full left-6 mb-2 p-3 bg-white rounded-lg shadow-md border border-gray-100 flex items-center justify-between gap-3 z-20 min-w-[200px]">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                       <FileText className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                       <span className="text-sm font-medium text-gray-600 truncate max-w-[150px]">{attachment.name}</span>
+                    </div>
+                    <button onClick={() => setAttachment(null)} className="text-gray-400 hover:text-red-500 rounded-full p-1 bg-gray-50 hover:bg-red-50 transition-colors">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                 )}
+                <div className="relative">
+                  <label className="flex-shrink-0 p-3 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 transition-colors cursor-pointer block">
+                    <Paperclip className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                    <input type="file" className="hidden" accept="image/*,.pdf,.doc,.docx" onChange={(e) => { if(e.target.files[0]) setAttachment(e.target.files[0]) }} />
+                  </label>
+                </div>
                 <div className="flex-1 bg-[#F5F7F9] rounded-full flex items-center px-6 py-3.5 border border-transparent focus-within:border-gray-200 focus-within:bg-white transition-all">
                   <input
                     type="text"
@@ -256,9 +412,10 @@ export default function MessagingSystem() {
                 </div>
                 <button
                   onClick={handleSendMessage}
-                  className="flex-shrink-0 p-3 bg-[#0FC3C2] text-white rounded-full hover:bg-teal-500 transition-colors shadow-md shadow-teal-100"
+                  disabled={isUploading}
+                  className={`flex-shrink-0 p-3 bg-[#0FC3C2] text-white rounded-full hover:bg-teal-500 transition-colors shadow-md shadow-teal-100 disabled:opacity-75 disabled:cursor-not-allowed`}
                 >
-                  <Send className="w-[18px] h-[18px] ml-0.5" strokeWidth={2.5} />
+                  {isUploading ? <Loader2 className="w-[18px] h-[18px] ml-0.5 animate-spin" strokeWidth={2.5} /> : <Send className="w-[18px] h-[18px] ml-0.5" strokeWidth={2.5} />}
                 </button>
               </div>
             </>

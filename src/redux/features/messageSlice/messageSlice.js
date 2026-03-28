@@ -60,18 +60,72 @@ export const messageSlice = apiSlice.injectEndpoints({
             });
           };
 
+          const handleUserOnline = (data) => {
+            const userId = typeof data === 'string' ? data : data?.userId || data?.id || data?.accountId;
+            updateCachedData((draft) => {
+              if (draft?.data) {
+                const conv = draft.data.find(c => c.profile?.accountId === userId || c._id === userId);
+                if (conv) conv.profile.isOnline = true;
+              }
+            });
+          };
+
+          const handleUserOffline = (data) => {
+            const userId = typeof data === 'string' ? data : data?.userId || data?.id || data?.accountId;
+            updateCachedData((draft) => {
+              if (draft?.data) {
+                const conv = draft.data.find(c => c.profile?.accountId === userId || c._id === userId);
+                if (conv) {
+                  conv.profile.isOnline = false;
+                  conv.profile.lastSeen = data?.lastSeen || new Date().toISOString();
+                }
+              }
+            });
+          };
+
           socket.on("message:new", handleNewMessage);
+          socket.on("useronline", handleUserOnline);
+          socket.on("useroffline", handleUserOffline);
         } catch {}
 
         await cacheEntryRemoved;
         socket.off("message:new");
+        socket.off("useronline");
+        socket.off("useroffline");
       },
     }),
 
     getChatStats: builder.query({
       query: (eventId) => `/messageOrganizer/stats/${eventId}`,
       providesTags: ["Conversations", "Messages"],
-      // You can add onCacheEntryAdded here to hook into active-count sockets if needed
+      async onCacheEntryAdded(
+        eventId,
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+      ) {
+        const socket = connectSocket(eventId);
+
+        try {
+          await cacheDataLoaded;
+
+          const handleActiveCount = (count) => {
+            const activeMemberValue = Number(count) || 0;
+            updateCachedData((draft) => {
+              if (draft?.data) {
+                draft.data.activeMember = activeMemberValue;
+              } else if (draft && 'activeMember' in draft) {
+                draft.activeMember = activeMemberValue;
+              }
+            });
+          };
+
+          socket.on("active-count", handleActiveCount);
+          socket.on("active_count", handleActiveCount);
+        } catch {}
+
+        await cacheEntryRemoved;
+        socket.off("active-count");
+        socket.off("active_count");
+      },
     }),
 
     getMessages: builder.query({
@@ -112,7 +166,31 @@ export const messageSlice = apiSlice.injectEndpoints({
         url: `/messageOrganizer/seen/${conversationId}/${eventId}`,
         method: "PATCH",
       }),
+      async onQueryStarted({ conversationId, eventId }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          apiSlice.util.updateQueryData('getConversations', eventId, (draft) => {
+            if (draft?.data) {
+              const conv = draft.data.find(c => c._id === conversationId);
+              if (conv) {
+                conv.unreadCount = 0;
+              }
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
       invalidatesTags: ["Conversations"],
+    }),
+    uploadChatAttachment: builder.mutation({
+      query: (formData) => ({
+        url: `/upload/chat-attachment`,
+        method: "POST",
+        body: formData,
+      }),
     }),
   }),
 });
@@ -122,4 +200,5 @@ export const {
   useGetChatStatsQuery,
   useGetMessagesQuery,
   useMarkMessagesSeenMutation,
+  useUploadChatAttachmentMutation,
 } = messageSlice;

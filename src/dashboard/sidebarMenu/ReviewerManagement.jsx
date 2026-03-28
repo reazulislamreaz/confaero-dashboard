@@ -183,7 +183,7 @@ export default function ReviewerManagement() {
     _id: reviewer?._id || reviewer?.id,
     name: reviewer?.name || "Unknown",
     email: reviewer?.email || "No Email",
-    avatar: reviewer?.profileImage || reviewer?.avatar || "/image/review.png",
+    avatar: reviewer?.profileImage || reviewer?.avatar || "/public/image/review.png",
     assigned: Number(reviewer?.assigned) || 0,
     completed: Number(reviewer?.completed) || 0,
     avgScore: reviewer?.avgScore ? Number(reviewer.avgScore).toFixed(1) : "0.0",
@@ -495,7 +495,7 @@ export default function ReviewerManagement() {
                     <img 
                       src={reviewer.avatar } 
                       alt={reviewer.name}
-                      onError={(e) => (e.currentTarget.src = "/image/review.png")}
+                      onError={(e) => (e.currentTarget.src = "/public/image/review.png")}
                       className="w-full h-full object-cover"
                     />
                   </div>

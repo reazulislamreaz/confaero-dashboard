@@ -57,7 +57,7 @@ const UpdatePassword = () => {
           <div className="md:w-1/2 bg-gradient-to-br border-r border-[#20BFA9] from-cyan-50 to-teal-50 p-8 md:p-12 flex items-center justify-center">
             <div className="w-full h-full flex items-center justify-center">
               <img 
-                src="/image/updatepss.png" 
+                src="/public/image/updatepss.png" 
                 alt="Update Password" 
                 className="w-full h-auto max-w-md object-contain"
               />
