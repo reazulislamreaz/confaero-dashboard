@@ -140,7 +140,13 @@ const handleMenuVisibility = (visible) => {
 
       <div className="flex gap-5 items-center">
         {/* <Dropdown overlay={menu} placement="bottomRight" arrow> */}
-        <div
+      
+        <div className=" cursor-pointer" 
+         onClick={() => navigate("/dashboard/messages")}
+        >
+          <MessageSquareMore />
+        </div>
+          <div
           onClick={(e) => navigate("/dashboard/notification")}
           className="relative flex items-center"
         >
@@ -150,11 +156,6 @@ const handleMenuVisibility = (visible) => {
               className={` bg-primary w-[52px] h-[52px] rounded-full p-2 `}
             />
           </Badge>
-        </div>
-        <div className=" cursor-pointer" 
-         onClick={() => navigate("/dashboard/messages")}
-        >
-          <MessageSquareMore />
         </div>
         {/* </Dropdown> */}
         {/* <div

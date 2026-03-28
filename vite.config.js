@@ -12,6 +12,7 @@ export default defineConfig({
     port: 3060,
     allowedHosts: [
       'sayedbro3060.syedbipul.me',
+      'reazul3060.suplify.life'
     ],
     open: true,
   },
