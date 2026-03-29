@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Users, UserPlus, TrendingUp, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
-import { useAddminDashboardOverviewQuery } from '../../redux/features/eventSlice/eventSlice';
+import { useAddminDashboardOverviewQuery, useGetGlobalEventTrendQuery } from '../../redux/features/eventSlice/eventSlice';
 import { Link } from 'react-router-dom';
 
 export default function DashboardOverview() {
@@ -11,6 +11,7 @@ export default function DashboardOverview() {
   const [organizerEmails, setOrganizerEmails] = useState(['example@email.com']);
 
   const { data: overviewData, isLoading, isError } = useAddminDashboardOverviewQuery();
+  const { data: trendDataRes, isLoading: trendLoading } = useGetGlobalEventTrendQuery();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -30,6 +31,21 @@ export default function DashboardOverview() {
   const recentEvents = overviewData?.data?.recentEvents || [];
   const latestOrganizers = overviewData?.data?.latestOrganizers || [];
 
+  // Mapping Backend Trend Data (Global)
+  const liveMonthlyData = React.useMemo(() => {
+    const raw = trendDataRes?.data || [];
+    if (raw.length === 0) return [];
+
+    return raw.map(item => {
+      const [year, month] = item.date.split('-');
+      const date = new Date(parseInt(year), parseInt(month) - 1);
+      return {
+        label: date.toLocaleString('default', { month: 'short' }) + ' ' + year,
+        events: item.count
+      };
+    });
+  }, [trendDataRes]);
+
   const stats = [
     { label: 'Total Events',       value: apiStats?.totalEvents       ?? '—', icon: Calendar },
     { label: 'Ongoing Events',     value: apiStats?.ongoingEvents      ?? '—', icon: TrendingUp },
@@ -38,34 +54,19 @@ export default function DashboardOverview() {
   ];
   // ─────────────────────────────────────────────────────────
 
-  const monthlyData = [
-    { label: 'Jan', events: 2500 },
-    { label: 'Feb', events: 3800 },
-    { label: 'Mar', events: 4200 },
-    { label: 'Apr', events: 5000 },
-    { label: 'May', events: 3600 },
-    { label: 'Jun', events: 4800 },
-    { label: 'Jul', events: 5500 }
+  const monthlyData = liveMonthlyData.length > 0 ? liveMonthlyData : [
+    { label: 'Jan', events: 0 },
+    { label: 'Feb', events: 0 }
   ];
 
   const weeklyData = [
-    { label: 'W1', events: 580 },
-    { label: 'W2', events: 920 },
-    { label: 'W3', events: 750 },
-    { label: 'W4', events: 1100 },
-    { label: 'W5', events: 650 },
-    { label: 'W6', events: 980 },
-    { label: 'W7', events: 1200 }
+    { label: 'W1', events: 0 },
   ];
 
   const yearlyData = [
-    { label: '2020', events: 15000 },
-    { label: '2021', events: 22000 },
-    { label: '2022', events: 28000 },
-    { label: '2023', events: 35000 },
-    { label: '2024', events: 32000 },
-    { label: '2025', events: 38000 },
-    { label: '2026', events: 42000 }
+    { label: '2024', events: 0 },
+    { label: '2025', events: 0 },
+    { label: '2026', events: 0 }
   ];
 
   const getData = () => {
@@ -77,6 +78,14 @@ export default function DashboardOverview() {
   };
 
   const getYAxisTicks = () => {
+    // Determine max value from current data to make ticks slightly more dynamic
+    const currentData = getData();
+    const maxValue = Math.max(...currentData.map(d => d.events), 10);
+    
+    if (maxValue < 100) {
+      return [0, 20, 40, 60, 80, 100];
+    }
+
     switch (selectedMonth) {
       case 'Weekly': return [0, 200, 400, 600, 800, 1000, 1200];
       case 'Yearly': return [0, 10000, 20000, 30000, 40000, 50000];

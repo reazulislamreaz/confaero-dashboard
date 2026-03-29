@@ -74,8 +74,11 @@ const eventApiSlice = apiSlice.injectEndpoints({
     //Admin API hooks eventApiSlice endpoints
 
     getAdminEvent: builder.query({
-      query: () => `/superAdmin/events`,
-      invalidatesTags: [{ type: "Events" }],
+      query: (params) => ({
+        url: `/superAdmin/events`,
+        params,
+      }),
+      providesTags: ["Events"],
     }),
 
     eventOverview: builder.query({
@@ -118,6 +121,10 @@ const eventApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Events" }],
     }),
+
+    getGlobalEventTrend: builder.query({
+      query: () => "/superAdmin/events-trend",
+    }),
   }),
 });
 
@@ -138,6 +145,7 @@ export const {
 
   useEventOverviewQuery,
   useAddminDashboardOverviewQuery,
+  useGetGlobalEventTrendQuery,
 } = eventApiSlice;
 
 // Separate slice for managing selected event state

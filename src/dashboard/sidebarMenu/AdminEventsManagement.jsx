@@ -15,6 +15,8 @@ import { useDispatch } from "react-redux";
 import {
   setSelectedEvent,
   useAdminCreateEventMutation,
+  useAdminDeleteEventMutation,
+  useAdminUpdateEventMutation,
   useGetAdminEventQuery,
 } from "../../redux/features/eventSlice/eventSlice";
 import toast from "react-hot-toast";
@@ -24,15 +26,22 @@ export default function AdminEventManagement({ onEventSelect }) {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("Recently");
-  const [eventDate, setEventDate] = useState("Recently");
-  const [condition, setCondition] = useState("Upcoming");
+  const [eventDate, setEventDate] = useState("");
+  const [condition, setCondition] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [organizerEmailInput, setOrganizerEmailInput] = useState("");
   const [organizerEmails, setOrganizerEmails] = useState([]);
 
-  const { data: adminEvents, isLoading, isError } = useGetAdminEventQuery();
-  const [createEvent, { isLoading: isCreating, error: createError }] =
+  const { data: adminEvents, isLoading, isError } = useGetAdminEventQuery({
+    search: searchQuery,
+    createdSort: sortBy,
+    eventDate: eventDate || undefined,
+    condition: condition || undefined,
+  });
+  const [createEvent, { isLoading: isCreating }] =
     useAdminCreateEventMutation();
+  const [updateEvent, { isLoading: isUpdating }] = useAdminUpdateEventMutation();
+  const [deleteEvent] = useAdminDeleteEventMutation();
 
   const events = adminEvents?.data || [];
 
@@ -49,6 +58,7 @@ export default function AdminEventManagement({ onEventSelect }) {
   });
 
   const [selectedEvent, setSelectedEventLocal] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
   const [formError, setFormError] = useState("");
 
   const formatDate = (startDate, endDate) => {
@@ -96,6 +106,40 @@ export default function AdminEventManagement({ onEventSelect }) {
     setOrganizerEmails([]);
     setOrganizerEmailInput("");
     setFormError("");
+    setEditingEvent(null);
+  };
+
+  const handleEditClick = (e, event) => {
+    e.stopPropagation();
+    setEditingEvent(event);
+    setFormData({
+      title: event.title || "",
+      website: event.website || "",
+      location: event.location || "",
+      googleMapLink: event.googleMapLink || "",
+      startDate: event.startDate ? new Date(event.startDate).toISOString().split("T")[0] : "",
+      endDate: event.endDate ? new Date(event.endDate).toISOString().split("T")[0] : "",
+      expectedAttendee: event.expectedAttendee || "",
+      boothSlot: event.boothSlot || "",
+      details: event.details || "",
+    });
+    // If organizers array has emails or names, we might need a separate way to fetch them. 
+    // For now, I'll leave organizerEmails empty or populate from event.organizers if they are emails.
+    setShowCreateModal(true);
+  };
+
+  const handleDeleteClick = async (e, eventId) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this event? This will also remove all related registrations and invitations.")) {
+      try {
+        const res = await deleteEvent(eventId).unwrap();
+        if (res.success) {
+          toast.success("Event deleted successfully!");
+        }
+      } catch (err) {
+        toast.error(err?.data?.message || "Failed to delete event.");
+      }
+    }
   };
 
   const handleCreateEvent = async () => {
@@ -122,22 +166,33 @@ export default function AdminEventManagement({ onEventSelect }) {
       details: formData.details,
     };
 
-    console.log(payload);
-
     try {
-      const res = await createEvent(payload).unwrap();
-      console.log(res);
+      let res;
+      if (editingEvent) {
+        res = await updateEvent({ eventId: editingEvent._id, eventData: payload }).unwrap();
+      } else {
+        res = await createEvent(payload).unwrap();
+      }
+      
       if (res.success === true) {
-        toast.success("Event created successfully!");
-
+        toast.success(editingEvent ? "Event updated successfully!" : "Event created successfully!");
         setShowCreateModal(false);
         resetForm();
       }
     } catch (err) {
-      setFormError(
-        err?.data?.message || "Failed to create event. Please try again.",
-      );
       console.log(err);
+
+      if (err?.data?.errorSources?.length > 0) {
+        const errors = err.data.errorSources
+          .map((e) => `${e.path}: ${e.message}`)
+          .join(", ");
+
+        setFormError(errors);
+      } else {
+        setFormError(
+          err?.data?.message || "Failed to process event. Please try again."
+        );
+      }
     }
   };
   console.log("this is my", events);
@@ -168,12 +223,12 @@ export default function AdminEventManagement({ onEventSelect }) {
           <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Sort By:
+                Search:
               </label>
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search by Event name or event date"
+                  placeholder="Search by Event name or location"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
@@ -183,16 +238,16 @@ export default function AdminEventManagement({ onEventSelect }) {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Created
+                Sort Created
               </label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white"
               >
-                <option>Recently</option>
-                <option>Oldest</option>
-                <option>Most Popular</option>
+                <option value="Recently">Recently</option>
+                <option value="Oldest">Oldest</option>
+                <option value="Most Popular">Most Popular</option>
               </select>
             </div>
             <div>
@@ -204,9 +259,10 @@ export default function AdminEventManagement({ onEventSelect }) {
                 onChange={(e) => setEventDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white"
               >
-                <option>Recently</option>
-                <option>This Month</option>
-                <option>Next Month</option>
+                <option value="">All</option>
+                <option value="Recently">Recently</option>
+                <option value="This Month">This Month</option>
+                <option value="Next Month">Next Month</option>
               </select>
             </div>
             <div>
@@ -218,9 +274,10 @@ export default function AdminEventManagement({ onEventSelect }) {
                 onChange={(e) => setCondition(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white"
               >
-                <option>Upcoming</option>
-                <option>Ongoing</option>
-                <option>Completed</option>
+                <option value="">All</option>
+                <option value="Upcoming">Upcoming</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
           </div>
@@ -315,9 +372,15 @@ export default function AdminEventManagement({ onEventSelect }) {
                           </span>
                         </div>
                         <div>
+                          <span className="text-gray-500">Participants</span>
+                          <span className="ml-2 font-semibold text-gray-900">
+                            {event.registrationCount ?? 0}
+                          </span>
+                        </div>
+                        <div>
                           <span className="text-gray-500">Organizers</span>
                           <span className="ml-2 font-semibold text-gray-900">
-                            {event.organizers ?? "N/A"}
+                            {event.organizerCount ?? 0}
                           </span>
                         </div>
                       </div>
@@ -336,13 +399,13 @@ export default function AdminEventManagement({ onEventSelect }) {
                       </button>
                       <div className="flex gap-2 mt-6">
                         <button
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => handleEditClick(e, event)}
                           className="flex items-center gap-1 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors text-sm"
                         >
                           <Edit2 className="w-3.5 h-3.5" /> Edit
                         </button>
                         <button
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => handleDeleteClick(e, event._id)}
                           className="flex items-center gap-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm"
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Delete
@@ -362,7 +425,7 @@ export default function AdminEventManagement({ onEventSelect }) {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-800">
-                  Create Event
+                  {editingEvent ? "Edit Event" : "Create Event"}
                 </h2>
                 <button
                   onClick={() => {
@@ -378,7 +441,7 @@ export default function AdminEventManagement({ onEventSelect }) {
               <div className="p-6 space-y-4">
                 {/* Error Message */}
                 {formError && (
-                  <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-2 rounded-lg">
+                  <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-2 rounded-lg whitespace-pre-line">
                     {formError}
                   </div>
                 )}
@@ -578,10 +641,10 @@ export default function AdminEventManagement({ onEventSelect }) {
 
                 <button
                   onClick={handleCreateEvent}
-                  disabled={isCreating}
+                  disabled={isCreating || isUpdating}
                   className="w-full bg-teal-600 hover:bg-teal-700 disabled:bg-teal-300 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
-                  {isCreating ? (
+                  {isCreating || isUpdating ? (
                     <>
                       <svg
                         className="animate-spin h-4 w-4 text-white"
@@ -603,10 +666,10 @@ export default function AdminEventManagement({ onEventSelect }) {
                           d="M4 12a8 8 0 018-8v8z"
                         />
                       </svg>
-                      Creating...
+                      {editingEvent ? "Updating..." : "Creating..."}
                     </>
                   ) : (
-                    "Create Event"
+                    editingEvent ? "Update Event" : "Create Event"
                   )}
                 </button>
               </div>
