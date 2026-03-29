@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Filter, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAdminUsersQuery, useDeleteUserMutation } from '../../redux/features/userSlice/userSlice';
+import { useAdminUsersQuery, useAdminDeleteUserMutation } from '../../redux/features/userSlice/userSlice';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
 
@@ -24,6 +24,23 @@ const App = () => {
   const [roleFilter, setRoleFilter] = useState('all');
 
   const { data: adminUsersData, isLoading, isError } = useAdminUsersQuery();
+  const [deleteUser] = useAdminDeleteUserMutation();
+
+  // Get current user role from localStorage
+  const userInfo = JSON.parse(localStorage.getItem('user-info') || '{}');
+  const userRole = userInfo?.role || '';
+  const isSuperAdmin = userRole === 'SUPER_ADMIN';
+
+  const handleDelete = async (userId) => {
+    try {
+      const res = await deleteUser(userId).unwrap();
+      if (res.success) {
+        toast.success(res.message || 'User deleted successfully');
+      }
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to delete user');
+    }
+  };
 
   const users = adminUsersData?.data
     ?.filter(user => user.activeRole === 'ATTENDEE' || user.activeRole === 'ORGANIZER')
@@ -63,19 +80,6 @@ const App = () => {
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(parseInt(e.target.value));
     setCurrentPage(1);
-  };
-
-  const [deleteUser] = useDeleteUserMutation();
-
-  const handleDelete = async (accountId) => {
-    try {  
-      const res = await deleteUser({ userId: accountId }).unwrap();
-      if (res.success === true) {
-        toast.success(res?.message || 'User deleted successfully');
-      }
-    } catch (err) {
-      console.error('Failed to delete user:', err);
-    }
   };
 
   // Generate page numbers to display (max 5 around current page)
@@ -191,23 +195,25 @@ const App = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => navigate(`/dashboard/user-management/details/${user.id}`)}
+                            onClick={() => navigate(`/dashboard/users/details/${user.id}`, { state: { isAdminMode: true } })}
                             className="px-4 py-1 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition-colors"
                           >
                             Details
                           </button>
-                          <Popconfirm
-                            title={`Delete ${user.name}`}
-                            description="Are you sure you want to delete this user? This action cannot be undone."
-                            onConfirm={() => handleDelete(user.id)}
-                            okText="Yes, Delete"
-                            cancelText="Cancel"
-                            okButtonProps={{ danger: true }}
-                          >
-                            <button className="p-1 text-red-500 hover:text-red-700 transition-colors">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </Popconfirm>
+                          {isSuperAdmin && (
+                            <Popconfirm
+                              title="Delete User"
+                              description="Are you sure you want to delete this user? This action cannot be undone."
+                              onConfirm={() => handleDelete(user.id)}
+                              okText="Yes, Delete"
+                              cancelText="Cancel"
+                              okButtonProps={{ danger: true }}
+                            >
+                              <button className="p-1 text-red-500 hover:text-red-700 transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </Popconfirm>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -90,6 +90,14 @@ const userSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+
+    adminDeleteUser: builder.mutation({
+      query: (userId) => ({
+        url: `/superAdmin/users/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["AdminUsers"],
+    }),
   }),
 });
 
@@ -101,6 +109,7 @@ export const {
 
   useAdminUsersQuery,
   useAdminUserDetaislQuery,
+  useAdminDeleteUserMutation,
   useChangePasswordMutation,
   useUpdateProfileMutation,
   useFetchUserProfileQuery

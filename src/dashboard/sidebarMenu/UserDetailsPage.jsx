@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Trash2 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
-import { useDeleteUserMutation, useDetailUserQuery } from '../../redux/features/userSlice/userSlice';
+import { useDeleteUserMutation, useDetailUserQuery, useAdminUserDetaislQuery, useAdminDeleteUserMutation } from '../../redux/features/userSlice/userSlice';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
 
@@ -14,11 +14,11 @@ const ROLE_DISPLAY = {
   VOLUNTEER: 'Volunteer',
   ABSTRACT_REVIEWER: 'Reviewer',
   TRACK_CHAIR: 'Track Chair',
+  ORGANIZER: 'Organizer',
 };
 
 const formatDate = (dateStr) => {
   if (!dateStr) return '—';
-  // handles "2022-01" or "2023" or full ISO
   const d = new Date(dateStr);
   if (isNaN(d)) return dateStr;
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
@@ -26,26 +26,51 @@ const formatDate = (dateStr) => {
 
 export default function UserDetailsPage() {
   const { id } = useParams();
-  console.log(id);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const { eventId } = useSelectedEvent();
+  const location = useLocation();
   const navigate = useNavigate();
+  const { eventId } = useSelectedEvent();
 
-  const { data: userDetailsResponse, isLoading, isError } = useDetailUserQuery(
+  // Detect mode: SuperAdmin vs Organizer
+  // We check location.state or fallback to path detection if navigated directly (less reliable)
+  const isAdminMode = location.state?.isAdminMode || location.pathname.includes('user-management');
+
+  // Fetch data based on mode
+  const { 
+    data: organizerResponse, 
+    isLoading: isOrganizerLoading, 
+    isError: isOrganizerError 
+  } = useDetailUserQuery(
     { eventId, userId: id },
-    { skip: !eventId || !id }
+    { skip: isAdminMode || !eventId || !id }
   );
 
-  console.log(userDetailsResponse);
+  const { 
+    data: adminResponse, 
+    isLoading: isAdminLoading, 
+    isError: isAdminError 
+  } = useAdminUserDetaislQuery(
+    id,
+    { skip: !isAdminMode || !id }
+  );
 
-  // ── Map API response to local variables ──────────────────────────────────
-  const raw = userDetailsResponse?.data;
-  const profile = raw?.profile;
-  const account = raw?.account;
-  const education = profile?.education?.[0];
-  const affiliation = profile?.affiliations?.[0];
+  const isLoading = isAdminMode ? isAdminLoading : isOrganizerLoading;
+  const isError = isAdminMode ? isAdminError : isOrganizerError;
+  const responseData = isAdminMode ? adminResponse?.data : organizerResponse?.data;
+
+  // ── Normalize Data ────────────────────────────────────────────────────────
+  const account = responseData?.account;
+  const profile = responseData?.profile;
+  const roleInEvent = isAdminMode ? account?.activeRole : responseData?.roleInEvent;
+
+  // Handle differences in Education/Affiliation structure
+  const education = Array.isArray(profile?.education) && profile.education.length > 0
+    ? (typeof profile.education[0] === 'object' ? profile.education[0] : { institute: profile.education[0] })
+    : null;
+
+  const affiliation = Array.isArray(profile?.affiliations) && profile.affiliations.length > 0
+    ? (typeof profile.affiliations[0] === 'object' ? profile.affiliations[0] : { company: profile.affiliations[0] })
+    : null;
   const resume = profile?.resume;
-  const roleInEvent = raw?.roleInEvent;
 
   const linkedin = profile?.socialLinks?.find(
     (s) => s.platform?.toLowerCase() === 'linkedin'
@@ -61,21 +86,39 @@ export default function UserDetailsPage() {
   };
 
   const [deleteUser] = useDeleteUserMutation();
+  const [adminDeleteUser] = useAdminDeleteUserMutation();
+
+  const userInfo = JSON.parse(localStorage.getItem('user-info') || '{}');
+  const userRole = userInfo?.role || '';
+  const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
   const handleDelete = async () => {
+    if (isAdminMode) {
+      if (!isSuperAdmin) {
+        toast.error('Only Super Admin can delete users.');
+        return;
+      }
+      try {
+        const res = await adminDeleteUser(id).unwrap();
+        if (res.success === true) {
+          toast.success(res?.message || 'User deleted successfully');
+          navigate(-1);
+        }
+      } catch (err) {
+        toast.error(err.data?.message || 'Failed to delete user');
+      }
+      return;
+    }
     console.log('Delete user:', id, eventId);
     try {  
       const res = await deleteUser({ eventId, userId: id }).unwrap();
-      console.log(res);
       if (res.success === true) {
         toast.success(res?.message || 'User deleted successfully');
-        navigate(-1); // Navigate back after successful deletion
+        navigate(-1);
       }
     } catch (err) {
       console.error('Failed to delete user:', err);
     }
-   
-
   };
 
   // ── Loading / Error states ────────────────────────────────────────────────
@@ -87,7 +130,7 @@ export default function UserDetailsPage() {
     );
   }
 
-  if (isError || !raw) {
+  if (isError || !responseData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-red-400 text-sm">Failed to load user details.</p>
@@ -297,12 +340,15 @@ export default function UserDetailsPage() {
               <Popconfirm
                 title={`Delete ${profile?.name || 'this user'}`}
                 description="Are you sure you want to delete this user? This action cannot be undone."
-              onConfirm={handleDelete}
+                onConfirm={handleDelete}
                 okText="Yes, Delete"
                 cancelText="Cancel"
                 okButtonProps={{ danger: true }}
+                disabled={isAdminMode && !isSuperAdmin}
               >
-                <button className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                <button 
+                  disabled={isAdminMode && !isSuperAdmin}
+                  className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors ${isAdminMode && !isSuperAdmin ? 'bg-gray-300' : 'bg-red-500 hover:bg-red-600'}`}>
                   <Trash2 className="w-4 h-4" />
                   <span>Delete</span>
                 </button>

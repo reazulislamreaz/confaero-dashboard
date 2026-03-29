@@ -61,10 +61,10 @@ export default function ConferenceDashboard({ eventId }) {
   ];
 
   const actions = [
-    { icon: <Megaphone className="w-5 h-5" />, label: 'Create Announcement', onClick: () => navigate('/dashboard/announcements') },
+    { icon: <Megaphone className="w-5 h-5" />, label: 'Announcement', onClick: () => navigate('/dashboard/notice-announcements') },
     { icon: <Users className="w-5 h-5" />, label: 'Assign Reviewer', onClick: () => navigate('/dashboard/reviewer-management') },
     { icon: <CheckCircle className="w-5 h-5" />, label: 'Approve Exhibitor', onClick: () => navigate('/dashboard/exhibitors-sponsors') },
-    { icon: <Mail className="w-5 h-5" />, label: 'Invitations', onClick: () => navigate('/dashboard/invitations') }
+    { icon: <Mail className="w-5 h-5" />, label: 'Invitations', onClick: () => navigate('/dashboard/invitaitons') }
   ];
 
   const handleAnnouncementSubmit = () => {
