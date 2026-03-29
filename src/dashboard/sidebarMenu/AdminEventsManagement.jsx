@@ -476,56 +476,58 @@ export default function AdminEventManagement({ onEventSelect }) {
                   />
                 </div>
 
-                {/* Organizer Emails */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Organizer Emails
-                  </label>
-                  <div className="space-y-2">
-                    {/* Added email tags */}
-                    {organizerEmails.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {organizerEmails.map((email, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 px-3 py-1 rounded-full text-sm"
-                          >
-                            {email}
-                            <button
-                              onClick={() => removeOrganizerEmail(index)}
-                              className="text-teal-400 hover:text-teal-700 ml-1"
+                {/* Organizer Emails - Only visible during creation */}
+                {!editingEvent && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Organizer Emails
+                    </label>
+                    <div className="space-y-2">
+                      {/* Added email tags */}
+                      {organizerEmails.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {organizerEmails.map((email, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 px-3 py-1 rounded-full text-sm"
                             >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
-                        ))}
+                              {email}
+                              <button
+                                onClick={() => removeOrganizerEmail(index)}
+                                className="text-teal-400 hover:text-teal-700 ml-1"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {/* Input + Add */}
+                      <div className="flex gap-2">
+                        <input
+                          type="email"
+                          placeholder="Enter organizer email"
+                          value={organizerEmailInput}
+                          onChange={(e) => setOrganizerEmailInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addOrganizerEmail();
+                            }
+                          }}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={addOrganizerEmail}
+                          className="px-4 py-2 bg-teal-50 border border-teal-300 text-teal-600 hover:bg-teal-100 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          + Add
+                        </button>
                       </div>
-                    )}
-                    {/* Input + Add */}
-                    <div className="flex gap-2">
-                      <input
-                        type="email"
-                        placeholder="Enter organizer email"
-                        value={organizerEmailInput}
-                        onChange={(e) => setOrganizerEmailInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addOrganizerEmail();
-                          }
-                        }}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={addOrganizerEmail}
-                        className="px-4 py-2 bg-teal-50 border border-teal-300 text-teal-600 hover:bg-teal-100 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        + Add
-                      </button>
                     </div>
                   </div>
-                </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
