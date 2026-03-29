@@ -2,7 +2,7 @@ import React from "react";
 
 import OverviewChart from "./OverviewChart";
 import RejectedProductsPage from "./RecentUser";
-import Cardd from "./Card";
+import Cardd from './EventHeader';
 import AdminOverview from "./AdminOverview";
 import { useGetEventQuery } from "../../redux/features/eventSlice/eventSlice";
 import { useIsAdmin } from "../../hooks/useUserRole";

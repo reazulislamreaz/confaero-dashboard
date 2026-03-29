@@ -121,6 +121,13 @@ export const reviewerSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Files"],
     }),
+
+    // get top posters by rating (for dashboard)
+    getTopPosters: builder.query({
+      query: ({ eventId, limit = 3 }) =>
+        `/poster-assign/top-posters/${eventId}?limit=${limit}`,
+      providesTags: ["Files"],
+    }),
   }),
 });
 
@@ -140,4 +147,5 @@ export const {
   useRejectDocumentMutation,
   useReviseDocumentMutation,
   useFlagAdminDocumentMutation,
+  useGetTopPostersQuery,
 } = reviewerSlice;

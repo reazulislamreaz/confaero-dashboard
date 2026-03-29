@@ -1,7 +1,7 @@
 import React from 'react';
 import OverviewChart from './OverviewChart';
 import RejectedProductsPage from './RecentUser';
-import Cardd from './Card';
+import Cardd from './EventHeader';
 import { useParams } from 'react-router-dom';
 
 const EventOverview = () => {

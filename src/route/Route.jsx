@@ -34,6 +34,7 @@ import EditJobPost from "../dashboard/sidebarMenu/resoursce/EditJobPost";
 import QAPolls from "../dashboard/sidebarMenu/resoursce/QaPollSurvey";
 import NoticeAnnouncements from "../dashboard/sidebarMenu/NoticeAnnouncements";
 import Messages from "../dashboard/sidebarMenu/Messages";
+import PostersRanking from "../dashboard/sidebarMenu/Posters";
 import OrganizerGuideline from "../dashboard/sidebarMenu/settings/OrganizerGuideline";
 import UpdateOrganizerGuideline from "../dashboard/sidebarMenu/settings/UpdateOrganizerGuideline";
 import AdminUserList from "../dashboard/sidebarMenu/AdminUserList";
@@ -157,6 +158,10 @@ export const router = createBrowserRouter([
             {
                 path: 'messages',
                 element:<Messages />
+            },
+            {
+                path: 'posters',
+                element:<PostersRanking />
             },
             {
                 path: 'settings',

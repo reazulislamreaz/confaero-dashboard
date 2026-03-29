@@ -1,67 +1,44 @@
-import React, { useState } from 'react';
-import { Star } from 'lucide-react';
+import React from 'react';
+import Card from './Card';
+import TopPostersCard from './TopPostersCard';
+import { useGetInvitationsQuery } from '../../redux/features/invitatation/invitaionSlice';
+import { useGetTopPostersQuery } from '../../redux/features/reviwer/reviewerSlice';
+import { useNavigate } from 'react-router-dom';
 
-const InvitationsDashboard = () => {
-  const [invitations] = useState([
-    {
-      id: 1,
-      name: 'Dr. Sarah Johnson',
-      role: 'Speaker',
-      status: 'pending'
-    },
-    {
-      id: 2,
-      name: 'TechCorp Inc',
-      role: 'Sponsor',
-      status: 'accepted'
-    },
-    {
-      id: 3,
-      name: 'InnovateLab',
-      role: 'Exhibitor',
-      status: 'rejected'
-    }
-  ]);
+const InvitationsDashboard = ({ eventId }) => {
+  const navigate = useNavigate();
+  // Fetch actual data
+  const { data: invitationsData, isLoading: invLoading, isError: invError } = useGetInvitationsQuery({ id: eventId, page: 1, limit: 3 });
+  const { data: postersData, isLoading: postersLoading, isError: postersError } = useGetTopPostersQuery({ eventId, limit: 3 });
 
-  const [topPosters] = useState([
-    {
-      id: 1,
-      rank: 1,
-      title: 'AI in Energy Storage',
-      author: 'Dr. Sarah Johnson',
-      rating: 9.5
-    },
-    {
-      id: 2,
-      rank: 2,
-      title: 'AI in Energy Storage',
-      author: 'Dr. Sarah Johnson',
-      rating: 9.5
-    },
-    {
-      id: 3,
-      rank: 3,
-      title: 'AI in Energy Storage',
-      author: 'Dr. Sarah Johnson',
-      rating: 9.5
-    }
-  ]);
+  const rawInvitations = invitationsData?.data?.data || [];
+  const invitations = [...rawInvitations]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 3);
+
+  // Process posters data - sort by rating and take top 3
+  const rawPosters = postersData?.data || [];
+  const posters = [...rawPosters]
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 3);
 
   const getStatusColor = (status) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'pending':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+        return 'text-gray-600';
       case 'accepted':
-        return 'text-green-600 bg-green-50 border-green-200';
+      case 'approved':
+        return 'text-teal-500';
       case 'rejected':
-        return 'text-red-600 bg-red-50 border-red-200';
+        return 'text-red-500';
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return 'text-gray-500';
     }
   };
 
   const getStatusText = (status) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    if (!status) return '';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   };
 
   return (
@@ -72,61 +49,48 @@ const InvitationsDashboard = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-lg font-semibold text-gray-800">Recent Invitations</h2>
-              <button className="text-sm text-cyan-500 hover:text-cyan-600 font-medium">
+              <button
+                onClick={() => navigate('/dashboard/invitaitons')}
+                className="text-sm text-cyan-500 hover:text-cyan-600 font-medium"
+              >
                 View All
               </button>
             </div>
             <div className="p-6 space-y-4">
-              {invitations.map((invitation) => (
-                <div
-                  key={invitation.id}
-                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div>
-                    <h3 className="font-medium text-gray-800">{invitation.name}</h3>
-                    <p className="text-sm text-gray-500">{invitation.role}</p>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                      invitation.status
-                    )}`}
+              {invLoading ? (
+                <p className="text-gray-500 text-sm">Loading invitations...</p>
+              ) : invError ? (
+                <p className="text-red-500 text-sm">Failed to load invitations.</p>
+              ) : invitations.length === 0 ? (
+                <p className="text-gray-500 text-sm">No recent invitations.</p>
+              ) : (
+                invitations.map((invitation) => (
+                  <div
+                    key={invitation._id || invitation.id}
+                    className="flex justify-between items-center p-4 bg-gray-50 rounded-lg"
                   >
-                    {getStatusText(invitation.status)}
-                  </span>
-                </div>
-              ))}
+                    <div>
+                      <h3 className="font-medium text-gray-800">{invitation.name || invitation?.invitedUserEmail || "Invited User"}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5 capitalize">{invitation.role}</p>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold bg-white ${getStatusColor(
+                        invitation.status
+                      )}`}
+                    >
+                      {getStatusText(invitation.status)}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
           {/* Top Posters Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-800">Top Posters</h2>
-              <button className="text-sm text-cyan-500 hover:text-cyan-600 font-medium">
-                View Rankings
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              {topPosters.map((poster) => (
-                <div
-                  key={poster.id}
-                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-cyan-500 to-teal-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    {poster.rank}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-800">{poster.title}</h3>
-                    <p className="text-sm text-gray-500">{poster.author}</p>
-                  </div>
-                  <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-200">
-                    <Star className="w-4 h-4 fill-cyan-500 text-cyan-500" />
-                    <span className="text-sm font-semibold text-gray-800">{poster.rating}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <TopPostersCard 
+            posters={posters}
+            onViewRankings={() => navigate('/dashboard/reviewer-management')}
+          />
         </div>
       </div>
     </div>
