@@ -8,7 +8,7 @@ export default function ConferenceDashboard({ eventId }) {
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [showReviewerModal, setShowReviewerModal] = useState(false);
 
-  const { data: overviewData, isLoading: overviewLoading, isError: overviewError } = useEventOverviewQuery(eventId);
+  const { data: overviewData, isLoading: overviewLoading, isError: overviewError } = useEventOverviewQuery(eventId, { skip: !eventId });
 
   const eventInfo = overviewData?.data?.eventInfo;
   const statsData = overviewData?.data?.stats;

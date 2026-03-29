@@ -31,10 +31,10 @@ const VolunteerManagementPage = () => {
   const { eventId } = useSelectedEvent();
   console.log('Event ID:', eventId);
 
-  const { data: taskData, isLoading: tasksLoading, refetch } = useGetTaskQuery({ eventId, page, limit });
+  const { data: taskData, isLoading: tasksLoading, refetch } = useGetTaskQuery({ eventId, page, limit }, { skip: !eventId });
   console.log('Task Data:', taskData);
 
-  const { data: volunteerEmailData, isLoading: emailsLoading } = useGetVoluntearEamilQuery(eventId);
+  const { data: volunteerEmailData, isLoading: emailsLoading } = useGetVoluntearEamilQuery(eventId, { skip: !eventId });
   console.log('Volunteer Email Data:', volunteerEmailData);
 
   // Fetch report details when selectedReportId changes

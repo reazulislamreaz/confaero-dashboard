@@ -8,6 +8,13 @@ const baseQuery = fetchBaseQuery({
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
+
+    // ✅ Inject eventid from localStorage (as requested)
+    const eventId = localStorage.getItem("selectedEventId");
+    if (eventId && eventId !== "undefined") {
+      headers.set("eventid", eventId);
+    }
+    
     return headers;
   },
 });
@@ -25,6 +32,19 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     // Redirect to login (Home) page
     window.location.href = "/";
   }
+
+  // Debugging log for 400 errors (as requested)
+  if (result.error && result.error.status === 400) {
+    console.error("API 400 Error Details:", {
+      url: args.url,
+      headers: {
+        eventid: localStorage.getItem("selectedEventId"),
+        hasToken: !!localStorage.getItem("token")
+      },
+      error: result.error
+    });
+  }
+
   return result;
 };
 

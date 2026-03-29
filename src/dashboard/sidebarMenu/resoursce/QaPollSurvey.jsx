@@ -214,9 +214,11 @@ export default function QAPolls() {
           </div>
         </div>
 
+
+
         {/* Q/A Tab Content */}
         {activeTab === 'QA' && (
-          <div>
+          <div >
             <div className="flex justify-end mb-4">
               <button onClick={openAddFAQ} className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors">
                 <Plus className="w-4 h-4" />
@@ -294,7 +296,7 @@ export default function QAPolls() {
                     <div className="flex gap-2">
                       <button onClick={() => handleDeletePoll(poll._id)} className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">Delete</button>
                       <button onClick={() => openEditPoll(poll)} className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm">Update</button>
-                      <button className="flex-1 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-sm">View Votes</button>
+                      {/* <button className="flex-1 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-sm">View Votes</button> */}
                     </div>
                   </div>
                 ))}

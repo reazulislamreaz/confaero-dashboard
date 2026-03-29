@@ -760,7 +760,7 @@ export default function InvitationsPage() {
     search: debouncedSearch,
   }), [eventId, currentPage, itemsPerPage, activeTab, debouncedSearch]);
 
-  const { data: invitationsData, isLoading, isFetching } = useGetInvitationsQuery(queryParams);
+  const { data: invitationsData, isLoading, isFetching } = useGetInvitationsQuery(queryParams, { skip: !eventId });
   console.log(invitationsData);
 
   const invitations = invitationsData?.data?.data || [];

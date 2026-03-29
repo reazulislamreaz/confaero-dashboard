@@ -23,11 +23,11 @@ export default function ExhibitorsSponsors() {
    const { eventId, setEvent } = useSelectedEvent();
   console.log(eventId);
 
-  const { data: exhibitorsRes, isLoading: isLoadingExhibitors } = useGetExibutorsQuery(eventId);
+  const { data: exhibitorsRes, isLoading: isLoadingExhibitors } = useGetExibutorsQuery(eventId, { skip: !eventId });
   
   // console.log(exhibitorsRes);
 
-  const { data: sponsorsRes, isLoading: isLoadingSponsors } = useGetSponsorsQuery(eventId);
+  const { data: sponsorsRes, isLoading: isLoadingSponsors } = useGetSponsorsQuery(eventId, { skip: !eventId });
 
   // console.log(sponsorsRes);
 

@@ -20,7 +20,7 @@ export default function NoticeAnnouncements() {
     eventId,
     page: currentPage,
     limit: itemsPerPage,
-  });
+  }, { skip: !eventId });
 
   const [createAnnouncement] = useCreateAnnouncementMutation();
   const [updateAnnouncement] = useUpdateAnnouncementMutation();
