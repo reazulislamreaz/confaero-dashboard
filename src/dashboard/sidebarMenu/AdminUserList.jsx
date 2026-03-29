@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
-import { Search, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAdminUsersQuery } from '../../redux/features/userSlice/userSlice';
+import { useAdminUsersQuery, useDeleteUserMutation } from '../../redux/features/userSlice/userSlice';
+import { Popconfirm } from 'antd';
+import toast from 'react-hot-toast';
+
+const ROLE_DISPLAY = {
+  ATTENDEE: 'Attendee',
+  ORGANIZER: 'Organizer',
+};
+
+const ROLE_FILTER_OPTIONS = [
+  { label: 'All Roles', value: 'all' },
+  { label: 'Attendee', value: 'User' },
+  { label: 'Organizer', value: 'Organizer' },
+];
 
 const App = () => {
   const navigate = useNavigate();
@@ -52,156 +65,208 @@ const App = () => {
     setCurrentPage(1);
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
-        <p className="text-gray-600">Manage User and profiles</p>
-      </div>
+  const [deleteUser] = useDeleteUserMutation();
 
-      {/* Search Bar and Role Filter */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="relative flex-grow max-w-md">
-          <input
-            type="text"
-            placeholder="Search by email or name"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <div className="absolute right-3 top-2.5 text-gray-400">
-            <Search size={20} />
+  const handleDelete = async (accountId) => {
+    try {  
+      const res = await deleteUser({ userId: accountId }).unwrap();
+      if (res.success === true) {
+        toast.success(res?.message || 'User deleted successfully');
+      }
+    } catch (err) {
+      console.error('Failed to delete user:', err);
+    }
+  };
+
+  // Generate page numbers to display (max 5 around current page)
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
+
+  return (
+    <div className="bg-gray-50 p-6 relative">
+      <div>
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800 mb-1">User Management</h1>
+          <p className="text-gray-500 text-sm">Manage users and profiles</p>
+        </div>
+
+        {/* Search and Filter Bar */}
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+          <div className="flex gap-3">
+            {/* Search Input */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by email or name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+
+            {/* Role Filter */}
+            <div className="relative">
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white cursor-pointer min-w-40"
+              >
+                {ROLE_FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <svg
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         </div>
 
-        {/* Role Filter */}
-        <div className="flex items-center space-x-2 ml-4">
-          <span className="text-sm text-gray-700">Role:</span>
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All</option>
-            <option value="User">Attendee</option>
-            <option value="Organizer">Organizer</option>
-          </select>
-        </div>
-      </div>
+        {/* Table */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">S. No</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Address</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Role</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">
+                      Loading users...
+                    </td>
+                  </tr>
+                ) : isError ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-red-400 text-sm">
+                      Failed to load users. Please try again.
+                    </td>
+                  </tr>
+                ) : filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">
+                      No users found.
+                    </td>
+                  </tr>
+                ) : (
+                  currentUsers.map((user, index) => (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-800">{user.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {user.address}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {user.role}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => navigate(`/dashboard/user-management/details/${user.id}`)}
+                            className="px-4 py-1 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition-colors"
+                          >
+                            Details
+                          </button>
+                          <Popconfirm
+                            title={`Delete ${user.name}`}
+                            description="Are you sure you want to delete this user? This action cannot be undone."
+                            onConfirm={() => handleDelete(user.id)}
+                            okText="Yes, Delete"
+                            cancelText="Cancel"
+                            okButtonProps={{ danger: true }}
+                          >
+                            <button className="p-1 text-red-500 hover:text-red-700 transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </Popconfirm>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-teal-100">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S. ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {isLoading && (
-              <tr>
-                <td colSpan={7} className="text-center text-gray-500 py-6">Loading users...</td>
-              </tr>
-            )}
-            {isError && (
-              <tr>
-                <td colSpan={7} className="text-center text-red-500 py-6">Failed to load users.</td>
-              </tr>
-            )}
-            {!isLoading && !isError && currentUsers.length === 0 && (
-              <tr>
-                <td colSpan={7} className="text-center text-gray-400 py-6">No users found.</td>
-              </tr>
-            )}
-            {!isLoading && !isError && currentUsers.map((user, index) => (
-              <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  #{String(startIndex + index + 1).padStart(2, '0')}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.address}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.role === 'User' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                  }`}>
-                    {user.role === 'User' ? 'Attendee' : 'Organizer'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.joined}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => navigate(`/dashboard/user-management/details/${user.id}`)}
-                      className="px-3 py-1 bg-teal-500 text-white text-xs rounded-md hover:bg-teal-600 transition-colors"
-                    >
-                      Details
-                    </button>
-                    <button className="p-1 text-gray-500 hover:text-red-500 transition-colors">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Showing</span>
+              <select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value={6}>6</option>
+                <option value={10}>10</option>
+                <option value={12}>12</option>
+                <option value={24}>24</option>
+                <option value={50}>50</option>
+              </select>
+              <span className="text-sm text-gray-700 ml-2">of {filteredUsers.length} users</span>
+            </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between mt-6">
-        <div className="flex items-center">
-          <span className="text-sm text-gray-700 mr-2">Showing</span>
-          <select
-            value={itemsPerPage}
-            onChange={handleItemsPerPageChange}
-            className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value={6}>6</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
-          <span className="text-sm text-gray-700 ml-2">of {filteredUsers.length}</span>
-        </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
 
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`p-2 rounded-md ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-          >
-            <ChevronLeft size={18} />
-          </button>
+              {getPageNumbers().map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`w-8 h-8 rounded text-sm ${
+                    currentPage === pageNum
+                      ? 'bg-teal-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
 
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => handlePageChange(i + 1)}
-              className={`px-3 py-1 rounded-md text-sm ${
-                currentPage === i + 1
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`p-2 rounded-md ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-          >
-            <ChevronRight size={18} />
-          </button>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
