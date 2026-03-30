@@ -42,6 +42,7 @@ import AdminEventManagement from "../dashboard/sidebarMenu/AdminEventsManagement
 import DashboardOverview from "../dashboard/home/AdminOverview";
 import EventOverview from "../dashboard/home/EventOverview";
 import AdminRoute from "./AdminRoute";
+import PaymentManagement from "../dashboard/sidebarMenu/PaymentManagement";
 
 // Wrapper component to pass context to AdminEventManagement
 function AdminEventsWrapper() {
@@ -157,6 +158,10 @@ export const router = createBrowserRouter([
             {
                 path: 'posters',
                 element:<PostersRanking />
+            },
+            {
+                path: 'payment-management',
+                element:<PaymentManagement />
             },
             {
                 path: 'settings',
