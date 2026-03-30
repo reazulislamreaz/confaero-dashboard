@@ -22,7 +22,9 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
   
-  if (result.error && result.error.status === 401) {
+  const isLoginRequest = typeof args === "string" ? args.includes("/auth/login") : args.url?.includes("/auth/login");
+
+  if (result.error && result.error.status === 401 && !isLoginRequest) {
     // Intercept 401 Unauthorized globally
     localStorage.removeItem("token");
     // Clear user metadata if stored

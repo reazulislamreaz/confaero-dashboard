@@ -17,7 +17,10 @@ const Login = () => {
   };
 
   const [login, { isLoading }] = useAdminLoginMutation();
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
     const newErrors = {};
 
     if (!email) {
@@ -60,7 +63,7 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error);
 
-      const message = error?.data?.message || "Invalid email or password";
+      const message = error?.data?.message || "Incorrect password. Please try again.";
 
       setErrors({ general: message });
 
@@ -88,7 +91,12 @@ const Login = () => {
                 Please enter your email and password to continue.
               </p>
 
-              <div className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {errors.general && (
+                  <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                    <p className="text-red-700 text-sm font-medium">{errors.general}</p>
+                  </div>
+                )}
                 {/* Email Field */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -180,13 +188,13 @@ const Login = () => {
 
                 {/* Submit Button */}
                 <button
-                  type="button"
-                  onClick={handleSubmit}
-                  className="w-full bg-[#0FC3C2] text-white  py-3 rounded-lg font-semibold   transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-[#0FC3C2] text-white  py-3 rounded-lg font-semibold   transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sign in
+                  {isLoading ? "Signing in..." : "Sign in"}
                 </button>
-              </div>
+              </form>
             </div>
           </div>
         </div>
