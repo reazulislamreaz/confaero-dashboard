@@ -59,21 +59,6 @@ export default function EventAgendaBuilder() {
 
   console.log(eventId);
 
-  // const {
-  //   data: adminResponse,
-  //   isLoading: adminLoading,
-  //   isError: adminError,
-  // } = useAdminEventdetailsQuery(eventId, {
-  //   skip: !isAdmin,
-  // });
-
-  // const {
-  //   data: userResponse,
-  //   isLoading: userLoading,
-  //   isError: userError,
-  // } = useGetEventQuery(undefined, {
-  //   skip: isAdmin,
-  // });
 
   const {
     data: adminResponse,
@@ -120,6 +105,7 @@ export default function EventAgendaBuilder() {
         endDate: formatDateTimeLocal(event.endDate),
         location: event.location || "",
         mapLink: event.googleMapLink || "",
+        price: event.price || "",
         description: event.details || "",
         website: event.website || "",
       });
@@ -260,6 +246,12 @@ export default function EventAgendaBuilder() {
 
   const handleSaveChanges = async () => {
     const formData = new FormData();
+    formData.append("title", eventData.title);
+    if (eventData.startDate) formData.append("startDate", new Date(eventData.startDate).toISOString());
+    if (eventData.endDate) formData.append("endDate", new Date(eventData.endDate).toISOString());
+    formData.append("location", eventData.location);
+    formData.append("googleMapLink", eventData.mapLink);
+    formData.append("price", eventData.price);
     formData.append("website", eventData.website);
     formData.append("details", eventData.description);
     if (eventData.bannerImage) {
@@ -269,6 +261,10 @@ export default function EventAgendaBuilder() {
       const result = await updateEvent({ eventId, eventData: formData });
       if (result?.data?.success === true) {
         toast.success("Event updated successfully!");
+        if (result.data.data) {
+          setEvent(result.data.data);
+        }
+        refetchEvent();
       } else {
         toast.error("Failed to update event. Please try again.");
       }
@@ -563,8 +559,15 @@ export default function EventAgendaBuilder() {
         </div>
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+
+
+
+      {/*  */}
+
+
+       <div className="grid grid-cols-2 gap-4 mb-6">
+        <div>
+           <label className="block text-sm font-medium text-gray-700 mb-2">
           Website
         </label>
         <input
@@ -575,7 +578,22 @@ export default function EventAgendaBuilder() {
           }
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
         />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Registration Fee
+          </label>
+          <input
+            type="number"
+            value={eventData.price}
+            onChange={(e) =>
+              setEventData((p) => ({ ...p, price: e.target.value }))
+            }
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
       </div>
+      
 
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
