@@ -68,6 +68,7 @@ export const apiSlice = createApi({
     "Notifications",
     "Conversations",
     "Messages",
+    "VerifyEmail",
   ],
 
   endpoints: () => ({}),

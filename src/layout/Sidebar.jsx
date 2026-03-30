@@ -13,7 +13,7 @@ import { CiBullhorn, CiSettings } from "react-icons/ci";
 import Swal from "sweetalert2";
 import { BsCalendarEventFill, BsExclude } from "react-icons/bs";
 // import { FaUserAlt, FaUserFriends } from "react-icons/fa";
-import {  TbUsers, TbUsersGroup } from "react-icons/tb";
+import {  TbUsers, TbUsersGroup, TbShieldCheck } from "react-icons/tb";
 // import { GoMail } from "react-icons/go";
 // import { ImCoinDollar } from "react-icons/im";
 // import { GrAnnounce } from 'react-icons/gr';
@@ -333,6 +333,19 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                   >
                     <FaRegUser className="h-7 w-7 lg:h-5 lg:w-5" />
                     <span className="hidden ml-2 sm:block">Registration</span>
+                  </NavLink>
+
+                  {/* Verified Emails */}
+                  <NavLink
+                    to="verified-emails"
+                    className={({ isActive }) =>
+                      isActive
+                        ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                        : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                    }
+                  >
+                    <TbShieldCheck className="h-7 w-7 lg:h-5 lg:w-5" />
+                    <span className="hidden ml-2 sm:block">Verified Emails</span>
                   </NavLink>
 
                   {/* Invitations */}

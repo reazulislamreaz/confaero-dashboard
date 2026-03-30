@@ -43,6 +43,7 @@ import DashboardOverview from "../dashboard/home/AdminOverview";
 import EventOverview from "../dashboard/home/EventOverview";
 import AdminRoute from "./AdminRoute";
 import PaymentManagement from "../dashboard/sidebarMenu/PaymentManagement";
+import VerifiedEmails from "../dashboard/sidebarMenu/VerifiedEmails";
 
 // Wrapper component to pass context to AdminEventManagement
 function AdminEventsWrapper() {
@@ -162,6 +163,10 @@ export const router = createBrowserRouter([
             {
                 path: 'payment-management',
                 element:<PaymentManagement />
+            },
+            {
+                path: 'verified-emails',
+                element:<VerifiedEmails />
             },
             {
                 path: 'settings',
