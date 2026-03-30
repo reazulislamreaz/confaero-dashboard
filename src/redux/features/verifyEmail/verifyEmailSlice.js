@@ -15,7 +15,6 @@ const verifyEmailApiSlice = apiSlice.injectEndpoints({
             ]
           : [{ type: "VerifyEmail", id: "LIST" }],
     }),
-    // added
     addVerifyEmails: builder.mutation({
       query: ({ eventId, emails }) => ({
         url: `/organizer/verify-email/add`,
