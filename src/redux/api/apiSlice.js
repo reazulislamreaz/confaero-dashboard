@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  // baseUrl: "https://reazul8078.suplify.life/api/v1",
-  baseUrl: "http://10.10.11.30:8080/api/v1",
+  baseUrl: "https://reazul8078.suplify.life/api/v1",
+  // baseUrl: "http://10.10.11.30:8080/api/v1",
   prepareHeaders: (headers, { getState }) => {
     const token = localStorage.getItem("token");
     if (token) {
