@@ -46,6 +46,14 @@ const invitaionSlice =  apiSlice.injectEndpoints({
   invalidatesTags: ['Invitations'], 
     }),    
 
+    resendInvitation: builder.mutation({
+      query: ({ invitationId, eventId }) => ({
+        url: `/invitation/${invitationId}/resend/${eventId}`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Invitations'],
+    }),
+
 
 
 
@@ -59,4 +67,5 @@ export const {
     useGetInvitationsQuery ,
     useSendInvitationForSpekerMutation,
     useDeleteInvitationMutation,
+    useResendInvitationMutation,
 } = invitaionSlice;

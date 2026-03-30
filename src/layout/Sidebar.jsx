@@ -164,6 +164,8 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                     <span className="hidden ml-2 sm:block">User Management</span>
                   </NavLink>
 
+
+
                   {/* Events Management - always visible, collapsible with arrow */}
                   <li className="mb-[6px]">
                     <NavLink
@@ -221,6 +223,34 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                           <MdOutlineInsertInvitation className="h-5 w-5 lg:h-4 lg:w-4 flex-shrink-0" />
                           <span className="hidden ml-2 sm:block">Event Details & Agenda</span>
                         </NavLink>
+
+{/* ADD THIS */}
+<NavLink
+  to="verified-emails"
+  className={({ isActive }) =>
+    isActive
+      ? "flex p-[8px] m-[4px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg text-sm"
+      : "flex text-[#252525] bg-[#F6F6F6] p-[8px] m-[4px] cursor-pointer items-center font-medium rounded-lg text-sm"
+  }
+>
+  <TbShieldCheck className="h-5 w-5 lg:h-4 lg:w-4 flex-shrink-0" />
+  <span className="hidden ml-2 sm:block">Verified Emails</span>
+</NavLink>
+
+
+{/* Payment Management  */}
+
+{/* <NavLink
+  to="payment-management"
+  className={({ isActive }) =>
+    isActive
+      ? "flex p-[8px] m-[4px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg text-sm"
+      : "flex text-[#252525] bg-[#F6F6F6] p-[8px] m-[4px] cursor-pointer items-center font-medium rounded-lg text-sm"
+  }
+>
+  <FaDollarSign className="h-5 w-5 lg:h-4 lg:w-4 flex-shrink-0" />
+  <span className="hidden ml-2 sm:block">Payment Management</span>
+</NavLink> */}
 
                         <NavLink
                           to="reviewer-management"
@@ -335,19 +365,7 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                     <span className="hidden ml-2 sm:block">Registration</span>
                   </NavLink>
 
-                  {/* Verified Emails */}
-                  <NavLink
-                    to="verified-emails"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                        : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
-                    }
-                  >
-                    <TbShieldCheck className="h-7 w-7 lg:h-5 lg:w-5" />
-                    <span className="hidden ml-2 sm:block">Verified Emails</span>
-                  </NavLink>
-
+                
                   {/* Invitations */}
                   <NavLink
                     to="invitaitons"
@@ -373,6 +391,34 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                     <MdOutlineInsertInvitation className="h-7 w-7 lg:h-5 lg:w-5" />
                     <span className="hidden ml-2 sm:block">Event Details & Agenda</span>
                   </NavLink>
+
+                  {/* Verified Emails */}
+                  <NavLink
+                    to="verified-emails"
+                    className={({ isActive }) =>
+                      isActive
+                        ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                        : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                    }
+                  >
+                    <TbShieldCheck className="h-7 w-7 lg:h-5 lg:w-5" />
+                    <span className="hidden ml-2 sm:block">Verified Emails</span>
+                  </NavLink>
+
+
+                  {/* Payment Management */}
+                  <NavLink
+                    to="payment-management"
+                    className={({ isActive }) =>
+                      isActive
+                        ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
+                        : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
+                    }
+                  >
+                    <FaDollarSign className="h-7 w-7 lg:h-5 lg:w-5" />
+                    <span className="hidden ml-2 sm:block">Payment Management</span>
+                  </NavLink>
+
 
                   {/* Reviewer Management */}
                   <NavLink
@@ -476,18 +522,6 @@ const Sidebar = ({ isAdmin, hasSelectedEvent = false }) => {
                     <span className="hidden ml-2 sm:block">Announcements</span>
                   </NavLink>
 
-                  {/* Payment Management */}
-                  <NavLink
-                    to="payment-management"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "flex p-[10px] m-[6px] cursor-pointer items-center font-medium bg-[#32A69A] text-[#F6F6F6] rounded-lg"
-                        : "flex text-[#252525] bg-[#F6F6F6] p-[10px] m-[6px] cursor-pointer items-center font-medium rounded-lg"
-                    }
-                  >
-                    <FaDollarSign className="h-7 w-7 lg:h-5 lg:w-5" />
-                    <span className="hidden ml-2 sm:block">Payment Management</span>
-                  </NavLink>
                 </div>
               )
             }

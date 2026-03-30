@@ -1,469 +1,3 @@
-// import React, { useState, useMemo } from 'react';
-// import { Search, Eye, Heart, Trash2, X, ChevronLeft, ChevronRight, Plus, Mail, User, Calendar, Building2, Phone, MapPin, RefreshCw } from 'lucide-react';
-// import { useSelectedEvent } from '../../hooks/useSelectedEvent';
-// import { useGetInvitationsQuery } from '../../redux/features/invitatation/invitaionSlice';
-
-// // --- Role / Status Config ---
-// const ROLE_MAP = {
-//   SPEAKER: { label: 'Speaker', color: 'text-teal-700 bg-teal-50 border border-teal-200' },
-//   SPONSOR: { label: 'Sponsor', color: 'text-purple-700 bg-purple-50 border border-purple-200' },
-//   VOLUNTEER: { label: 'Volunteer', color: 'text-amber-700 bg-amber-50 border border-amber-200' },
-//   EXHIBITOR: { label: 'Exhibitor', color: 'text-blue-700 bg-blue-50 border border-blue-200' },
-//   TRACK_CHAIR: { label: 'Track Chair', color: 'text-pink-700 bg-pink-50 border border-pink-200' },
-//   ABSTRACT_REVIEWER: { label: 'Reviewer', color: 'text-emerald-700 bg-emerald-50 border border-emerald-200' },
-// };
-
-// const STATUS_MAP = {
-//   ACCEPTED: { label: 'Accepted', color: 'text-teal-700 bg-teal-50 border border-teal-200', dot: 'bg-teal-500' },
-//   PENDING: { label: 'Pending', color: 'text-amber-700 bg-amber-50 border border-amber-200', dot: 'bg-amber-400' },
-//   REJECTED: { label: 'Rejected', color: 'text-red-700 bg-red-50 border border-red-200', dot: 'bg-red-500' },
-// };
-
-// const TAB_ROLE_MAP = {
-//   All: null,
-//   Speakers: 'SPEAKER',
-//   Sponsors: 'SPONSOR',
-//   Exhibitors: 'EXHIBITOR',
-//   Volunteers: 'VOLUNTEER',
-//   Reviewers: 'ABSTRACT_REVIEWER',
-//   'Track Chairs': 'TRACK_CHAIR',
-// };
-
-// const TABS = Object.keys(TAB_ROLE_MAP);
-
-// function getRoleInfo(role) {
-//   return ROLE_MAP[role] || { label: role, color: 'text-gray-700 bg-gray-50 border border-gray-200' };
-// }
-
-// function getStatusInfo(status) {
-//   return STATUS_MAP[status] || { label: status, color: 'text-gray-700 bg-gray-50 border border-gray-200', dot: 'bg-gray-400' };
-// }
-
-// function formatDate(dateStr) {
-//   if (!dateStr) return '—';
-//   return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-// }
-
-// // --- Skeleton Row ---
-// function SkeletonRow() {
-//   return (
-//     <tr>
-//       {[...Array(6)].map((_, i) => (
-//         <td key={i} className="px-6 py-4">
-//           <div className="h-4 bg-gray-100 rounded animate-pulse" style={{ width: `${60 + Math.random() * 30}%` }} />
-//         </td>
-//       ))}
-//     </tr>
-//   );
-// }
-
-// // --- Badge ---
-// function Badge({ className, children }) {
-//   return (
-//     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium ${className}`}>
-//       {children}
-//     </span>
-//   );
-// }
-
-// // --- Details Modal ---
-// function DetailsModal({ invitation, onClose, onResend }) {
-//   if (!invitation) return null;
-//   const role = getRoleInfo(invitation.role);
-//   const status = getStatusInfo(invitation.status);
-//   return (
-//     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-//       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-//         {/* Header */}
-//         <div className="bg-gradient-to-r from-teal-600 to-teal-500 p-6 text-white relative">
-//           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
-//             <X className="w-5 h-5" />
-//           </button>
-//           <div className="flex items-center gap-4">
-//             <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">
-//               {invitation.name?.[0] || '?'}
-//             </div>
-//             <div>
-//               <h2 className="text-xl font-semibold">{invitation.name || 'Unknown'}</h2>
-//               <p className="text-teal-100 text-sm mt-0.5">{invitation.email}</p>
-//             </div>
-//           </div>
-//           <div className="flex gap-2 mt-4">
-//             <Badge className={role.color}>{role.label}</Badge>
-//             <Badge className={`${status.color} flex items-center`}>
-//               <span className={`w-1.5 h-1.5 rounded-full ${status.dot} mr-1`} />
-//               {status.label}
-//             </Badge>
-//           </div>
-//         </div>
-
-//         {/* Body */}
-//         <div className="p-6 space-y-5">
-//           <Section title="Invitation Details">
-//             <InfoRow icon={<Mail className="w-4 h-4" />} label="Email" value={invitation.email} />
-//             <InfoRow icon={<Calendar className="w-4 h-4" />} label="Sent" value={formatDate(invitation.createdAt)} />
-//             <InfoRow icon={<Calendar className="w-4 h-4" />} label="Updated" value={formatDate(invitation.updatedAt)} />
-//           </Section>
-//           <Section title="System Info">
-//             <InfoRow icon={<User className="w-4 h-4" />} label="Invitation ID" value={<code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{invitation._id}</code>} />
-//             <InfoRow icon={<Building2 className="w-4 h-4" />} label="Event ID" value={<code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{invitation.eventId}</code>} />
-//           </Section>
-//         </div>
-
-//         <div className="flex gap-3 px-6 pb-6">
-//           <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-//             Close
-//           </button>
-//           <button
-//             onClick={() => { onResend(invitation); onClose(); }}
-//             className="flex-1 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
-//           >
-//             <RefreshCw className="w-4 h-4" /> Resend
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function Section({ title, children }) {
-//   return (
-//     <div>
-//       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{title}</p>
-//       <div className="space-y-2.5">{children}</div>
-//     </div>
-//   );
-// }
-
-// function InfoRow({ icon, label, value }) {
-//   return (
-//     <div className="flex items-start gap-3">
-//       <span className="text-gray-400 mt-0.5">{icon}</span>
-//       <span className="text-sm text-gray-500 w-24 shrink-0">{label}</span>
-//       <span className="text-sm text-gray-800 font-medium">{value}</span>
-//     </div>
-//   );
-// }
-
-// // --- Send Invitation Modal ---
-// function SendInvitationModal({ onClose, onSubmit }) {
-//   const [form, setForm] = useState({ role: '', session: '', name: '', email: '' });
-//   const set = (field, val) => setForm(p => ({ ...p, [field]: val }));
-
-//   const handleSubmit = () => {
-//     if (!form.role || !form.name || !form.email) return alert('Please fill in all required fields');
-//     if (form.role === 'SPEAKER' && !form.session) return alert('Please select a session for Speaker');
-//     onSubmit(form);
-//     onClose();
-//   };
-
-//   return (
-//     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-//       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-//         <div className="flex items-center justify-between px-6 py-5 border-b">
-//           <div>
-//             <h2 className="text-lg font-semibold text-gray-800">Send Invitation</h2>
-//             <p className="text-sm text-gray-500 mt-0.5">Invite someone to participate in this event</p>
-//           </div>
-//           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-//             <X className="w-5 h-5" />
-//           </button>
-//         </div>
-
-//         <div className="p-6 space-y-4">
-//           <Field label="Role" required>
-//             <select value={form.role} onChange={e => set('role', e.target.value)} className={selectClass}>
-//               <option value="">Select a role</option>
-//               {Object.entries(ROLE_MAP).map(([k, v]) => (
-//                 <option key={k} value={k}>{v.label}</option>
-//               ))}
-//             </select>
-//           </Field>
-
-//           {form.role === 'SPEAKER' && (
-//             <Field label="Session" required>
-//               <select value={form.session} onChange={e => set('session', e.target.value)} className={selectClass}>
-//                 <option value="">Select a session</option>
-//                 {['Session 1', 'Session 2', 'Session 3', 'Session 4'].map(s => (
-//                   <option key={s} value={s}>{s}</option>
-//                 ))}
-//               </select>
-//             </Field>
-//           )}
-
-//           <Field label="Full Name" required>
-//             <input type="text" placeholder="e.g. Dr. Sarah Johnson" value={form.name}
-//               onChange={e => set('name', e.target.value)} className={inputClass} />
-//           </Field>
-
-//           <Field label="Email Address" required>
-//             <input type="email" placeholder="e.g. sarah@example.com" value={form.email}
-//               onChange={e => set('email', e.target.value)} className={inputClass} />
-//           </Field>
-//         </div>
-
-//         <div className="px-6 pb-6">
-//           <button onClick={handleSubmit}
-//             className="w-full py-3 bg-teal-600 text-white rounded-xl font-medium hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
-//             <Mail className="w-4 h-4" /> Send Invitation
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function Field({ label, required, children }) {
-//   return (
-//     <div>
-//       <label className="block text-sm font-medium text-gray-700 mb-1.5">
-//         {label} {required && <span className="text-red-500">*</span>}
-//       </label>
-//       {children}
-//     </div>
-//   );
-// }
-
-// const inputClass = 'w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition';
-// const selectClass = 'w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition';
-
-// // --- Main Page ---
-// export default function InvitationsPage() {
-//   const [activeTab, setActiveTab] = useState('All');
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [itemsPerPage, setItemsPerPage] = useState(9);
-//   const [showDetailsModal, setShowDetailsModal] = useState(false);
-//   const [selectedInvitation, setSelectedInvitation] = useState(null);
-//   const [showInviteModal, setShowInviteModal] = useState(false);
-//   const [favorites, setFavorites] = useState(new Set());
-
-//   const { eventId } = useSelectedEvent();
-//   console.log(eventId);
-//   const { data: invitationsData, isLoading } = useGetInvitationsQuery(eventId);
-
-//   // Extract real data
-//   const allInvitations = useMemo(() => invitationsData?.data?.data || [], [invitationsData]);
-
-//   const filteredInvitations = useMemo(() => {
-//     const roleFilter = TAB_ROLE_MAP[activeTab];
-//     return allInvitations.filter(inv => {
-//       const matchesSearch = !searchTerm ||
-//         (inv.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         (inv.email || '').toLowerCase().includes(searchTerm.toLowerCase());
-//       const matchesTab = !roleFilter || inv.role === roleFilter;
-//       return matchesSearch && matchesTab;
-//     });
-//   }, [allInvitations, activeTab, searchTerm]);
-
-//   const totalPages = Math.ceil(filteredInvitations.length / itemsPerPage);
-//   const startIndex = (currentPage - 1) * itemsPerPage;
-//   const currentInvitations = filteredInvitations.slice(startIndex, startIndex + itemsPerPage);
-
-//   const tabCounts = useMemo(() => {
-//     const counts = { All: allInvitations.length };
-//     Object.entries(TAB_ROLE_MAP).forEach(([tab, role]) => {
-//       if (role) counts[tab] = allInvitations.filter(i => i.role === role).length;
-//     });
-//     return counts;
-//   }, [allInvitations]);
-
-//   const toggleFavorite = (id) => setFavorites(prev => {
-//     const next = new Set(prev);
-//     next.has(id) ? next.delete(id) : next.add(id);
-//     return next;
-//   });
-
-//   const handleDelete = (inv) => {
-//     console.log('Delete:', inv._id);
-//     // dispatch delete action here
-//   };
-
-//   return (
-//     <div className="bg-gray-50 min-h-screen p-6">
-//       <style>{`
-//         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-//         .animate-fade-in { animation: fadeIn 0.2s ease; }
-//         .row-enter { animation: fadeIn 0.15s ease both; }
-//       `}</style>
-
-//       <div className="max-w-7xl mx-auto">
-//         {/* Header */}
-//         <div className="flex items-center justify-between mb-6">
-//           <div>
-//             <h1 className="text-2xl font-bold text-gray-900">Invitations</h1>
-//             <p className="text-gray-500 text-sm mt-0.5">
-//               {isLoading ? 'Loading...' : `${allInvitations.length} total invitation${allInvitations.length !== 1 ? 's' : ''}`}
-//             </p>
-//           </div>
-//           <button onClick={() => setShowInviteModal(true)}
-//             className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
-//             <Plus className="w-4 h-4" /> Send Invitation
-//           </button>
-//         </div>
-
-//         {/* Tabs */}
-//         <div className="bg-white rounded-xl border border-gray-100 mb-4 shadow-sm overflow-x-auto">
-//           <div className="flex p-1.5 gap-1">
-//             {TABS.map(tab => (
-//               <button key={tab} onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
-//                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-all ${
-//                   activeTab === tab
-//                     ? 'bg-teal-600 text-white shadow-sm'
-//                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-//                 }`}>
-//                 {tab}
-//                 {tabCounts[tab] > 0 && (
-//                   <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-//                     activeTab === tab ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
-//                   }`}>{tabCounts[tab]}</span>
-//                 )}
-//               </button>
-//             ))}
-//           </div>
-//         </div>
-
-//         {/* Search */}
-//         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 mb-4">
-//           <div className="relative">
-//             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-//             <input type="text" placeholder="Search by name or email…" value={searchTerm}
-//               onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-//               className="w-full pl-9 pr-4 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 border-0" />
-//           </div>
-//         </div>
-
-//         {/* Table */}
-//         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-//           <div className="overflow-x-auto">
-//             <table className="w-full">
-//               <thead>
-//                 <tr className="border-b border-gray-100">
-//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
-//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Role</th>
-//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
-//                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
-//                 </tr>
-//               </thead>
-//               <tbody className="divide-y divide-gray-50">
-//                 {isLoading ? (
-//                   [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
-//                 ) : currentInvitations.length === 0 ? (
-//                   <tr>
-//                     <td colSpan={6} className="px-6 py-16 text-center">
-//                       <div className="flex flex-col items-center gap-2 text-gray-400">
-//                         <Mail className="w-10 h-10 opacity-30" />
-//                         <p className="text-sm font-medium">No invitations found</p>
-//                         <p className="text-xs">{searchTerm ? 'Try a different search term' : 'Send your first invitation to get started'}</p>
-//                       </div>
-//                     </td>
-//                   </tr>
-//                 ) : (
-//                   currentInvitations.map((inv, i) => {
-//                     const role = getRoleInfo(inv.role);
-//                     const status = getStatusInfo(inv.status);
-//                     const isFav = favorites.has(inv._id);
-//                     return (
-//                       <tr key={inv._id} className="hover:bg-gray-50/80 transition-colors row-enter"
-//                         style={{ animationDelay: `${i * 30}ms` }}>
-//                         <td className="px-6 py-4">
-//                           <div className="flex items-center gap-3">
-//                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-//                               {(inv.name || inv.email)?.[0]?.toUpperCase() || '?'}
-//                             </div>
-//                             <span className="text-sm font-medium text-gray-800">{inv.name || <span className="text-gray-400 italic">No name</span>}</span>
-//                           </div>
-//                         </td>
-//                         <td className="px-6 py-4">
-//                           <Badge className={role.color}>{role.label}</Badge>
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-500">{inv.email}</td>
-//                         <td className="px-6 py-4">
-//                           <Badge className={status.color}>
-//                             <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
-//                             {status.label}
-//                           </Badge>
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-500">{formatDate(inv.createdAt)}</td>
-//                         <td className="px-6 py-4">
-//                           <div className="flex items-center gap-1">
-//                             <button onClick={() => { setSelectedInvitation(inv); setShowDetailsModal(true); }}
-//                               className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors" title="View Details">
-//                               <Eye className="w-4 h-4" />
-//                             </button>
-//                             <button onClick={() => toggleFavorite(inv._id)}
-//                               className={`p-1.5 rounded-lg transition-colors ${isFav ? 'text-pink-500 bg-pink-50' : 'text-gray-400 hover:text-pink-500 hover:bg-pink-50'}`} title="Favorite">
-//                               <Heart className="w-4 h-4" fill={isFav ? 'currentColor' : 'none'} />
-//                             </button>
-//                             <button onClick={() => handleDelete(inv)}
-//                               className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
-//                               <Trash2 className="w-4 h-4" />
-//                             </button>
-//                           </div>
-//                         </td>
-//                       </tr>
-//                     );
-//                   })
-//                 )}
-//               </tbody>
-//             </table>
-//           </div>
-
-//           {/* Pagination */}
-//           {!isLoading && filteredInvitations.length > 0 && (
-//             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50">
-//               <div className="flex items-center gap-2 text-sm text-gray-500">
-//                 <span>Show</span>
-//                 <select value={itemsPerPage} onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-//                   className="px-2 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-//                   {[9, 18, 27, 50].map(n => <option key={n} value={n}>{n}</option>)}
-//                 </select>
-//                 <span>of <strong>{filteredInvitations.length}</strong> results</span>
-//               </div>
-
-//               <div className="flex items-center gap-1">
-//                 <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-//                   className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-//                   <ChevronLeft className="w-4 h-4" />
-//                 </button>
-//                 {[...Array(Math.min(6, totalPages))].map((_, i) => {
-//                   const p = i + 1;
-//                   return (
-//                     <button key={p} onClick={() => setCurrentPage(p)}
-//                       className={`w-8 h-8 text-sm rounded-lg font-medium transition-colors ${
-//                         currentPage === p ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-//                       }`}>{p}</button>
-//                   );
-//                 })}
-//                 <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-//                   className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-//                   <ChevronRight className="w-4 h-4" />
-//                 </button>
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-
-//       {showDetailsModal && (
-//         <DetailsModal
-//           invitation={selectedInvitation}
-//           onClose={() => setShowDetailsModal(false)}
-//           onResend={(inv) => console.log('Resend to:', inv.email)}
-//         />
-//       )}
-
-//       {showInviteModal && (
-//         <SendInvitationModal
-//           onClose={() => setShowInviteModal(false)}
-//           onSubmit={(form) => console.log('Send invitation:', form)}
-//         />
-//       )}
-//     </div>
-//   );
-// }
 
 
 
@@ -471,7 +5,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { Search, Eye, Heart, Trash2, X, ChevronLeft, ChevronRight, Plus, Mail, Calendar, Building2, User, RefreshCw } from 'lucide-react';
 import { Popconfirm } from 'antd';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
-import { useDeleteInvitationMutation, useGetInvitationsQuery, useSendInvitationForSpekerMutation, useSendInvitationMutation} from '../../redux/features/invitatation/invitaionSlice';
+import { useDeleteInvitationMutation, useResendInvitationMutation, useGetInvitationsQuery, useSendInvitationForSpekerMutation, useSendInvitationMutation} from '../../redux/features/invitatation/invitaionSlice';
 import toast from 'react-hot-toast';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
@@ -634,6 +168,8 @@ function SendInvitationModal({ onClose, onSubmit }) {
     onClose();
   };
 
+
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in">
@@ -794,6 +330,21 @@ export default function InvitationsPage() {
     }
      
   }, []);
+  const [resendInvitation] = useResendInvitationMutation();
+
+const handleResend = useCallback(async (inv) => {
+  try {
+    const res = await resendInvitation({ invitationId: inv._id, eventId });
+    if (res?.data?.success) {
+      toast.success(res.data.message || 'Invitation resent successfully');
+    } else {
+      toast.error(res?.error?.data?.message || 'Failed to resend invitation');
+    }
+  } catch (error) {
+    console.error('Error resending invitation:', error);
+    toast.error('Something went wrong');
+  }
+}, [eventId]);
 
 
   const handleTabChange = (tab) => { setActiveTab(tab); setCurrentPage(1); };
@@ -1006,13 +557,16 @@ export default function InvitationsPage() {
       </div>
 
       {/* Modals */}
+     
       {showDetails && (
-        <DetailsModal
-          invitation={selectedInv}
-          onClose={() => setShowDetails(false)}
-          onResend={(inv) => console.log('Resend to:', inv.email)}
-        />
-      )}
+  <DetailsModal
+    invitation={selectedInv}
+    onClose={() => setShowDetails(false)}
+    onResend={(inv) => handleResend(inv)}  // ← এটা change করো
+  />
+)}
+
+
 
       {showInvite && (
         <SendInvitationModal
