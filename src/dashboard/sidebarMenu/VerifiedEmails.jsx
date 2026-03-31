@@ -38,7 +38,6 @@ export default function VerifiedEmails() {
     try {
       const token = localStorage.getItem("token");
       const selectedEventId = localStorage.getItem("selectedEventId");
-      
       const response = await axios.get(
         `https://reazul8078.suplify.life/api/v1/organizer/verify-email/list/${eventId}`, 
         {
