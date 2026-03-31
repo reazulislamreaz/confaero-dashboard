@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
-import { useGetEventQuery } from '../redux/features/eventSlice/eventSlice';
-import { useSelectedEvent } from '../hooks/useSelectedEvent';
+import React, { useEffect } from "react";
+import { useGetEventQuery } from "../redux/features/eventSlice/eventSlice";
+import { useSelectedEvent } from "../hooks/useSelectedEvent";
 
 const EventDisplayComponent = () => {
   const { data: eventsResponse, isLoading, error } = useGetEventQuery();
-  const { eventId, eventData, setEvent, clearEvent, isSelected } = useSelectedEvent();
-
+  const { eventId, eventData, setEvent, clearEvent, isSelected } =
+    useSelectedEvent();
+  // test
   // Example: Automatically set the first event as selected when data loads
   useEffect(() => {
     if (eventsResponse?.data && eventsResponse.data.length > 0 && !isSelected) {
@@ -20,13 +21,19 @@ const EventDisplayComponent = () => {
   return (
     <div className="p-4">
       <h2>Current Selected Event</h2>
-      
+
       {eventId ? (
         <div>
-          <p><strong>Event ID:</strong> {eventId}</p>
-          <p><strong>Event Title:</strong> {eventData?.title}</p>
-          <p><strong>Event Location:</strong> {eventData?.location}</p>
-          <button 
+          <p>
+            <strong>Event ID:</strong> {eventId}
+          </p>
+          <p>
+            <strong>Event Title:</strong> {eventData?.title}
+          </p>
+          <p>
+            <strong>Event Location:</strong> {eventData?.location}
+          </p>
+          <button
             onClick={clearEvent}
             className="bg-red-500 text-white px-4 py-2 rounded"
           >
@@ -44,7 +51,7 @@ const EventDisplayComponent = () => {
             <p>{event.title}</p>
             <p>ID: {event._id}</p>
             {!isSelected || eventId !== event._id ? (
-              <button 
+              <button
                 onClick={() => setEvent(event)}
                 className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
               >
