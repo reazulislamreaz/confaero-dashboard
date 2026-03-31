@@ -6,7 +6,6 @@ const EventDisplayComponent = () => {
   const { data: eventsResponse, isLoading, error } = useGetEventQuery();
   const { eventId, eventData, setEvent, clearEvent, isSelected } =
     useSelectedEvent();
-  // test
   // Example: Automatically set the first event as selected when data loads
   useEffect(() => {
     if (eventsResponse?.data && eventsResponse.data.length > 0 && !isSelected) {
@@ -17,7 +16,7 @@ const EventDisplayComponent = () => {
 
   if (isLoading) return <div>Loading events...</div>;
   if (error) return <div>Error: {error.message}</div>;
-
+   console.log(error)
   return (
     <div className="p-4">
       <h2>Current Selected Event</h2>
