@@ -16,7 +16,6 @@ const EventDisplayComponent = () => {
 
   if (isLoading) return <div>Loading events...</div>;
   if (error) return <div>Error: {error.message}</div>;
-  // test
   return (
     <div className="p-4">
       <h2>Current Selected Event</h2>
