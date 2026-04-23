@@ -20,7 +20,6 @@ import {
   useGetAdminEventQuery,
 } from "../../redux/features/eventSlice/eventSlice";
 import toast from "react-hot-toast";
-// test
 export default function AdminEventManagement({ onEventSelect }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
