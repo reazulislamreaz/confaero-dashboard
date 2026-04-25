@@ -1,4 +1,3 @@
-import derivative from "antd/es/theme/themes/default";
 import { apiSlice } from "../../api/apiSlice";
 import { use } from "react";
 
