@@ -12,7 +12,7 @@ const connectSocket = (eventId) => {
   }
 
   const token = localStorage.getItem("token");
-  socket = io("https://reazul8078.suplify.life", {
+  socket = io("http://206.162.244.11:8078", {
     extraHeaders: {
       token: token,
       eventid: eventId,
