@@ -8,6 +8,7 @@ const baseQuery = fetchBaseQuery({
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
+    // test
 
     // ✅ Inject eventid from localStorage (as requested)
     const eventId = localStorage.getItem("selectedEventId");
