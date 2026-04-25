@@ -18,8 +18,8 @@ const VolunteerManagementPage = () => {
   // Form state
   const [selectedEmail, setSelectedEmail] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
-  const [taskTime, setTaskTime] = useState('');
-  const [taskDate, setTaskDate] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [location, setLocation] = useState('');
   const [instruction, setInstruction] = useState('');
   const [referenceImage, setReferenceImage] = useState(null);
@@ -74,8 +74,8 @@ const VolunteerManagementPage = () => {
     // Reset form
     setSelectedEmail('');
     setTaskTitle('');
-    setTaskTime('');
-    setTaskDate('');
+    setStartDate('');
+    setEndDate('');
     setLocation('');
     setInstruction('');
     setReferenceImage(null);
@@ -140,12 +140,12 @@ const VolunteerManagementPage = () => {
       toast.error('Please enter task title');
       return;
     }
-    if (!taskDate) {
-      toast.error('Please select task date');
+    if (!startDate) {
+      toast.error('Please select start date');
       return;
     }
-    if (!taskTime) {
-      toast.error('Please enter task time');
+    if (!endDate) {
+      toast.error('Please select end date');
       return;
     }
     if (!location) {
@@ -176,8 +176,8 @@ const VolunteerManagementPage = () => {
         eventId: eventId,
         volunteerEmail: selectedEmail,
         title: taskTitle,
-        date: taskDate,
-        time: taskTime,
+        startDate: startDate,
+        endDate: endDate,
         location: location,
         instruction: instruction,
         referenceImage: finalImageUrl
@@ -296,7 +296,9 @@ const VolunteerManagementPage = () => {
                       >
                         <div>
                           <h5 className="font-semibold text-gray-900 text-sm mb-1">{task.title}</h5>
-                          <p className="text-xs text-gray-600 mt-1">{task.date} - {task.time}</p>
+                          <p className="text-xs text-gray-600 mt-1">
+                            {task.startDate ? new Date(task.startDate).toLocaleString() : ''} - {task.endDate ? new Date(task.endDate).toLocaleString() : ''}
+                          </p>
                           <p className="text-xs text-gray-500 mt-1 line-clamp-1">{task.instruction}</p>
                         </div>
                         <span className={`px-3 py-1.5 text-[11px] rounded-full font-medium ${
@@ -510,28 +512,28 @@ const VolunteerManagementPage = () => {
                   />
                 </div>
 
-                {/* Task Time & Date */}
+                {/* Task Start and End Date */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Task Time <span className="text-red-500">*</span>
+                      Start Date & Time <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="time"
-                      value={taskTime}
-                      onChange={(e) => setTaskTime(e.target.value)}
+                      type="datetime-local"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date <span className="text-red-500">*</span>
+                      End Date & Time <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="date"
-                      value={taskDate}
-                      onChange={(e) => setTaskDate(e.target.value)}
+                      type="datetime-local"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                       required
                     />
@@ -689,13 +691,13 @@ const VolunteerManagementPage = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-600">Date:</span>
-                        <span className="font-medium text-gray-900">{reportData.data.task.date}</span>
+                        <span className="text-gray-600">Start:</span>
+                        <span className="font-medium text-gray-900">{reportData.data.task.startDate ? new Date(reportData.data.task.startDate).toLocaleString() : ''}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-600">Time:</span>
-                        <span className="font-medium text-gray-900">{reportData.data.task.time}</span>
+                        <span className="text-gray-600">End:</span>
+                        <span className="font-medium text-gray-900">{reportData.data.task.endDate ? new Date(reportData.data.task.endDate).toLocaleString() : ''}</span>
                       </div>
                     </div>
                   </div>
