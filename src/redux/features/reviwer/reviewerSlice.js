@@ -2,6 +2,12 @@ import { apiSlice } from "../../api/apiSlice";
 
 export const reviewerSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // get all reviewers
+    getAllReviewers: builder.query({
+      query: (eventId) => `/poster-assign/reviewers/${eventId}`,
+      providesTags: ["Reviewer"],
+    }),
+
     // reviewer stats (top cards)
     getReviewerStats: builder.query({
       query: (eventId) => `/poster-assign/reviewer-stats/${eventId}`,
@@ -132,6 +138,7 @@ export const reviewerSlice = apiSlice.injectEndpoints({
 });
 
 export const {
+  useGetAllReviewersQuery,
   useGetReviewerStatsQuery,
   useSearchReviewerQuery,
   useGetUnassignFilesQuery,

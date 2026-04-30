@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://206.162.244.11:8078/api/v1",
-  // baseUrl: "http://10.10.11.30:8081/api/v1",
+  // baseUrl: "http://206.162.244.11:8078/api/v1",
+  baseUrl: "http://10.10.11.30:8080/api/v1",
   prepareHeaders: (headers, { getState }) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -15,15 +15,18 @@ const baseQuery = fetchBaseQuery({
     if (eventId && eventId !== "undefined") {
       headers.set("eventid", eventId);
     }
-    
+
     return headers;
   },
 });
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
-  
-  const isLoginRequest = typeof args === "string" ? args.includes("/auth/login") : args.url?.includes("/auth/login");
+
+  const isLoginRequest =
+    typeof args === "string"
+      ? args.includes("/auth/login")
+      : args.url?.includes("/auth/login");
 
   if (result.error && result.error.status === 401 && !isLoginRequest) {
     // Intercept 401 Unauthorized globally
@@ -31,7 +34,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     // Clear user metadata if stored
     localStorage.removeItem("user");
     localStorage.removeItem("user-info");
-    
+
     // Redirect to login (Home) page
     window.location.href = "/";
   }
@@ -42,9 +45,9 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
       url: args.url,
       headers: {
         eventid: localStorage.getItem("selectedEventId"),
-        hasToken: !!localStorage.getItem("token")
+        hasToken: !!localStorage.getItem("token"),
       },
-      error: result.error
+      error: result.error,
     });
   }
 
