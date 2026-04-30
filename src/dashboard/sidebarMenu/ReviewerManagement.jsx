@@ -471,7 +471,6 @@ export default function ReviewerManagement() {
       // Clear state on success
       setSelectedFiles([]);
       setSelectedReviewer(null);
-      setSearchEmail("");
       setDueDate("");
       setShowAddReviewerModal(false);
     } catch (error) {
