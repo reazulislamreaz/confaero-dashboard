@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 let socket;
 let currentEventId;
 
+// this is a test
 const connectSocket = (eventId) => {
   if (socket && currentEventId === eventId) return socket;
 
