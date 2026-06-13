@@ -1,5 +1,5 @@
 import { Button, Form } from "antd";
-import JoditEditor from "jodit-react";
+import JoditEditor from "../../../components/LazyJoditEditor";
 import { useRef, useState, useEffect } from "react";
 import { FaCircleArrowLeft } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";

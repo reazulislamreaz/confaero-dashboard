@@ -11,7 +11,12 @@ import {
 } from '../../redux/features/messageSlice/messageSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { useFetchUserProfileQuery } from '../../redux/features/userSlice/userSlice';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import calendar from 'dayjs/plugin/calendar';
+
+dayjs.extend(relativeTime);
+dayjs.extend(calendar);
 
 export default function MessagingSystem() {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -209,7 +214,7 @@ export default function MessagingSystem() {
                     <div className="flex items-center justify-between mb-0.5">
                       <h4 className="text-[15px] font-semibold text-gray-800 truncate leading-tight">{conv.profile?.name || "Unknown"}</h4>
                       <span className="text-[11px] text-gray-400 font-medium whitespace-nowrap ml-2">
-                        {conv.lastMessageAt ? moment(conv.lastMessageAt).format("LT") : ""}
+                        {conv.lastMessageAt ? dayjs(conv.lastMessageAt).format("h:mm A") : ""}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -257,7 +262,7 @@ export default function MessagingSystem() {
                         </>
                       ) : (
                         selectedUser.profile?.lastSeen 
-                          ? `Active ${moment(selectedUser.profile.lastSeen).fromNow()}` 
+                          ? `Active ${dayjs(selectedUser.profile.lastSeen).fromNow()}` 
                           : "Active recently"
                       )}
                     </p>
@@ -296,10 +301,10 @@ export default function MessagingSystem() {
                         showTimeSeparator = true;
                       } else {
                         const prevMsg = messages[index - 1];
-                        const duration = moment(msg.createdAt).diff(moment(prevMsg.createdAt), 'hours');
+                        const duration = dayjs(msg.createdAt).diff(dayjs(prevMsg.createdAt), 'hour');
                         if (
                           duration >= 1 ||
-                          moment(msg.createdAt).format("L") !== moment(prevMsg.createdAt).format("L")
+                          dayjs(msg.createdAt).format("YYYY-MM-DD") !== dayjs(prevMsg.createdAt).format("YYYY-MM-DD")
                         ) {
                           showTimeSeparator = true;
                         }
@@ -310,7 +315,7 @@ export default function MessagingSystem() {
                           {showTimeSeparator && (
                             <div className="flex justify-center my-6">
                               <span className="text-[10px] text-gray-400 font-semibold tracking-wide">
-                                {moment(msg.createdAt)
+                                {dayjs(msg.createdAt)
                                   .calendar(null, {
                                     sameDay: '[Today], h:mm A',
                                     lastDay: '[Yesterday], h:mm A',

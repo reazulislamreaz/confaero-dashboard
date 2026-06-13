@@ -1,54 +1,68 @@
 
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, useOutletContext } from "react-router-dom";
 import Home from "../Home";
 import ErrorPage from "./ErrorPage";
-import ForgotPassword from "../auth/ForgotPassword";
-import VerifyOtp from "../auth/VerifyEmail";
-import UpdatePassword from "../auth/UpdatePassword";
-import Main from "../layout/Main";
-import DashboardHome from "../dashboard/home/DashboardHome";
-import Settings from "../dashboard/sidebarMenu/settings/Settings";
-import PrivacyPolicy from "../dashboard/sidebarMenu/settings/PrivacyPolicy";
-import EditPrivacy from "../dashboard/sidebarMenu/settings/EditPrivacy";
-import TermCondition from "../dashboard/sidebarMenu/settings/TermCondition";
-import EditTermCondition from "../dashboard/sidebarMenu/settings/EditTermCondition";
-import About from "../dashboard/sidebarMenu/settings/Aboute";
-import EditAbout from "../dashboard/sidebarMenu/settings/EditAbout";
-import Notification from "../dashboard/sidebarMenu/profile/Notification";
-import Profile from "../dashboard/sidebarMenu/profile/Profile";
-import EditProfiel from "../dashboard/sidebarMenu/profile/EditProfile";
-import UserListsPage from "../dashboard/sidebarMenu/Users";
-
-import UserManagement from "../dashboard/sidebarMenu/Users";
-import UserDetailsPage from "../dashboard/sidebarMenu/UserDetailsPage";
-import EventAgendaBuilder from "../dashboard/sidebarMenu/EventManagement";
-import InvitationsPage from "../dashboard/sidebarMenu/Invitations";
-import ReviewerManagement from "../dashboard/sidebarMenu/ReviewerManagement";
-import ExhibitorsSponsors from "../dashboard/sidebarMenu/ExhibitorsSponsors";
-import VolunteerManagementPage from "../dashboard/sidebarMenu/Volunteers";
-import DocumentManagement from "../dashboard/sidebarMenu/resoursce/Documents";
-import Photos from "../dashboard/sidebarMenu/resoursce/Photos";
-import JobPostManagement from "../dashboard/sidebarMenu/resoursce/JobPost";
-import CreateJobPost from "../dashboard/sidebarMenu/resoursce/CreateJobPost";
-import EditJobPost from "../dashboard/sidebarMenu/resoursce/EditJobPost";
-import QAPolls from "../dashboard/sidebarMenu/resoursce/QaPollSurvey";
-import NoticeAnnouncements from "../dashboard/sidebarMenu/NoticeAnnouncements";
-import Messages from "../dashboard/sidebarMenu/Messages";
-import PostersRanking from "../dashboard/sidebarMenu/Posters";
-import OrganizerGuideline from "../dashboard/sidebarMenu/settings/OrganizerGuideline";
-import UpdateOrganizerGuideline from "../dashboard/sidebarMenu/settings/UpdateOrganizerGuideline";
-import AdminUserList from "../dashboard/sidebarMenu/AdminUserList";
-import AdminEventManagement from "../dashboard/sidebarMenu/AdminEventsManagement";
-import DashboardOverview from "../dashboard/home/AdminOverview";
-import EventOverview from "../dashboard/home/EventOverview";
 import AdminRoute from "./AdminRoute";
-import PaymentManagement from "../dashboard/sidebarMenu/PaymentManagement";
-import VerifiedEmails from "../dashboard/sidebarMenu/VerifiedEmails";
 
-// Wrapper component to pass context to AdminEventManagement
+const PageLoader = () => (
+  <div className="flex min-h-[50vh] items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0FC3C2] border-t-transparent" />
+  </div>
+);
+
+const withSuspense = (element) => (
+  <Suspense fallback={<PageLoader />}>{element}</Suspense>
+);
+
+const ForgotPassword = lazy(() => import("../auth/ForgotPassword"));
+const VerifyOtp = lazy(() => import("../auth/VerifyEmail"));
+const UpdatePassword = lazy(() => import("../auth/UpdatePassword"));
+const Main = lazy(() => import("../layout/Main"));
+const DashboardHome = lazy(() => import("../dashboard/home/DashboardHome"));
+const Settings = lazy(() => import("../dashboard/sidebarMenu/settings/Settings"));
+const PrivacyPolicy = lazy(() => import("../dashboard/sidebarMenu/settings/PrivacyPolicy"));
+const EditPrivacy = lazy(() => import("../dashboard/sidebarMenu/settings/EditPrivacy"));
+const TermCondition = lazy(() => import("../dashboard/sidebarMenu/settings/TermCondition"));
+const EditTermCondition = lazy(() => import("../dashboard/sidebarMenu/settings/EditTermCondition"));
+const About = lazy(() => import("../dashboard/sidebarMenu/settings/Aboute"));
+const EditAbout = lazy(() => import("../dashboard/sidebarMenu/settings/EditAbout"));
+const Notification = lazy(() => import("../dashboard/sidebarMenu/profile/Notification"));
+const Profile = lazy(() => import("../dashboard/sidebarMenu/profile/Profile"));
+const EditProfiel = lazy(() => import("../dashboard/sidebarMenu/profile/EditProfile"));
+const UserListsPage = lazy(() => import("../dashboard/sidebarMenu/Users"));
+const UserDetailsPage = lazy(() => import("../dashboard/sidebarMenu/UserDetailsPage"));
+const EventAgendaBuilder = lazy(() => import("../dashboard/sidebarMenu/EventManagement"));
+const InvitationsPage = lazy(() => import("../dashboard/sidebarMenu/Invitations"));
+const ReviewerManagement = lazy(() => import("../dashboard/sidebarMenu/ReviewerManagement"));
+const ExhibitorsSponsors = lazy(() => import("../dashboard/sidebarMenu/ExhibitorsSponsors"));
+const VolunteerManagementPage = lazy(() => import("../dashboard/sidebarMenu/Volunteers"));
+const DocumentManagement = lazy(() => import("../dashboard/sidebarMenu/resoursce/Documents"));
+const Photos = lazy(() => import("../dashboard/sidebarMenu/resoursce/Photos"));
+const JobPostManagement = lazy(() => import("../dashboard/sidebarMenu/resoursce/JobPost"));
+const CreateJobPost = lazy(() => import("../dashboard/sidebarMenu/resoursce/CreateJobPost"));
+const EditJobPost = lazy(() => import("../dashboard/sidebarMenu/resoursce/EditJobPost"));
+const QAPolls = lazy(() => import("../dashboard/sidebarMenu/resoursce/QaPollSurvey"));
+const NoticeAnnouncements = lazy(() => import("../dashboard/sidebarMenu/NoticeAnnouncements"));
+const Messages = lazy(() => import("../dashboard/sidebarMenu/Messages"));
+const PostersRanking = lazy(() => import("../dashboard/sidebarMenu/Posters"));
+const OrganizerGuideline = lazy(() => import("../dashboard/sidebarMenu/settings/OrganizerGuideline"));
+const UpdateOrganizerGuideline = lazy(() => import("../dashboard/sidebarMenu/settings/UpdateOrganizerGuideline"));
+const AdminUserList = lazy(() => import("../dashboard/sidebarMenu/AdminUserList"));
+const AdminEventManagement = lazy(() => import("../dashboard/sidebarMenu/AdminEventsManagement"));
+const DashboardOverview = lazy(() => import("../dashboard/home/AdminOverview"));
+const EventOverview = lazy(() => import("../dashboard/home/EventOverview"));
+const PaymentManagement = lazy(() => import("../dashboard/sidebarMenu/PaymentManagement"));
+const VerifiedEmails = lazy(() => import("../dashboard/sidebarMenu/VerifiedEmails"));
+
 function AdminEventsWrapper() {
   const { handleEventSelect, resetEventSelection } = useOutletContext();
-  return <AdminEventManagement onEventSelect={handleEventSelect} resetEventSelection={resetEventSelection} />;
+  return (
+    <AdminEventManagement
+      onEventSelect={handleEventSelect}
+      resetEventSelection={resetEventSelection}
+    />
+  );
 }
 
 export const router = createBrowserRouter([
@@ -59,171 +73,171 @@ export const router = createBrowserRouter([
     },
     {
         path: "forgotpassword",
-        element: <ForgotPassword></ForgotPassword>
+        element: withSuspense(<ForgotPassword />)
     },
     {
         path: "verifyotp",
-        element: <VerifyOtp></VerifyOtp>
+        element: withSuspense(<VerifyOtp />)
     },
     {
         path: "updatepassword",
-        element: <UpdatePassword />
+        element: withSuspense(<UpdatePassword />)
     },
 
     {
         path: "dashboard",
-        element: <Main></Main>,
+        element: withSuspense(<Main />),
         children: [
             {
                 path: "home",
-                element: <DashboardHome />
+                element: withSuspense(<DashboardHome />)
             },
             {
                 path: "admin-home",
-                element: <AdminRoute><DashboardOverview /></AdminRoute>
+                element: withSuspense(<AdminRoute><DashboardOverview /></AdminRoute>)
             },
             {
                 path: "admin-events/event-overview/:id",
-                element: <AdminRoute><EventOverview /></AdminRoute>
+                element: withSuspense(<AdminRoute><EventOverview /></AdminRoute>)
             },
             {
                 path: "users",
-                element: <UserListsPage />
+                element: withSuspense(<UserListsPage />)
             },
 
             {
                 path: "user-management",
-                element: <AdminRoute><AdminUserList /></AdminRoute>
+                element: withSuspense(<AdminRoute><AdminUserList /></AdminRoute>)
             },
             {
                 path: "users/details/:id",
-                element: <UserDetailsPage />
+                element: withSuspense(<UserDetailsPage />)
             },
             {
                 path: "admin-events",
-                element: <AdminRoute><AdminEventsWrapper /></AdminRoute>
+                element: withSuspense(<AdminRoute><AdminEventsWrapper /></AdminRoute>)
             },
             {
                 path: "invitaitons",
-                element: <InvitationsPage />
+                element: withSuspense(<InvitationsPage />)
             },
             {
                 path: "enents",
-                element: <EventAgendaBuilder />
+                element: withSuspense(<EventAgendaBuilder />)
             },
             {
                 path: "reviewer-management",
-                element: <ReviewerManagement />
+                element: withSuspense(<ReviewerManagement />)
             },
             {
                 path: "exhibitors-sponsors",
-                element: <ExhibitorsSponsors />
+                element: withSuspense(<ExhibitorsSponsors />)
             },
             {
                 path: "volunteers",
-                element: <VolunteerManagementPage />
+                element: withSuspense(<VolunteerManagementPage />)
             },
             {
                 path: "resources/documents",
-                element: <DocumentManagement />
+                element: withSuspense(<DocumentManagement />)
             },
             {
                 path: "resources/photos",
-                element: <Photos />
+                element: withSuspense(<Photos />)
             },
             {
                 path: "resources/job-posts",
-                element: <JobPostManagement />
+                element: withSuspense(<JobPostManagement />)
             },
             {
                 path: "resources/job-posts/create-job",
-                element: <CreateJobPost />
+                element: withSuspense(<CreateJobPost />)
             },
             {
                 path: "resources/job-posts/editjob/:id",
-                element: <EditJobPost />
+                element: withSuspense(<EditJobPost />)
             },
             {
                 path: "resources/qa-polls-survey",
-                element: <QAPolls />
+                element: withSuspense(<QAPolls />)
             },
 
             {
                 path: 'notice-announcements',
-                element:<NoticeAnnouncements />
+                element: withSuspense(<NoticeAnnouncements />)
             },
             {
                 path: 'messages',
-                element:<Messages />
+                element: withSuspense(<Messages />)
             },
             {
                 path: 'posters',
-                element:<PostersRanking />
+                element: withSuspense(<PostersRanking />)
             },
             {
                 path: 'payment-management',
-                element:<PaymentManagement />
+                element: withSuspense(<PaymentManagement />)
             },
             {
                 path: 'verified-emails',
-                element:<VerifiedEmails />
+                element: withSuspense(<VerifiedEmails />)
             },
             {
                 path: 'settings',
-                element:<Settings />
+                element: withSuspense(<Settings />)
             },
             {
                 path:'settings/privacypolicy',
-                element:<PrivacyPolicy />
+                element: withSuspense(<PrivacyPolicy />)
             },
             {
                 path:'settings/organizer-guideline',
-                element:<OrganizerGuideline />
+                element: withSuspense(<OrganizerGuideline />)
             },
             {
                 path:'settings/update-organizerg-uideline',
-                element:<UpdateOrganizerGuideline />
+                element: withSuspense(<UpdateOrganizerGuideline />)
             },
 
             {
                 path:'settings/editprivacypolicy',
-                element: <EditPrivacy />
+                element: withSuspense(<EditPrivacy />)
             },
             {
                 path:"settings/termcondition",
-                element:<TermCondition />
+                element: withSuspense(<TermCondition />)
             },
             {
                 path: "settings/edittermcondition",
-                element: <EditTermCondition />
+                element: withSuspense(<EditTermCondition />)
             },
             {
                 path:'settings/about',
-                element: <About />
+                element: withSuspense(<About />)
             },
             {
                 path:'settings/editabout',
-                element:<EditAbout />
+                element: withSuspense(<EditAbout />)
             },
               {
                 path: "notification",
-                element: <Notification />
+                element: withSuspense(<Notification />)
             },
             {
                 path: "settings/profile",
-                element: <Profile />
+                element: withSuspense(<Profile />)
             },
             {
                 path: "dashboard/profile",
-                element: <Profile />
+                element: withSuspense(<Profile />)
             },
             {
                 path: "settings/editprofile",
-                element: <EditProfiel />
+                element: withSuspense(<EditProfiel />)
             },
             {
                 path: "dashboard/editprofile",
-                element: <EditProfiel />
+                element: withSuspense(<EditProfiel />)
             },
 
 

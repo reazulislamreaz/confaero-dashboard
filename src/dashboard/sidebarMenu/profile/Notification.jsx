@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Bell, AlertCircle, RefreshCw } from 'lucide-react';
 import { useGetNotificationsQuery, useMarkAsReadMutation } from '../../../redux/features/notificationSlice/notificationSlice';
 import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 export default function NotificationsPage() {
   const [expandedNotifications, setExpandedNotifications] = useState({});
@@ -121,7 +124,7 @@ export default function NotificationsPage() {
                     
                     <div className="flex items-center gap-3">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {moment(notification.createdAt).fromNow()}
+                        {dayjs(notification.createdAt).fromNow()}
                       </span>
                     </div>
                   </div>

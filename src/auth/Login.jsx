@@ -78,7 +78,7 @@ const Login = () => {
         <div className="flex flex-col md:flex-row">
           {/* Left Side - Logo and Branding */}
           <div className="md:w-1/2  p-12 border-r border-[#20BFA9] flex flex-col justify-center items-center text-white">
-            <img className=" " src="/public/image/logo.png" alt="Logo" />
+            <img className=" " src="/image/logo.png" alt="Logo" />
           </div>
 
           {/* Right Side - Login Form */}
