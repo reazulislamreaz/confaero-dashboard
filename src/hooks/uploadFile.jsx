@@ -14,7 +14,7 @@ export default function UploadPage() {
       formData.append("file", file);
 
       const response = await fetch(
-        `http://206.162.244.11:8078/api/v1/upload/chat-attachment`,
+        `https://api.confaero.com/api/v1/upload/chat-attachment`,
         {
           method: "POST",
           body: formData,

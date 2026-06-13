@@ -12,7 +12,7 @@ const connectSocket = (eventId) => {
   }
 
   const token = localStorage.getItem("token");
-  socket = io("http://206.162.244.11:8078", {
+  socket = io("https://api.confaero.com", {
     extraHeaders: {
       token: token,
       eventid: eventId,

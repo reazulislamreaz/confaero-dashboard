@@ -1,26 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Plus, Trash2, Mail, FileUp, ShieldCheck, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { 
-  useAddVerifyEmailsMutation, 
-  useUploadVerifyEmailCSVMutation, 
-  useDeleteVerifyEmailMutation 
-} from '../../redux/features/verifyEmail/verifyEmailSlice';
-import { useSelectedEvent } from '../../hooks/useSelectedEvent';
-import { Popconfirm } from 'antd';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Plus,
+  Trash2,
+  Mail,
+  FileUp,
+  ShieldCheck,
+  Search,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import {
+  useAddVerifyEmailsMutation,
+  useUploadVerifyEmailCSVMutation,
+  useDeleteVerifyEmailMutation,
+} from "../../redux/features/verifyEmail/verifyEmailSlice";
+import { useSelectedEvent } from "../../hooks/useSelectedEvent";
+import { Popconfirm } from "antd";
+import toast from "react-hot-toast";
 
 export default function VerifiedEmails() {
   const { eventId } = useSelectedEvent();
-  const [emailInput, setEmailInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [emailInput, setEmailInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  
+
   // Data State
   const [verifiedEmails, setVerifiedEmails] = useState([]);
   const [meta, setMeta] = useState({ total: 0, totalPage: 1 });
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -33,20 +43,20 @@ export default function VerifiedEmails() {
   // Manual Fetch Logic
   const fetchEmails = async () => {
     if (!eventId) return;
-    
+
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
       const selectedEventId = localStorage.getItem("selectedEventId");
       const response = await axios.get(
-        `http://206.162.244.11:8078/api/v1/organizer/verify-email/list/${eventId}`, 
+        `https://api.confaero.com/api/v1/organizer/verify-email/list/${eventId}`,
         {
           params: { page: currentPage, limit: pageSize },
           headers: {
             Authorization: `Bearer ${token}`,
-            eventid: selectedEventId
-          }
-        }
+            eventid: selectedEventId,
+          },
+        },
       );
 
       // Log API response structure for verification
@@ -59,7 +69,9 @@ export default function VerifiedEmails() {
       }
     } catch (err) {
       console.error("Failed to fetch verified emails:", err);
-      toast.error(err?.response?.data?.message || 'Failed to load verified emails');
+      toast.error(
+        err?.response?.data?.message || "Failed to load verified emails",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -75,25 +87,28 @@ export default function VerifiedEmails() {
     e.preventDefault();
     if (!emailInput.trim() || !eventId) return;
 
-    const emails = emailInput.split(',').map(e => e.trim()).filter(e => e !== '');
+    const emails = emailInput
+      .split(",")
+      .map((e) => e.trim())
+      .filter((e) => e !== "");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const invalidEmails = emails.filter(e => !emailRegex.test(e));
-    
+    const invalidEmails = emails.filter((e) => !emailRegex.test(e));
+
     if (invalidEmails.length > 0) {
-      toast.error(`Invalid email(s): ${invalidEmails.join(', ')}`);
+      toast.error(`Invalid email(s): ${invalidEmails.join(", ")}`);
       return;
     }
 
     try {
       const res = await addVerifyEmails({ eventId, emails }).unwrap();
       if (res.success) {
-        toast.success(res.message || 'Emails added successfully');
-        setEmailInput('');
-        setCurrentPage(1); 
+        toast.success(res.message || "Emails added successfully");
+        setEmailInput("");
+        setCurrentPage(1);
         fetchEmails(); // Manual refetch
       }
     } catch (err) {
-      toast.error(err?.data?.message || 'Failed to add emails');
+      toast.error(err?.data?.message || "Failed to add emails");
     }
   };
 
@@ -105,15 +120,15 @@ export default function VerifiedEmails() {
     try {
       const res = await uploadCSV({ eventId, file }).unwrap();
       if (res.success) {
-        toast.success(res.message || 'Emails uploaded successfully');
-        setCurrentPage(1); 
+        toast.success(res.message || "Emails uploaded successfully");
+        setCurrentPage(1);
         fetchEmails(); // Manual refetch
       }
     } catch (err) {
-      toast.error(err?.data?.message || 'Upload failed');
+      toast.error(err?.data?.message || "Upload failed");
     } finally {
       setIsUploading(false);
-      e.target.value = ''; 
+      e.target.value = "";
     }
   };
 
@@ -122,25 +137,27 @@ export default function VerifiedEmails() {
     try {
       const res = await deleteEmail({ eventId, verifyEmailId }).unwrap();
       if (res.success) {
-        toast.success('Email removed from verified list');
+        toast.success("Email removed from verified list");
         fetchEmails(); // Manual refetch
       }
     } catch (err) {
-      toast.error(err?.data?.message || 'Delete failed');
+      toast.error(err?.data?.message || "Delete failed");
     }
   };
 
   // Local filter for search query
-  const filteredEmails = Array.isArray(verifiedEmails) 
-    ? verifiedEmails.filter(item => item.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredEmails = Array.isArray(verifiedEmails)
+    ? verifiedEmails.filter((item) =>
+        item.email.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
     : [];
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -156,8 +173,12 @@ export default function VerifiedEmails() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-1">Attendee Email Verification</h1>
-        <p className="text-gray-500 text-sm">Manage pre-verified attendee emails for this event</p>
+        <h1 className="text-2xl font-semibold text-gray-800 mb-1">
+          Attendee Email Verification
+        </h1>
+        <p className="text-gray-500 text-sm">
+          Manage pre-verified attendee emails for this event
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -167,7 +188,10 @@ export default function VerifiedEmails() {
             <Mail className="w-5 h-5 text-teal-600" />
             <h2 className="font-semibold text-gray-800">Add Verified Emails</h2>
           </div>
-          <form onSubmit={handleAddEmail} className="flex flex-col sm:flex-row gap-3">
+          <form
+            onSubmit={handleAddEmail}
+            className="flex flex-col sm:flex-row gap-3"
+          >
             <input
               type="text"
               placeholder="Enter email addresses (separated by commas)"
@@ -183,7 +207,10 @@ export default function VerifiedEmails() {
               Add Emails
             </button>
           </form>
-          <p className="mt-3 text-xs text-gray-400 italic">Separate multiple emails with commas (e.g. john@example.com, jane@example.com)</p>
+          <p className="mt-3 text-xs text-gray-400 italic">
+            Separate multiple emails with commas (e.g. john@example.com,
+            jane@example.com)
+          </p>
         </div>
 
         {/* Bulk Upload Card */}
@@ -192,7 +219,10 @@ export default function VerifiedEmails() {
             <FileUp className="w-6 h-6 text-teal-600" />
           </div>
           <h2 className="font-semibold text-gray-800 mb-1">Bulk Upload</h2>
-          <p className="text-xs text-gray-500 mb-4 px-4">Upload a CSV file containing an 'email' column to verify attendees in bulk.</p>
+          <p className="text-xs text-gray-500 mb-4 px-4">
+            Upload a CSV file containing an 'email' column to verify attendees
+            in bulk.
+          </p>
           <div className="relative w-full">
             <input
               type="file"
@@ -202,10 +232,14 @@ export default function VerifiedEmails() {
               disabled={isUploading}
             />
             <button
-              className={`w-full py-2.5 px-4 rounded-lg border-2 border-dashed border-teal-100 text-teal-600 font-medium text-sm hover:bg-teal-50 transition-all flex items-center justify-center gap-2 ${isUploading ? 'opacity-50' : ''}`}
+              className={`w-full py-2.5 px-4 rounded-lg border-2 border-dashed border-teal-100 text-teal-600 font-medium text-sm hover:bg-teal-50 transition-all flex items-center justify-center gap-2 ${isUploading ? "opacity-50" : ""}`}
             >
-              {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
-              {isUploading ? 'Uploading...' : 'Choose File'}
+              {isUploading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileUp className="w-4 h-4" />
+              )}
+              {isUploading ? "Uploading..." : "Choose File"}
             </button>
           </div>
         </div>
@@ -216,7 +250,9 @@ export default function VerifiedEmails() {
         <div className="p-4 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <h3 className="font-semibold text-gray-800 flex items-center gap-2">
             Verified List
-            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{meta.total} Total</span>
+            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+              {meta.total} Total
+            </span>
           </h3>
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -234,36 +270,55 @@ export default function VerifiedEmails() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email Address</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Added Date</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right uppercase tracking-wider pr-10">Actions</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Email Address
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
+                  Added Date
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right uppercase tracking-wider pr-10">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
+                  <td
+                    colSpan="4"
+                    className="px-6 py-12 text-center text-gray-400"
+                  >
                     <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 opacity-20" />
                     <span className="text-sm">Loading verified emails...</span>
                   </td>
                 </tr>
               ) : filteredEmails.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
+                  <td
+                    colSpan="4"
+                    className="px-6 py-12 text-center text-gray-400"
+                  >
                     <Mail className="w-12 h-12 mx-auto mb-2 opacity-10" />
                     <span className="text-sm">No verified emails found.</span>
                   </td>
                 </tr>
               ) : (
                 filteredEmails.map((item) => (
-                  <tr key={item._id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr
+                    key={item._id}
+                    className="hover:bg-gray-50/50 transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center">
                           <Mail className="w-4 h-4 text-teal-600" />
                         </div>
-                        <span className="text-sm font-medium text-gray-700">{item.email}</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          {item.email}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -278,7 +333,9 @@ export default function VerifiedEmails() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center text-sm text-gray-500">
-                      {item.isUsed ? formatDate(item.usedAt) : formatDate(item.createdAt)}
+                      {item.isUsed
+                        ? formatDate(item.usedAt)
+                        : formatDate(item.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-right pr-6">
                       <div className="flex justify-end items-center gap-2">
@@ -293,11 +350,15 @@ export default function VerifiedEmails() {
                           <button
                             disabled={item.isUsed}
                             className={`p-2 transition-all rounded-lg flex items-center justify-center ${
-                              item.isUsed 
-                                ? 'text-gray-200 cursor-not-allowed bg-transparent' 
-                                : 'text-gray-400 hover:text-red-600 hover:bg-red-50 bg-white border border-transparent hover:border-red-100 shadow-sm hover:shadow-md'
+                              item.isUsed
+                                ? "text-gray-200 cursor-not-allowed bg-transparent"
+                                : "text-gray-400 hover:text-red-600 hover:bg-red-50 bg-white border border-transparent hover:border-red-100 shadow-sm hover:shadow-md"
                             }`}
-                            title={item.isUsed ? "Cannot delete used email" : "Delete"}
+                            title={
+                              item.isUsed
+                                ? "Cannot delete used email"
+                                : "Delete"
+                            }
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -344,8 +405,8 @@ export default function VerifiedEmails() {
                 {[...Array(meta.totalPage)].map((_, index) => {
                   const page = index + 1;
                   if (
-                    page === 1 || 
-                    page === meta.totalPage || 
+                    page === 1 ||
+                    page === meta.totalPage ||
                     (page >= currentPage - 1 && page <= currentPage + 1)
                   ) {
                     return (
@@ -353,26 +414,32 @@ export default function VerifiedEmails() {
                         key={page}
                         onClick={() => setCurrentPage(page)}
                         className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
-                          currentPage === page 
-                            ? 'bg-teal-600 text-white shadow-sm ring-2 ring-teal-600/20' 
-                            : 'text-gray-600 hover:bg-white hover:shadow-sm'
+                          currentPage === page
+                            ? "bg-teal-600 text-white shadow-sm ring-2 ring-teal-600/20"
+                            : "text-gray-600 hover:bg-white hover:shadow-sm"
                         }`}
                       >
                         {page}
                       </button>
                     );
                   } else if (
-                    (page === currentPage - 2 && page > 1) || 
+                    (page === currentPage - 2 && page > 1) ||
                     (page === currentPage + 2 && page < meta.totalPage)
                   ) {
-                    return <span key={page} className="px-1 text-gray-400">...</span>;
+                    return (
+                      <span key={page} className="px-1 text-gray-400">
+                        ...
+                      </span>
+                    );
                   }
                   return null;
                 })}
               </div>
 
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(meta.totalPage, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(meta.totalPage, prev + 1))
+                }
                 disabled={currentPage === meta.totalPage}
                 className="p-2 text-gray-600 hover:bg-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
