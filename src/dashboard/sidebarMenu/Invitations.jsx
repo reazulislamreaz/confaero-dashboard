@@ -16,7 +16,10 @@ import {
 } from "lucide-react";
 import { Popconfirm, Select } from "antd";
 import { useSelectedEvent } from "../../hooks/useSelectedEvent";
-import { SkeletonBlock } from "../../components/loading/SkeletonBlock";
+import TableSkeletonRow from "../../components/loading/TableSkeletonRow";
+import SubtitleSkeleton from "../../components/loading/SubtitleSkeleton";
+import SearchLoadingSpinner from "../../components/loading/SearchLoadingSpinner";
+import { useDashboardLoading } from "../../hooks/useDashboardLoading";
 import {
   useDeleteInvitationMutation,
   useResendInvitationMutation,
@@ -121,21 +124,6 @@ function Badge({ className, children }) {
     >
       {children}
     </span>
-  );
-}
-
-function SkeletonRow() {
-  return (
-    <tr>
-      {[...Array(6)].map((_, i) => (
-        <td key={i} className="px-6 py-4">
-          <SkeletonBlock
-            className="h-4"
-            style={{ width: `${50 + i * 9}%` }}
-          />
-        </td>
-      ))}
-    </tr>
   );
 }
 
@@ -474,7 +462,7 @@ export default function InvitationsPage() {
   const invitations = invitationsData?.data?.data || [];
   const meta = invitationsData?.data?.meta || { total: 0 };
   const totalPages = Math.ceil(meta.total / itemsPerPage);
-  const loading = isLoading || isFetching;
+  const loading = useDashboardLoading(isLoading, isFetching);
 
   const toggleFavorite = useCallback((id) => {
     setFavorites((prev) => {
@@ -559,7 +547,7 @@ export default function InvitationsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Invitations</h1>
             <p className="text-gray-500 text-sm mt-0.5">
               {loading ? (
-                <SkeletonBlock className="mt-1 h-4 w-32" />
+                <SubtitleSkeleton />
               ) : (
                 `${meta.total} total invitation${meta.total !== 1 ? "s" : ""}`
               )}
@@ -604,25 +592,7 @@ export default function InvitationsPage() {
               className="w-full pl-9 pr-10 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 border-0"
             />
             {loading && (
-              <svg
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-teal-500 animate-spin"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  className="opacity-25"
-                />
-                <path
-                  fill="currentColor"
-                  className="opacity-75"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                />
-              </svg>
+              <SearchLoadingSpinner className="absolute right-3 top-1/2 -translate-y-1/2" />
             )}
           </div>
         </div>
@@ -647,7 +617,7 @@ export default function InvitationsPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
-                  [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
+                  [...Array(5)].map((_, i) => <TableSkeletonRow key={i} columns={6} />)
                 ) : invitations.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-16 text-center">

@@ -7,6 +7,8 @@ import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import toast from 'react-hot-toast';
 import DetailPageSkeleton from '../../components/loading/DetailPageSkeleton';
 import ListSkeleton from '../../components/loading/ListSkeleton';
+import SubtitleSkeleton from '../../components/loading/SubtitleSkeleton';
+import { useDashboardLoading } from '../../hooks/useDashboardLoading';
 import { SkeletonBlock } from '../../components/loading/SkeletonBlock';
 import { useUploadFileMutation } from '../../redux/features/fileUpload';
 
@@ -34,7 +36,7 @@ const VolunteerManagementPage = () => {
   const { eventId } = useSelectedEvent();
   console.log('Event ID:', eventId);
 
-  const { data: taskData, isLoading: tasksLoading, refetch } = useGetTaskQuery({ eventId, page, limit }, { skip: !eventId });
+  const { data: taskData, isLoading: tasksLoading, isFetching: tasksFetching, refetch } = useGetTaskQuery({ eventId, page, limit }, { skip: !eventId });
   console.log('Task Data:', taskData);
 
   const { data: volunteerEmailData, isLoading: emailsLoading } = useGetVoluntearEamilQuery(eventId, { skip: !eventId });
@@ -218,6 +220,7 @@ const VolunteerManagementPage = () => {
   };
 
   const totalPages = Math.ceil(meta.total / limit);
+  const loading = useDashboardLoading(tasksLoading, tasksFetching);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -225,7 +228,9 @@ const VolunteerManagementPage = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-xl font-semibold text-gray-800">Volunteer Management</h1>
-          <p className="text-sm text-gray-600">Assign tasks and view reports</p>
+          <p className="text-sm text-gray-600">
+            {loading ? <SubtitleSkeleton className="mt-1 h-3 w-40" /> : 'Assign tasks and view reports'}
+          </p>
         </div>
         <button
           onClick={handleAddTaskClick}
@@ -237,7 +242,7 @@ const VolunteerManagementPage = () => {
 
       {/* Volunteers List */}
       <div className="space-y-4">
-        {tasksLoading ? (
+        {loading ? (
           <ListSkeleton rows={5} />
         ) : volunteers.length === 0 ? (
           <div className="text-center py-10 text-gray-500">No volunteers found</div>

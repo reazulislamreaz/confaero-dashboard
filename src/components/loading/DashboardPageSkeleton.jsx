@@ -1,29 +1,45 @@
 import { SkeletonBlock } from "./SkeletonBlock";
-import CardGridSkeleton from "./CardGridSkeleton";
-import ListSkeleton from "./ListSkeleton";
+import TableSkeletonRow from "./TableSkeletonRow";
+import SubtitleSkeleton from "./SubtitleSkeleton";
 
-export default function DashboardPageSkeleton() {
+export default function DashboardPageSkeleton({ rows = 5, columns = 6 }) {
+  const headers = Array.from({ length: columns }, (_, index) => `Column ${index + 1}`);
+
   return (
     <div className="w-full space-y-6 pb-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
+        <div>
           <SkeletonBlock className="h-8 w-48 sm:w-64" />
-          <SkeletonBlock className="h-4 w-72 max-w-full" />
+          <SubtitleSkeleton />
         </div>
-        <div className="flex gap-3">
-          <SkeletonBlock className="h-10 w-28 rounded-xl" />
-          <SkeletonBlock className="h-10 w-32 rounded-xl" />
-        </div>
+        <SkeletonBlock className="h-10 w-36 rounded-xl" />
       </div>
 
-      <CardGridSkeleton count={4} columns={4} />
-
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <SkeletonBlock className="h-10 w-full max-w-sm rounded-xl" />
-          <SkeletonBlock className="h-10 w-36 rounded-xl" />
+      <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <div className="border-b border-gray-100 p-3">
+          <SkeletonBlock className="h-10 w-full max-w-md rounded-lg" />
         </div>
-        <ListSkeleton rows={6} />
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {headers.map((header) => (
+                  <th
+                    key={header}
+                    className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-400"
+                  >
+                    <SkeletonBlock className="h-3 w-16" />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {Array.from({ length: rows }).map((_, index) => (
+                <TableSkeletonRow key={index} columns={columns} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

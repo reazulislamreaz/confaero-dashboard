@@ -2,7 +2,7 @@ import React from 'react';
 import { useGetStripeStatusQuery, useConnectStripeMutation } from '../../redux/features/paymentSlice/paymentSlice';
 import toast from 'react-hot-toast';
 import { FaStripeS, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
-import CardGridSkeleton from '../../components/loading/CardGridSkeleton';
+import DashboardPageSkeleton from '../../components/loading/DashboardPageSkeleton';
 
 export default function PaymentManagement() {
   const { data: statusRes, isLoading } = useGetStripeStatusQuery();
@@ -26,8 +26,13 @@ export default function PaymentManagement() {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-50 p-6">
-        <CardGridSkeleton count={2} columns={2} />
+      <div className="bg-gray-50 p-6 min-h-screen">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold text-gray-800 mb-1">Payment Management</h1>
+          </div>
+          <DashboardPageSkeleton rows={3} columns={3} />
+        </div>
       </div>
     );
   }

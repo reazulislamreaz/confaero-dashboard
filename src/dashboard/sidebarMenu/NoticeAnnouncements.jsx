@@ -4,7 +4,8 @@ import { useCreateAnnouncementMutation, useDeleteAnnouncementMutation, useGetAnn
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
-import CardGridSkeleton from '../../components/loading/CardGridSkeleton';
+import AnnouncementListSkeleton from '../../components/loading/AnnouncementListSkeleton';
+import SubtitleSkeleton from '../../components/loading/SubtitleSkeleton';
 
 export default function NoticeAnnouncements() {
   const [showModal, setShowModal] = useState(false);
@@ -17,11 +18,23 @@ export default function NoticeAnnouncements() {
 
   const { eventId } = useSelectedEvent();
 
-  const { data: announcementsRes, isLoading: isLoadingAnnouncements } = useGetAnnouncementsQuery({
-    eventId,
-    page: currentPage,
-    limit: itemsPerPage,
-  }, { skip: !eventId });
+  const {
+    data: announcementsRes,
+    isLoading: isLoadingAnnouncements,
+    isFetching: isFetchingAnnouncements,
+  } = useGetAnnouncementsQuery(
+    {
+      eventId,
+      page: currentPage,
+      limit: itemsPerPage,
+    },
+    { skip: !eventId }
+  );
+
+  const isAnnouncementsLoading =
+    !eventId ||
+    isLoadingAnnouncements ||
+    (isFetchingAnnouncements && !announcementsRes);
 
   const [createAnnouncement] = useCreateAnnouncementMutation();
   const [updateAnnouncement] = useUpdateAnnouncementMutation();
@@ -124,7 +137,13 @@ export default function NoticeAnnouncements() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800 mb-1">Notice announcements</h1>
-            <p className="text-gray-500 text-sm">Manage User and profiles</p>
+            <p className="text-gray-500 text-sm">
+              {isAnnouncementsLoading ? (
+                <SubtitleSkeleton />
+              ) : (
+                'Manage User and profiles'
+              )}
+            </p>
           </div>
           <button
             onClick={handleCreateClick}
@@ -137,8 +156,8 @@ export default function NoticeAnnouncements() {
 
         {/* Announcements List */}
         <div className="bg-white rounded-lg shadow-sm">
-          {isLoadingAnnouncements ? (
-            <CardGridSkeleton count={6} columns={3} />
+          {isAnnouncementsLoading ? (
+            <AnnouncementListSkeleton rows={itemsPerPage} />
           ) : announcements.length === 0 ? (
             <div className="text-center py-10 text-gray-500">No announcements found.</div>
           ) : (

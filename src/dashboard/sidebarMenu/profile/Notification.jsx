@@ -5,6 +5,8 @@ import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import ListSkeleton from '../../../components/loading/ListSkeleton';
+import SubtitleSkeleton from '../../../components/loading/SubtitleSkeleton';
+import { useDashboardLoading } from '../../../hooks/useDashboardLoading';
 
 dayjs.extend(relativeTime);
 
@@ -19,6 +21,8 @@ export default function NotificationsPage() {
     page: currentPage,
     limit: itemsPerPage
   }, { skip: !eventId });
+
+  const loading = useDashboardLoading(isLoading, isFetching);
 
   const [markAsRead] = useMarkAsReadMutation();
 
@@ -90,7 +94,7 @@ export default function NotificationsPage() {
       {/* Main Content */}
       <div className="  px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-4">
-          {isLoading ? (
+          {loading ? (
             <ListSkeleton rows={5} />
           ) : notifications.length === 0 ? (
             <div className="text-center py-12 text-gray-500 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -170,7 +174,7 @@ export default function NotificationsPage() {
       </div>
 
       {/* Pagination */}
-      {!isLoading && notifications.length > 0 && (
+      {!loading && notifications.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600">

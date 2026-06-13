@@ -7,6 +7,19 @@ import { Provider } from "react-redux";
 import store from './redux/srore.js';
 import { ToastProvider } from './hooks/useToast';
 import { Toaster } from 'react-hot-toast';
+import { isChunkLoadError } from './utils/lazyWithRetry';
+
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault();
+  window.location.reload();
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  if (isChunkLoadError(event.reason)) {
+    event.preventDefault();
+    window.location.reload();
+  }
+});
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

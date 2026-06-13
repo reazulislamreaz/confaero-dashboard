@@ -4,7 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useGetJobsQuery, useDeleteJobMutation, useUpdateJobStatusMutation } from '../../../redux/features/jobSlice/jobSlice';
 import toast from 'react-hot-toast';
 import { Popconfirm } from 'antd';
-import ListSkeleton from '../../../components/loading/ListSkeleton';
+import TableSkeleton from '../../../components/loading/TableSkeleton';
+import SubtitleSkeleton from '../../../components/loading/SubtitleSkeleton';
+import SearchLoadingSpinner from '../../../components/loading/SearchLoadingSpinner';
+import { useDashboardLoading } from '../../../hooks/useDashboardLoading';
 
 export default function JobPostManagement() {
     const navigate = useNavigate();
@@ -15,7 +18,7 @@ export default function JobPostManagement() {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(6);
 
-    const { data: jobsData, isLoading: jobsLoading, refetch } = useGetJobsQuery({ 
+    const { data: jobsData, isLoading: jobsLoading, isFetching: jobsFetching, refetch } = useGetJobsQuery({ 
         page: currentPage, 
         limit: itemsPerPage,
         type: activeTab,
@@ -66,6 +69,7 @@ export default function JobPostManagement() {
 
     const totalPages = Math.ceil((meta.total || apiJobs.length || 0) / itemsPerPage);
     const displayedJobs = apiJobs;
+    const loading = useDashboardLoading(jobsLoading, jobsFetching);
 
     const getStatusColor = (status) => {
         return status === 'APPROVED' ? 'text-teal-600' : 'text-orange-600';
@@ -84,7 +88,13 @@ export default function JobPostManagement() {
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-800 mb-1">Job Post</h1>
-                        <p className="text-gray-500 text-sm">Create & review job postings</p>
+                        <p className="text-gray-500 text-sm">
+                            {loading ? (
+                                <SubtitleSkeleton />
+                            ) : (
+                                'Create & review job postings'
+                            )}
+                        </p>
                     </div>
                     <button 
                         onClick={() => navigate("create-job")}
@@ -127,7 +137,11 @@ export default function JobPostManagement() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                             />
-                            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-teal-600" />
+                            {loading ? (
+                                <SearchLoadingSpinner className="absolute right-3 top-1/2 -translate-y-1/2" />
+                            ) : (
+                                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-teal-600" />
+                            )}
                         </div>
                         <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                             <Filter className="w-5 h-5 text-gray-600" />
@@ -138,24 +152,21 @@ export default function JobPostManagement() {
                 {/* Table */}
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
-                        {jobsLoading ? (
-                            <div className="p-6">
-                                <ListSkeleton rows={6} />
-                            </div>
-                        ) : (
-                            <table className="w-full">
-                                <thead className="bg-teal-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Title</th>
-                                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Company</th>
-                                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Location</th>
-                                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
-                                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-                                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {displayedJobs.length === 0 ? (
+                        <table className="w-full">
+                            <thead className="bg-teal-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Title</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Company</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Location</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {loading ? (
+                                    <TableSkeleton rows={6} columns={6} />
+                                ) : displayedJobs.length === 0 ? (
                                         <tr>
                                             <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
                                                 No jobs found
@@ -216,7 +227,6 @@ export default function JobPostManagement() {
                                     )}
                                 </tbody>
                             </table>
-                        )}
                     </div>
 
                     {/* Pagination */}

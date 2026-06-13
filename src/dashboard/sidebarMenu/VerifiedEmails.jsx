@@ -21,6 +21,8 @@ import { Popconfirm } from "antd";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "../../redux/api/baseUrl";
 import TableSkeleton from "../../components/loading/TableSkeleton";
+import SubtitleSkeleton from "../../components/loading/SubtitleSkeleton";
+import SearchLoadingSpinner from "../../components/loading/SearchLoadingSpinner";
 
 export default function VerifiedEmails() {
   const { eventId } = useSelectedEvent();
@@ -179,7 +181,11 @@ export default function VerifiedEmails() {
           Attendee Email Verification
         </h1>
         <p className="text-gray-500 text-sm">
-          Manage pre-verified attendee emails for this event
+          {isLoading ? (
+            <SubtitleSkeleton />
+          ) : (
+            'Manage pre-verified attendee emails for this event'
+          )}
         </p>
       </div>
 
@@ -261,10 +267,13 @@ export default function VerifiedEmails() {
             <input
               type="text"
               placeholder="Search email..."
-              className="w-full pl-9 pr-4 py-2 border border-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 text-sm transition-all"
+              className="w-full pl-9 pr-10 py-2 border border-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 text-sm transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {isLoading && (
+              <SearchLoadingSpinner className="absolute right-3 top-1/2 -translate-y-1/2" />
+            )}
           </div>
         </div>
 

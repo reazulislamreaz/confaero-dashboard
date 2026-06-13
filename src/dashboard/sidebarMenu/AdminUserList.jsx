@@ -5,6 +5,9 @@ import { useAdminUsersQuery, useAdminDeleteUserMutation } from '../../redux/feat
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
 import TableSkeleton from '../../components/loading/TableSkeleton';
+import SubtitleSkeleton from '../../components/loading/SubtitleSkeleton';
+import SearchLoadingSpinner from '../../components/loading/SearchLoadingSpinner';
+import { useDashboardLoading } from '../../hooks/useDashboardLoading';
 
 const ROLE_DISPLAY = {
   ATTENDEE: 'Attendee',
@@ -24,7 +27,7 @@ const App = () => {
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [roleFilter, setRoleFilter] = useState('all');
 
-  const { data: adminUsersData, isLoading, isError } = useAdminUsersQuery();
+  const { data: adminUsersData, isLoading, isFetching, isError } = useAdminUsersQuery();
   const [deleteUser] = useAdminDeleteUserMutation();
 
   // Get current user role from localStorage
@@ -96,13 +99,21 @@ const App = () => {
     return pages;
   };
 
+  const loading = useDashboardLoading(isLoading, isFetching);
+
   return (
     <div className="bg-gray-50 p-6 relative">
       <div>
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-800 mb-1">User Management</h1>
-          <p className="text-gray-500 text-sm">Manage users and profiles</p>
+          <p className="text-gray-500 text-sm">
+            {loading ? (
+              <SubtitleSkeleton />
+            ) : (
+              `${filteredUsers.length} total user${filteredUsers.length !== 1 ? 's' : ''}`
+            )}
+          </p>
         </div>
 
         {/* Search and Filter Bar */}
@@ -116,8 +127,11 @@ const App = () => {
                 placeholder="Search by email or name"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
+              {loading && (
+                <SearchLoadingSpinner className="absolute right-3 top-1/2 -translate-y-1/2" />
+              )}
             </div>
 
             {/* Role Filter */}
@@ -161,7 +175,7 @@ const App = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {isLoading ? (
+                {loading ? (
                   <TableSkeleton rows={6} columns={6} />
                 ) : isError ? (
                   <tr>

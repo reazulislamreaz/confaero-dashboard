@@ -1,12 +1,22 @@
 import { ArrowLeft, Edit3 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useFetchUserProfileQuery } from "../../../redux/features/userSlice/userSlice";
+import FormSkeleton from '../../../components/loading/FormSkeleton';
 
 const Profile = () => {
   const navigate = useNavigate();
   const { data: profileData, isLoading } = useFetchUserProfileQuery();
 
   const user = profileData?.data;
+
+  if (isLoading) {
+    return (
+      <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+        <div className="mb-12">
+          <FormSkeleton fields={3} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6">

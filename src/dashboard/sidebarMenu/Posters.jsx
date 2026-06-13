@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGetTopPostersQuery } from '../../redux/features/reviwer/reviewerSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { Star } from 'lucide-react';
-import CardGridSkeleton from '../../components/loading/CardGridSkeleton';
+import TableSkeleton from '../../components/loading/TableSkeleton';
 
 const PostersRanking = () => {
   const { eventId } = useSelectedEvent();
@@ -30,7 +30,25 @@ const PostersRanking = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
-        <CardGridSkeleton count={6} columns={2} />
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800 mb-1">Top Posters</h1>
+        </div>
+        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {['Rank', 'Name', 'Rating', 'Reviews'].map((header) => (
+                  <th key={header} className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              <TableSkeleton rows={6} columns={4} />
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }

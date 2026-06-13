@@ -13,7 +13,7 @@ import {
   useGetExibutorsQuery,
 } from '../../redux/features/exibutor&sponsor/boothSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
-import CardGridSkeleton from '../../components/loading/CardGridSkeleton';
+import ListSkeleton from '../../components/loading/ListSkeleton';
 import DetailPageSkeleton from '../../components/loading/DetailPageSkeleton';
  
 
@@ -146,7 +146,9 @@ export default function ExhibitorsSponsors() {
         {activeTab === 'Exhibitors' && (
           <>
             {isLoadingExhibitors ? (
-              <CardGridSkeleton count={4} columns={2} />
+              <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+                <ListSkeleton rows={6} columns={4} />
+              </div>
             ) : exhibitors.length === 0 ? (
               <div className="text-center py-10 text-gray-500">No exhibitors found.</div>
             ) : (
@@ -230,7 +232,9 @@ export default function ExhibitorsSponsors() {
         {activeTab === 'Sponsors' && (
           <>
             {isLoadingSponsors ? (
-              <CardGridSkeleton count={4} columns={2} />
+              <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+                <ListSkeleton rows={6} columns={4} />
+              </div>
             ) : sponsors.length === 0 ? (
               <div className="text-center py-10 text-gray-500">No sponsors found.</div>
             ) : (

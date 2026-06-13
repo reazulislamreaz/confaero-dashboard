@@ -1,9 +1,10 @@
 
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { createBrowserRouter, useOutletContext } from "react-router-dom";
 import Home from "../Home";
 import ErrorPage from "./ErrorPage";
 import AdminRoute from "./AdminRoute";
+import lazyWithRetry from "../utils/lazyWithRetry";
 import {
   AuthPageLoader,
   DashboardPageSkeleton,
@@ -22,45 +23,45 @@ const dashboardPage = (element) => (
   <Suspense fallback={<DashboardPageSkeleton />}>{element}</Suspense>
 );
 
-const ForgotPassword = lazy(() => import("../auth/ForgotPassword"));
-const VerifyOtp = lazy(() => import("../auth/VerifyEmail"));
-const UpdatePassword = lazy(() => import("../auth/UpdatePassword"));
-const Main = lazy(() => import("../layout/Main"));
-const DashboardHome = lazy(() => import("../dashboard/home/DashboardHome"));
-const Settings = lazy(() => import("../dashboard/sidebarMenu/settings/Settings"));
-const PrivacyPolicy = lazy(() => import("../dashboard/sidebarMenu/settings/PrivacyPolicy"));
-const EditPrivacy = lazy(() => import("../dashboard/sidebarMenu/settings/EditPrivacy"));
-const TermCondition = lazy(() => import("../dashboard/sidebarMenu/settings/TermCondition"));
-const EditTermCondition = lazy(() => import("../dashboard/sidebarMenu/settings/EditTermCondition"));
-const About = lazy(() => import("../dashboard/sidebarMenu/settings/Aboute"));
-const EditAbout = lazy(() => import("../dashboard/sidebarMenu/settings/EditAbout"));
-const Notification = lazy(() => import("../dashboard/sidebarMenu/profile/Notification"));
-const Profile = lazy(() => import("../dashboard/sidebarMenu/profile/Profile"));
-const EditProfiel = lazy(() => import("../dashboard/sidebarMenu/profile/EditProfile"));
-const UserListsPage = lazy(() => import("../dashboard/sidebarMenu/Users"));
-const UserDetailsPage = lazy(() => import("../dashboard/sidebarMenu/UserDetailsPage"));
-const EventAgendaBuilder = lazy(() => import("../dashboard/sidebarMenu/EventManagement"));
-const InvitationsPage = lazy(() => import("../dashboard/sidebarMenu/Invitations"));
-const ReviewerManagement = lazy(() => import("../dashboard/sidebarMenu/ReviewerManagement"));
-const ExhibitorsSponsors = lazy(() => import("../dashboard/sidebarMenu/ExhibitorsSponsors"));
-const VolunteerManagementPage = lazy(() => import("../dashboard/sidebarMenu/Volunteers"));
-const DocumentManagement = lazy(() => import("../dashboard/sidebarMenu/resoursce/Documents"));
-const Photos = lazy(() => import("../dashboard/sidebarMenu/resoursce/Photos"));
-const JobPostManagement = lazy(() => import("../dashboard/sidebarMenu/resoursce/JobPost"));
-const CreateJobPost = lazy(() => import("../dashboard/sidebarMenu/resoursce/CreateJobPost"));
-const EditJobPost = lazy(() => import("../dashboard/sidebarMenu/resoursce/EditJobPost"));
-const QAPolls = lazy(() => import("../dashboard/sidebarMenu/resoursce/QaPollSurvey"));
-const NoticeAnnouncements = lazy(() => import("../dashboard/sidebarMenu/NoticeAnnouncements"));
-const Messages = lazy(() => import("../dashboard/sidebarMenu/Messages"));
-const PostersRanking = lazy(() => import("../dashboard/sidebarMenu/Posters"));
-const OrganizerGuideline = lazy(() => import("../dashboard/sidebarMenu/settings/OrganizerGuideline"));
-const UpdateOrganizerGuideline = lazy(() => import("../dashboard/sidebarMenu/settings/UpdateOrganizerGuideline"));
-const AdminUserList = lazy(() => import("../dashboard/sidebarMenu/AdminUserList"));
-const AdminEventManagement = lazy(() => import("../dashboard/sidebarMenu/AdminEventsManagement"));
-const DashboardOverview = lazy(() => import("../dashboard/home/AdminOverview"));
-const EventOverview = lazy(() => import("../dashboard/home/EventOverview"));
-const PaymentManagement = lazy(() => import("../dashboard/sidebarMenu/PaymentManagement"));
-const VerifiedEmails = lazy(() => import("../dashboard/sidebarMenu/VerifiedEmails"));
+const ForgotPassword = lazyWithRetry(() => import("../auth/ForgotPassword"));
+const VerifyOtp = lazyWithRetry(() => import("../auth/VerifyEmail"));
+const UpdatePassword = lazyWithRetry(() => import("../auth/UpdatePassword"));
+const Main = lazyWithRetry(() => import("../layout/Main"));
+const DashboardHome = lazyWithRetry(() => import("../dashboard/home/DashboardHome"));
+const Settings = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/Settings"));
+const PrivacyPolicy = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/PrivacyPolicy"));
+const EditPrivacy = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/EditPrivacy"));
+const TermCondition = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/TermCondition"));
+const EditTermCondition = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/EditTermCondition"));
+const About = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/Aboute"));
+const EditAbout = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/EditAbout"));
+const Notification = lazyWithRetry(() => import("../dashboard/sidebarMenu/profile/Notification"));
+const Profile = lazyWithRetry(() => import("../dashboard/sidebarMenu/profile/Profile"));
+const EditProfiel = lazyWithRetry(() => import("../dashboard/sidebarMenu/profile/EditProfile"));
+const UserListsPage = lazyWithRetry(() => import("../dashboard/sidebarMenu/Users"));
+const UserDetailsPage = lazyWithRetry(() => import("../dashboard/sidebarMenu/UserDetailsPage"));
+const EventAgendaBuilder = lazyWithRetry(() => import("../dashboard/sidebarMenu/EventManagement"));
+const InvitationsPage = lazyWithRetry(() => import("../dashboard/sidebarMenu/Invitations"));
+const ReviewerManagement = lazyWithRetry(() => import("../dashboard/sidebarMenu/ReviewerManagement"));
+const ExhibitorsSponsors = lazyWithRetry(() => import("../dashboard/sidebarMenu/ExhibitorsSponsors"));
+const VolunteerManagementPage = lazyWithRetry(() => import("../dashboard/sidebarMenu/Volunteers"));
+const DocumentManagement = lazyWithRetry(() => import("../dashboard/sidebarMenu/resoursce/Documents"));
+const Photos = lazyWithRetry(() => import("../dashboard/sidebarMenu/resoursce/Photos"));
+const JobPostManagement = lazyWithRetry(() => import("../dashboard/sidebarMenu/resoursce/JobPost"));
+const CreateJobPost = lazyWithRetry(() => import("../dashboard/sidebarMenu/resoursce/CreateJobPost"));
+const EditJobPost = lazyWithRetry(() => import("../dashboard/sidebarMenu/resoursce/EditJobPost"));
+const QAPolls = lazyWithRetry(() => import("../dashboard/sidebarMenu/resoursce/QaPollSurvey"));
+const NoticeAnnouncements = lazyWithRetry(() => import("../dashboard/sidebarMenu/NoticeAnnouncements"));
+const Messages = lazyWithRetry(() => import("../dashboard/sidebarMenu/Messages"));
+const PostersRanking = lazyWithRetry(() => import("../dashboard/sidebarMenu/Posters"));
+const OrganizerGuideline = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/OrganizerGuideline"));
+const UpdateOrganizerGuideline = lazyWithRetry(() => import("../dashboard/sidebarMenu/settings/UpdateOrganizerGuideline"));
+const AdminUserList = lazyWithRetry(() => import("../dashboard/sidebarMenu/AdminUserList"));
+const AdminEventManagement = lazyWithRetry(() => import("../dashboard/sidebarMenu/AdminEventsManagement"));
+const DashboardOverview = lazyWithRetry(() => import("../dashboard/home/AdminOverview"));
+const EventOverview = lazyWithRetry(() => import("../dashboard/home/EventOverview"));
+const PaymentManagement = lazyWithRetry(() => import("../dashboard/sidebarMenu/PaymentManagement"));
+const VerifiedEmails = lazyWithRetry(() => import("../dashboard/sidebarMenu/VerifiedEmails"));
 
 function AdminEventsWrapper() {
   const { handleEventSelect, resetEventSelection } = useOutletContext();
@@ -94,6 +95,7 @@ export const router = createBrowserRouter([
     {
         path: "dashboard",
         element: dashboardShell(<Main />),
+        errorElement: <ErrorPage />,
         children: [
             {
                 path: "home",

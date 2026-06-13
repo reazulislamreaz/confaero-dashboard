@@ -19,6 +19,8 @@ import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
 import { useUploadFileMutation } from '../../../redux/features/fileUpload';
 import TableSkeleton from '../../../components/loading/TableSkeleton';
+import SubtitleSkeleton from '../../../components/loading/SubtitleSkeleton';
+import SearchLoadingSpinner from '../../../components/loading/SearchLoadingSpinner';
 import DetailPageSkeleton from '../../../components/loading/DetailPageSkeleton';
 import { SkeletonBlock } from '../../../components/loading/SkeletonBlock';
 
@@ -44,11 +46,11 @@ export default function DocumentManagement() {
     { eventId, id: documentId },
     { skip: !documentId }
   );
-  const { data: documentsData, isLoading, isError } = useGetDocumentsQuery(
+  const { data: documentsData, isLoading, isFetching, isError } = useGetDocumentsQuery(
     { eventId, page: currentPage, limit: itemsPerPage },
     { skip: !eventId || activeFilter !== 'All' }
   );
-  const { data: pendingDocumentsData, isLoading: pendingLoading, isError: pendingError } = useGetPendingDocumentsQuery(
+  const { data: pendingDocumentsData, isLoading: pendingLoading, isFetching: pendingFetching, isError: pendingError } = useGetPendingDocumentsQuery(
     { eventId, page: currentPage, limit: itemsPerPage },
     { skip: !eventId || activeFilter !== 'Pending' }
   );
@@ -189,7 +191,7 @@ export default function DocumentManagement() {
     }
   };
 
-  const isLoadingAny = isLoading || pendingLoading;
+  const isLoadingAny = isLoading || pendingLoading || isFetching || pendingFetching;
   const isErrorAny   = isError   || pendingError;
 
   return (
@@ -198,7 +200,13 @@ export default function DocumentManagement() {
 
         <div className="px-4 sm:px-6 lg:px-8 py-4 mb-6">
           <h1 className=" text-2xl font-semibold text-gray-800 mb-1">Documents</h1>
-          <p className="text-gray-500 text-sm">Upload and manage event documents</p>
+          <p className="text-gray-500 text-sm">
+            {isLoadingAny ? (
+              <SubtitleSkeleton />
+            ) : (
+              'Upload and manage event documents'
+            )}
+          </p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
@@ -223,7 +231,10 @@ export default function DocumentManagement() {
               <input type="text" placeholder="Search by document name" value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              {isLoadingAny && (
+                <SearchLoadingSpinner className="absolute right-3 top-1/2 -translate-y-1/2" />
+              )}
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             </div>
             <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
               <Filter className="w-5 h-5 text-gray-600" />

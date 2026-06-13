@@ -12,6 +12,8 @@ import {
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { useFetchUserProfileQuery } from '../../redux/features/userSlice/userSlice';
 import ListSkeleton from '../../components/loading/ListSkeleton';
+import SubtitleSkeleton from '../../components/loading/SubtitleSkeleton';
+import { useDashboardLoading } from '../../hooks/useDashboardLoading';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import calendar from 'dayjs/plugin/calendar';
@@ -30,13 +32,16 @@ export default function MessagingSystem() {
   const { data: userProfileResponse } = useFetchUserProfileQuery();
   const user = userProfileResponse?.data;
   
-  const { data: conversationsResponse, isLoading: conversationsLoading } = useGetConversationsQuery(eventId, { skip: !eventId });
+  const { data: conversationsResponse, isLoading: conversationsLoading, isFetching: conversationsFetching } = useGetConversationsQuery(eventId, { skip: !eventId });
   const conversations = conversationsResponse?.data || [];
 
-  const { data: messagesResponse, isLoading: messagesLoading } = useGetMessagesQuery(
+  const conversationsLoadingState = useDashboardLoading(conversationsLoading, conversationsFetching);
+
+  const { data: messagesResponse, isLoading: messagesLoading, isFetching: messagesFetching } = useGetMessagesQuery(
     { conversationId: selectedUser?._id, eventId },
     { skip: !selectedUser?._id || !eventId }
   );
+  const messagesLoadingState = useDashboardLoading(messagesLoading, messagesFetching);
   const messages = messagesResponse?.data || [];
 
   const { data: statsResponse } = useGetChatStatsQuery(eventId, { skip: !eventId });
@@ -193,7 +198,7 @@ export default function MessagingSystem() {
           </div>
           
           <div className="overflow-y-auto flex-1">
-            {conversationsLoading ? (
+            {conversationsLoadingState ? (
               <div className="p-3">
                 <ListSkeleton rows={5} />
               </div>
@@ -275,7 +280,7 @@ export default function MessagingSystem() {
 
               {/* Messages */}
               <div className="flex-1 p-6 px-8 bg-white overflow-y-auto">
-                {messagesLoading ? (
+                {messagesLoadingState ? (
                   <div className="h-full p-4">
                     <ListSkeleton rows={6} showAvatar={false} />
                   </div>

@@ -8,6 +8,9 @@ import { useDeleteUserMutation, useGetAllUsersQuery } from '../../redux/features
 import toast from 'react-hot-toast';
 import { Popconfirm } from 'antd';
 import TableSkeleton from '../../components/loading/TableSkeleton';
+import SubtitleSkeleton from '../../components/loading/SubtitleSkeleton';
+import SearchLoadingSpinner from '../../components/loading/SearchLoadingSpinner';
+import { useDashboardLoading } from '../../hooks/useDashboardLoading';
  
 
 // Role display mapping
@@ -43,7 +46,7 @@ export default function UserManagement() {
 
   const { eventId } = useSelectedEvent();
 
-const { data: usersData, isLoading, isError } = useGetAllUsersQuery(
+const { data: usersData, isLoading, isFetching, isError } = useGetAllUsersQuery(
   {
     id: eventId,
     role: selectedRole,
@@ -62,6 +65,7 @@ const { data: usersData, isLoading, isError } = useGetAllUsersQuery(
   const meta = usersData?.data?.meta || {};
   const totalPages = meta.totalPages || 1;
   const totalUsers = meta.total || 0;
+  const loading = useDashboardLoading(isLoading, isFetching);
 
   const handleSearchSubmit = () => {
     setSearchTerm(searchInput);
@@ -114,7 +118,13 @@ const { data: usersData, isLoading, isError } = useGetAllUsersQuery(
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-800 mb-1">User Management</h1>
-          <p className="text-gray-500 text-sm">Manage users and profiles</p>
+          <p className="text-gray-500 text-sm">
+            {loading ? (
+              <SubtitleSkeleton />
+            ) : (
+              `${totalUsers} total user${totalUsers !== 1 ? 's' : ''}`
+            )}
+          </p>
         </div>
 
         {/* Search and Filter Bar */}
@@ -129,8 +139,11 @@ const { data: usersData, isLoading, isError } = useGetAllUsersQuery(
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
+              {loading && (
+                <SearchLoadingSpinner className="absolute right-3 top-1/2 -translate-y-1/2" />
+              )}
             </div>
 
             {/* Search Button */}
@@ -182,7 +195,7 @@ const { data: usersData, isLoading, isError } = useGetAllUsersQuery(
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {isLoading ? (
+                {loading ? (
                   <TableSkeleton rows={6} columns={6} />
                 ) : isError ? (
                   <tr>
