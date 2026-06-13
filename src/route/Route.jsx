@@ -4,15 +4,22 @@ import { createBrowserRouter, useOutletContext } from "react-router-dom";
 import Home from "../Home";
 import ErrorPage from "./ErrorPage";
 import AdminRoute from "./AdminRoute";
+import {
+  AuthPageLoader,
+  DashboardPageSkeleton,
+  DashboardShellSkeleton,
+} from "../components/loading";
 
-const PageLoader = () => (
-  <div className="flex min-h-[50vh] items-center justify-center">
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0FC3C2] border-t-transparent" />
-  </div>
+const authPage = (element) => (
+  <Suspense fallback={<AuthPageLoader />}>{element}</Suspense>
 );
 
-const withSuspense = (element) => (
-  <Suspense fallback={<PageLoader />}>{element}</Suspense>
+const dashboardShell = (element) => (
+  <Suspense fallback={<DashboardShellSkeleton />}>{element}</Suspense>
+);
+
+const dashboardPage = (element) => (
+  <Suspense fallback={<DashboardPageSkeleton />}>{element}</Suspense>
 );
 
 const ForgotPassword = lazy(() => import("../auth/ForgotPassword"));
@@ -73,171 +80,171 @@ export const router = createBrowserRouter([
     },
     {
         path: "forgotpassword",
-        element: withSuspense(<ForgotPassword />)
+        element: authPage(<ForgotPassword />)
     },
     {
         path: "verifyotp",
-        element: withSuspense(<VerifyOtp />)
+        element: authPage(<VerifyOtp />)
     },
     {
         path: "updatepassword",
-        element: withSuspense(<UpdatePassword />)
+        element: authPage(<UpdatePassword />)
     },
 
     {
         path: "dashboard",
-        element: withSuspense(<Main />),
+        element: dashboardShell(<Main />),
         children: [
             {
                 path: "home",
-                element: withSuspense(<DashboardHome />)
+                element: dashboardPage(<DashboardHome />)
             },
             {
                 path: "admin-home",
-                element: withSuspense(<AdminRoute><DashboardOverview /></AdminRoute>)
+                element: dashboardPage(<AdminRoute><DashboardOverview /></AdminRoute>)
             },
             {
                 path: "admin-events/event-overview/:id",
-                element: withSuspense(<AdminRoute><EventOverview /></AdminRoute>)
+                element: dashboardPage(<AdminRoute><EventOverview /></AdminRoute>)
             },
             {
                 path: "users",
-                element: withSuspense(<UserListsPage />)
+                element: dashboardPage(<UserListsPage />)
             },
 
             {
                 path: "user-management",
-                element: withSuspense(<AdminRoute><AdminUserList /></AdminRoute>)
+                element: dashboardPage(<AdminRoute><AdminUserList /></AdminRoute>)
             },
             {
                 path: "users/details/:id",
-                element: withSuspense(<UserDetailsPage />)
+                element: dashboardPage(<UserDetailsPage />)
             },
             {
                 path: "admin-events",
-                element: withSuspense(<AdminRoute><AdminEventsWrapper /></AdminRoute>)
+                element: dashboardPage(<AdminRoute><AdminEventsWrapper /></AdminRoute>)
             },
             {
                 path: "invitaitons",
-                element: withSuspense(<InvitationsPage />)
+                element: dashboardPage(<InvitationsPage />)
             },
             {
                 path: "enents",
-                element: withSuspense(<EventAgendaBuilder />)
+                element: dashboardPage(<EventAgendaBuilder />)
             },
             {
                 path: "reviewer-management",
-                element: withSuspense(<ReviewerManagement />)
+                element: dashboardPage(<ReviewerManagement />)
             },
             {
                 path: "exhibitors-sponsors",
-                element: withSuspense(<ExhibitorsSponsors />)
+                element: dashboardPage(<ExhibitorsSponsors />)
             },
             {
                 path: "volunteers",
-                element: withSuspense(<VolunteerManagementPage />)
+                element: dashboardPage(<VolunteerManagementPage />)
             },
             {
                 path: "resources/documents",
-                element: withSuspense(<DocumentManagement />)
+                element: dashboardPage(<DocumentManagement />)
             },
             {
                 path: "resources/photos",
-                element: withSuspense(<Photos />)
+                element: dashboardPage(<Photos />)
             },
             {
                 path: "resources/job-posts",
-                element: withSuspense(<JobPostManagement />)
+                element: dashboardPage(<JobPostManagement />)
             },
             {
                 path: "resources/job-posts/create-job",
-                element: withSuspense(<CreateJobPost />)
+                element: dashboardPage(<CreateJobPost />)
             },
             {
                 path: "resources/job-posts/editjob/:id",
-                element: withSuspense(<EditJobPost />)
+                element: dashboardPage(<EditJobPost />)
             },
             {
                 path: "resources/qa-polls-survey",
-                element: withSuspense(<QAPolls />)
+                element: dashboardPage(<QAPolls />)
             },
 
             {
                 path: 'notice-announcements',
-                element: withSuspense(<NoticeAnnouncements />)
+                element: dashboardPage(<NoticeAnnouncements />)
             },
             {
                 path: 'messages',
-                element: withSuspense(<Messages />)
+                element: dashboardPage(<Messages />)
             },
             {
                 path: 'posters',
-                element: withSuspense(<PostersRanking />)
+                element: dashboardPage(<PostersRanking />)
             },
             {
                 path: 'payment-management',
-                element: withSuspense(<PaymentManagement />)
+                element: dashboardPage(<PaymentManagement />)
             },
             {
                 path: 'verified-emails',
-                element: withSuspense(<VerifiedEmails />)
+                element: dashboardPage(<VerifiedEmails />)
             },
             {
                 path: 'settings',
-                element: withSuspense(<Settings />)
+                element: dashboardPage(<Settings />)
             },
             {
                 path:'settings/privacypolicy',
-                element: withSuspense(<PrivacyPolicy />)
+                element: dashboardPage(<PrivacyPolicy />)
             },
             {
                 path:'settings/organizer-guideline',
-                element: withSuspense(<OrganizerGuideline />)
+                element: dashboardPage(<OrganizerGuideline />)
             },
             {
                 path:'settings/update-organizerg-uideline',
-                element: withSuspense(<UpdateOrganizerGuideline />)
+                element: dashboardPage(<UpdateOrganizerGuideline />)
             },
 
             {
                 path:'settings/editprivacypolicy',
-                element: withSuspense(<EditPrivacy />)
+                element: dashboardPage(<EditPrivacy />)
             },
             {
                 path:"settings/termcondition",
-                element: withSuspense(<TermCondition />)
+                element: dashboardPage(<TermCondition />)
             },
             {
                 path: "settings/edittermcondition",
-                element: withSuspense(<EditTermCondition />)
+                element: dashboardPage(<EditTermCondition />)
             },
             {
                 path:'settings/about',
-                element: withSuspense(<About />)
+                element: dashboardPage(<About />)
             },
             {
                 path:'settings/editabout',
-                element: withSuspense(<EditAbout />)
+                element: dashboardPage(<EditAbout />)
             },
               {
                 path: "notification",
-                element: withSuspense(<Notification />)
+                element: dashboardPage(<Notification />)
             },
             {
                 path: "settings/profile",
-                element: withSuspense(<Profile />)
+                element: dashboardPage(<Profile />)
             },
             {
                 path: "dashboard/profile",
-                element: withSuspense(<Profile />)
+                element: dashboardPage(<Profile />)
             },
             {
                 path: "settings/editprofile",
-                element: withSuspense(<EditProfiel />)
+                element: dashboardPage(<EditProfiel />)
             },
             {
                 path: "dashboard/editprofile",
-                element: withSuspense(<EditProfiel />)
+                element: dashboardPage(<EditProfiel />)
             },
 
 
