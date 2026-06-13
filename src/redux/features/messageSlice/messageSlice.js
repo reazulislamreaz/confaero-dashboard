@@ -1,4 +1,5 @@
 import { apiSlice } from "../../api/apiSlice";
+import { API_ORIGIN } from "../../api/baseUrl";
 import { io } from "socket.io-client";
 
 let socket;
@@ -12,7 +13,7 @@ const connectSocket = (eventId) => {
   }
 
   const token = localStorage.getItem("token");
-  socket = io("https://api.confaero.com", {
+  socket = io(API_ORIGIN, {
     extraHeaders: {
       token: token,
       eventid: eventId,

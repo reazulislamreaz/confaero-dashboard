@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_BASE_URL } from "../redux/api/baseUrl";
 
 export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -14,7 +15,7 @@ export default function UploadPage() {
       formData.append("file", file);
 
       const response = await fetch(
-        `https://api.confaero.com/api/v1/upload/chat-attachment`,
+        `${API_BASE_URL}/upload/chat-attachment`,
         {
           method: "POST",
           body: formData,

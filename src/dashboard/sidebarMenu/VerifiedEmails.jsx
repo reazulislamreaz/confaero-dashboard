@@ -19,6 +19,7 @@ import {
 import { useSelectedEvent } from "../../hooks/useSelectedEvent";
 import { Popconfirm } from "antd";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "../../redux/api/baseUrl";
 
 export default function VerifiedEmails() {
   const { eventId } = useSelectedEvent();
@@ -49,7 +50,7 @@ export default function VerifiedEmails() {
       const token = localStorage.getItem("token");
       const selectedEventId = localStorage.getItem("selectedEventId");
       const response = await axios.get(
-        `https://api.confaero.com/api/v1/organizer/verify-email/list/${eventId}`,
+        `${API_BASE_URL}/organizer/verify-email/list/${eventId}`,
         {
           params: { page: currentPage, limit: pageSize },
           headers: {

@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_BASE_URL } from "./baseUrl";
 
 const baseQuery = fetchBaseQuery({
-  // baseUrl: "http://206.162.244.11:8078/api/v1",
-  baseUrl: "https://api.confaero.com/api/v1",
+  baseUrl: API_BASE_URL,
   prepareHeaders: (headers, { getState }) => {
     const token = localStorage.getItem("token");
     if (token) {
