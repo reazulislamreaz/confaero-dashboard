@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Popconfirm, Select } from "antd";
 import { useSelectedEvent } from "../../hooks/useSelectedEvent";
+import { SkeletonBlock } from "../../components/loading/SkeletonBlock";
 import {
   useDeleteInvitationMutation,
   useResendInvitationMutation,
@@ -128,8 +129,8 @@ function SkeletonRow() {
     <tr>
       {[...Array(6)].map((_, i) => (
         <td key={i} className="px-6 py-4">
-          <div
-            className="h-4 bg-gray-100 rounded animate-pulse"
+          <SkeletonBlock
+            className="h-4"
             style={{ width: `${50 + i * 9}%` }}
           />
         </td>
@@ -557,9 +558,11 @@ export default function InvitationsPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Invitations</h1>
             <p className="text-gray-500 text-sm mt-0.5">
-              {loading
-                ? "Loading…"
-                : `${meta.total} total invitation${meta.total !== 1 ? "s" : ""}`}
+              {loading ? (
+                <SkeletonBlock className="mt-1 h-4 w-32" />
+              ) : (
+                `${meta.total} total invitation${meta.total !== 1 ? "s" : ""}`
+              )}
             </p>
           </div>
           <button

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Star } from 'lucide-react';
+import ListSkeleton from '../../components/loading/ListSkeleton';
 
-const TopPostersCard = ({ posters, onViewRankings }) => {
+const TopPostersCard = ({ posters, onViewRankings, isLoading = false }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-6 border-b border-gray-200 flex justify-between items-center">
@@ -14,7 +15,9 @@ const TopPostersCard = ({ posters, onViewRankings }) => {
         </button>
       </div>
       <div className="p-6 space-y-4">
-        {posters.length === 0 ? (
+        {isLoading ? (
+          <ListSkeleton rows={3} showAvatar={false} />
+        ) : posters.length === 0 ? (
           <p className="text-gray-500 text-sm italic text-center py-4">No posters available.</p>
         ) : (
           posters.map((poster, index) => (

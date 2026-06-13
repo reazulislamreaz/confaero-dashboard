@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useGetEventQuery } from "../redux/features/eventSlice/eventSlice";
 import { useSelectedEvent } from "../hooks/useSelectedEvent";
+import ListSkeleton from "./loading/ListSkeleton";
 
 const EventDisplayComponent = () => {
   const { data: eventsResponse, isLoading, error } = useGetEventQuery();
@@ -14,7 +15,7 @@ const EventDisplayComponent = () => {
     }
   }, [eventsResponse, isSelected, setEvent]);
 
-  if (isLoading) return <div>Loading events...</div>;
+  if (isLoading) return <ListSkeleton rows={4} />;
   if (error) return <div>Error: {error.message}</div>;
   return (
     <div className="p-4">

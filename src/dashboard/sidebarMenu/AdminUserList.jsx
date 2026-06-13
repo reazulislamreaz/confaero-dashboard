@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAdminUsersQuery, useAdminDeleteUserMutation } from '../../redux/features/userSlice/userSlice';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
+import TableSkeleton from '../../components/loading/TableSkeleton';
 
 const ROLE_DISPLAY = {
   ATTENDEE: 'Attendee',
@@ -161,11 +162,7 @@ const App = () => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">
-                      Loading users...
-                    </td>
-                  </tr>
+                  <TableSkeleton rows={6} columns={6} />
                 ) : isError ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-10 text-center text-red-400 text-sm">

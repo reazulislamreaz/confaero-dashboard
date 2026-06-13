@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGetJobByIdQuery, useUpdateJobMutation } from '../../../redux/features/jobSlice/jobSlice';
  
 import toast from 'react-hot-toast';
+import FormSkeleton from '../../../components/loading/FormSkeleton';
 import { useUploadFileMutation } from '../../../redux/features/fileUpload';
 
 export default function EditJobPost() {
@@ -178,8 +179,10 @@ export default function EditJobPost() {
 
   if (jobLoading || isFetching) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <div className="text-gray-500">Loading job details...</div>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto">
+          <FormSkeleton />
+        </div>
       </div>
     );
   }

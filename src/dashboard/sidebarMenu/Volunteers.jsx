@@ -5,6 +5,9 @@ import { useAssignTaskMutation, useGetTaskByIdQuery, useGetTaskQuery, useGetVolu
  
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import toast from 'react-hot-toast';
+import DetailPageSkeleton from '../../components/loading/DetailPageSkeleton';
+import ListSkeleton from '../../components/loading/ListSkeleton';
+import { SkeletonBlock } from '../../components/loading/SkeletonBlock';
 import { useUploadFileMutation } from '../../redux/features/fileUpload';
 
 const VolunteerManagementPage = () => {
@@ -235,7 +238,7 @@ const VolunteerManagementPage = () => {
       {/* Volunteers List */}
       <div className="space-y-4">
         {tasksLoading ? (
-          <div className="text-center py-10 text-gray-500">Loading volunteers...</div>
+          <ListSkeleton rows={5} />
         ) : volunteers.length === 0 ? (
           <div className="text-center py-10 text-gray-500">No volunteers found</div>
         ) : (
@@ -479,7 +482,7 @@ const VolunteerManagementPage = () => {
                     Volunteer Email <span className="text-red-500">*</span>
                   </label>
                   {emailsLoading ? (
-                    <div className="text-sm text-gray-500">Loading emails...</div>
+                    <SkeletonBlock className="h-11 w-full rounded-xl" />
                   ) : (
                     <select
                       value={selectedEmail}
@@ -609,7 +612,7 @@ const VolunteerManagementPage = () => {
               </div>
 
               {reportLoading ? (
-                <div className="text-center py-10 text-gray-500">Loading report details...</div>
+                <DetailPageSkeleton />
               ) : reportData?.data ? (
                 <div className="space-y-6">
                   {/* Urgency & Category Badges */}

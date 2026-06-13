@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Upload, Bold, Italic, Underline, Strikethrough, Link, List, ListOrdered, Calendar, MapPin, User, CheckSquare, FileText, Store, Megaphone, Users, CheckCircle, Mail } from 'lucide-react';
 import { useEventOverviewQuery, useGetEventQuery } from '../../redux/features/eventSlice/eventSlice';
 import { useNavigate } from 'react-router-dom';
+import DashboardPageSkeleton from '../../components/loading/DashboardPageSkeleton';
 
 export default function ConferenceDashboard({ eventId }) {
   const navigate = useNavigate();
@@ -93,11 +94,7 @@ export default function ConferenceDashboard({ eventId }) {
   };
 
   if (overviewLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading event overview...</p>
-      </div>
-    );
+    return <DashboardPageSkeleton />;
   }
 
   if (overviewError) {

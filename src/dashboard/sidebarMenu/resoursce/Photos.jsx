@@ -6,6 +6,7 @@ import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
 import { useUploadFileMutation } from '../../../redux/features/fileUpload';
+import PhotoGridSkeleton from '../../../components/loading/PhotoGridSkeleton';
 
 export default function Photos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -173,9 +174,7 @@ export default function Photos() {
       {/* Photo Grid */}
       <div className="px-4 sm:px-6 lg:px-8 py-6">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
-            Loading photos...
-          </div>
+          <PhotoGridSkeleton count={6} />
         ) : isError ? (
           <div className="flex items-center justify-center py-20 text-red-400 text-sm">
             Failed to load photos.

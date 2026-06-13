@@ -33,6 +33,8 @@ import {
 
 import { useSelectedEvent } from "../../hooks/useSelectedEvent";
 import { useGetEventQuery } from "../../redux/features/eventSlice/eventSlice";
+import DashboardPageSkeleton from "../../components/loading/DashboardPageSkeleton";
+import InlineListSkeleton from "../../components/loading/InlineListSkeleton";
 import { useIsAdmin } from "../../hooks/useUserRole";
 import toast from "react-hot-toast";
 
@@ -184,11 +186,7 @@ export default function ReviewerManagement() {
 
   // Prevent render before eventId ready
   if (!eventId || isStatsLoading) {
-    return (
-      <div className="p-10 text-gray-500 flex justify-center">
-        Loading reviewer data...
-      </div>
-    );
+    return <DashboardPageSkeleton />;
   }
 
   // Normalize reviewer stats to avoid undefined issues
@@ -1059,10 +1057,7 @@ export default function ReviewerManagement() {
                   <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-200">
                     <div className="max-h-60 overflow-y-auto">
                       {isAllReviewersLoading ? (
-                        <div className="p-4 text-center text-sm text-gray-500 flex items-center justify-center gap-2">
-                          <div className="w-4 h-4 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-                          <span>Loading reviewers...</span>
-                        </div>
+                        <InlineListSkeleton rows={4} />
                       ) : safeArray(allReviewersData?.data).length === 0 ? (
                         <div className="p-4 text-center text-sm text-gray-500">
                           No reviewers available

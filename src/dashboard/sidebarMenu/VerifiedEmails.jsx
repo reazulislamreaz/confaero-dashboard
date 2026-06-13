@@ -20,6 +20,7 @@ import { useSelectedEvent } from "../../hooks/useSelectedEvent";
 import { Popconfirm } from "antd";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "../../redux/api/baseUrl";
+import TableSkeleton from "../../components/loading/TableSkeleton";
 
 export default function VerifiedEmails() {
   const { eventId } = useSelectedEvent();
@@ -287,15 +288,7 @@ export default function VerifiedEmails() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan="4"
-                    className="px-6 py-12 text-center text-gray-400"
-                  >
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 opacity-20" />
-                    <span className="text-sm">Loading verified emails...</span>
-                  </td>
-                </tr>
+                <TableSkeleton rows={6} columns={4} />
               ) : filteredEmails.length === 0 ? (
                 <tr>
                   <td

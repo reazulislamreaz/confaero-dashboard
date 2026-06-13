@@ -4,6 +4,7 @@ import TopPostersCard from './TopPostersCard';
 import { useGetInvitationsQuery } from '../../redux/features/invitatation/invitaionSlice';
 import { useGetTopPostersQuery } from '../../redux/features/reviwer/reviewerSlice';
 import { useNavigate } from 'react-router-dom';
+import ListSkeleton from '../../components/loading/ListSkeleton';
 
 const InvitationsDashboard = ({ eventId }) => {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ const InvitationsDashboard = ({ eventId }) => {
             </div>
             <div className="p-6 space-y-4">
               {invLoading ? (
-                <p className="text-gray-500 text-sm">Loading invitations...</p>
+                <ListSkeleton rows={3} />
               ) : invError ? (
                 <p className="text-red-500 text-sm">Failed to load invitations.</p>
               ) : invitations.length === 0 ? (
@@ -89,6 +90,7 @@ const InvitationsDashboard = ({ eventId }) => {
           {/* Top Posters Section */}
           <TopPostersCard 
             posters={posters}
+            isLoading={postersLoading}
             onViewRankings={() => navigate('/dashboard/reviewer-management')}
           />
         </div>

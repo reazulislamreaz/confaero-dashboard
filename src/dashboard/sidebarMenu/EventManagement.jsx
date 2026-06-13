@@ -24,6 +24,7 @@ import { useSelectedEvent } from "../../hooks/useSelectedEvent";
 import toast from "react-hot-toast";
 import { Popconfirm } from "antd";
 import { useIsAdmin } from "../../hooks/useUserRole";
+import DashboardPageSkeleton from "../../components/loading/DashboardPageSkeleton";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const formatDate = (iso) => {
@@ -419,8 +420,8 @@ export default function EventAgendaBuilder() {
   // ── Loading / Error ───────────────────────────────────────────────────────
   if (isLoading || !eventData || !floorMaps) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Loading event data...</p>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <DashboardPageSkeleton />
       </div>
     );
   }

@@ -5,6 +5,7 @@ import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { useDeleteUserMutation, useDetailUserQuery, useAdminUserDetaislQuery, useAdminDeleteUserMutation } from '../../redux/features/userSlice/userSlice';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
+import DetailPageSkeleton from '../../components/loading/DetailPageSkeleton';
 
 const ROLE_DISPLAY = {
   ATTENDEE: 'Attendee',
@@ -124,8 +125,8 @@ export default function UserDetailsPage() {
   // ── Loading / Error states ────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Loading user details...</p>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <DetailPageSkeleton />
       </div>
     );
   }

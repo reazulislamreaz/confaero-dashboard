@@ -7,6 +7,7 @@ import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { useDeleteUserMutation, useGetAllUsersQuery } from '../../redux/features/userSlice/userSlice';
 import toast from 'react-hot-toast';
 import { Popconfirm } from 'antd';
+import TableSkeleton from '../../components/loading/TableSkeleton';
  
 
 // Role display mapping
@@ -182,11 +183,7 @@ const { data: usersData, isLoading, isError } = useGetAllUsersQuery(
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">
-                      Loading users...
-                    </td>
-                  </tr>
+                  <TableSkeleton rows={6} columns={6} />
                 ) : isError ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-10 text-center text-red-400 text-sm">

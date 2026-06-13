@@ -4,6 +4,7 @@ import { useGetNotificationsQuery, useMarkAsReadMutation } from '../../../redux/
 import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import ListSkeleton from '../../../components/loading/ListSkeleton';
 
 dayjs.extend(relativeTime);
 
@@ -90,7 +91,7 @@ export default function NotificationsPage() {
       <div className="  px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-4">
           {isLoading ? (
-            <div className="text-center py-12 text-gray-500">Loading notifications...</div>
+            <ListSkeleton rows={5} />
           ) : notifications.length === 0 ? (
             <div className="text-center py-12 text-gray-500 bg-white rounded-lg shadow-sm border border-gray-200">
               <Bell className="mx-auto h-12 w-12 text-gray-300 mb-3" />

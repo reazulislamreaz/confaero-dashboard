@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGetJobsQuery, useDeleteJobMutation, useUpdateJobStatusMutation } from '../../../redux/features/jobSlice/jobSlice';
 import toast from 'react-hot-toast';
 import { Popconfirm } from 'antd';
+import ListSkeleton from '../../../components/loading/ListSkeleton';
 
 export default function JobPostManagement() {
     const navigate = useNavigate();
@@ -138,8 +139,8 @@ export default function JobPostManagement() {
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         {jobsLoading ? (
-                            <div className="flex items-center justify-center py-20">
-                                <div className="text-gray-500">Loading jobs...</div>
+                            <div className="p-6">
+                                <ListSkeleton rows={6} />
                             </div>
                         ) : (
                             <table className="w-full">

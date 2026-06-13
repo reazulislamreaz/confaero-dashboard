@@ -13,6 +13,8 @@ import {
   useGetExibutorsQuery,
 } from '../../redux/features/exibutor&sponsor/boothSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
+import CardGridSkeleton from '../../components/loading/CardGridSkeleton';
+import DetailPageSkeleton from '../../components/loading/DetailPageSkeleton';
  
 
 export default function ExhibitorsSponsors() {
@@ -144,7 +146,7 @@ export default function ExhibitorsSponsors() {
         {activeTab === 'Exhibitors' && (
           <>
             {isLoadingExhibitors ? (
-              <div className="text-center py-10 text-gray-500">Loading exhibitors...</div>
+              <CardGridSkeleton count={4} columns={2} />
             ) : exhibitors.length === 0 ? (
               <div className="text-center py-10 text-gray-500">No exhibitors found.</div>
             ) : (
@@ -228,7 +230,7 @@ export default function ExhibitorsSponsors() {
         {activeTab === 'Sponsors' && (
           <>
             {isLoadingSponsors ? (
-              <div className="text-center py-10 text-gray-500">Loading sponsors...</div>
+              <CardGridSkeleton count={4} columns={2} />
             ) : sponsors.length === 0 ? (
               <div className="text-center py-10 text-gray-500">No sponsors found.</div>
             ) : (
@@ -349,7 +351,7 @@ export default function ExhibitorsSponsors() {
             {/* Modal Body */}
             <div className="p-6">
               {isLoadingSponsorDetails && activeTab === 'Sponsors' ? (
-                <div className="text-center py-4 text-gray-500 text-sm">Loading details...</div>
+                <DetailPageSkeleton />
               ) : (
                 <>
                   {/* Company Info */}

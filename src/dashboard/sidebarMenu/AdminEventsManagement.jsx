@@ -20,6 +20,7 @@ import {
   useGetAdminEventQuery,
 } from "../../redux/features/eventSlice/eventSlice";
 import toast from "react-hot-toast";
+import CardGridSkeleton from "../../components/loading/CardGridSkeleton";
 export default function AdminEventManagement({ onEventSelect }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -283,11 +284,7 @@ export default function AdminEventManagement({ onEventSelect }) {
         </div>
 
         {/* Loading / Error States */}
-        {isLoading && (
-          <div className="text-center py-12 text-gray-500">
-            Loading events...
-          </div>
-        )}
+        {isLoading && <CardGridSkeleton count={6} columns={3} />}
         {isError && (
           <div className="text-center py-12 text-red-500">
             Failed to load events. Please try again.

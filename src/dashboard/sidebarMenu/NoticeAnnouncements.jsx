@@ -4,6 +4,7 @@ import { useCreateAnnouncementMutation, useDeleteAnnouncementMutation, useGetAnn
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
+import CardGridSkeleton from '../../components/loading/CardGridSkeleton';
 
 export default function NoticeAnnouncements() {
   const [showModal, setShowModal] = useState(false);
@@ -137,7 +138,7 @@ export default function NoticeAnnouncements() {
         {/* Announcements List */}
         <div className="bg-white rounded-lg shadow-sm">
           {isLoadingAnnouncements ? (
-            <div className="text-center py-10 text-gray-500">Loading announcements...</div>
+            <CardGridSkeleton count={6} columns={3} />
           ) : announcements.length === 0 ? (
             <div className="text-center py-10 text-gray-500">No announcements found.</div>
           ) : (

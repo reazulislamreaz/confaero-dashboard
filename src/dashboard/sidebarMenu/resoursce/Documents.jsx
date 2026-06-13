@@ -18,6 +18,9 @@ import { useSelectedEvent } from '../../../hooks/useSelectedEvent';
 import { Popconfirm } from 'antd';
 import toast from 'react-hot-toast';
 import { useUploadFileMutation } from '../../../redux/features/fileUpload';
+import TableSkeleton from '../../../components/loading/TableSkeleton';
+import DetailPageSkeleton from '../../../components/loading/DetailPageSkeleton';
+import { SkeletonBlock } from '../../../components/loading/SkeletonBlock';
 
 export default function DocumentManagement() {
   const [activeFilter, setActiveFilter]         = useState('All');
@@ -240,7 +243,7 @@ export default function DocumentManagement() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {isLoadingAny ? (
-                  <tr><td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-sm">Loading documents...</td></tr>
+                  <TableSkeleton rows={5} columns={6} />
                 ) : isErrorAny ? (
                   <tr><td colSpan={6} className="px-6 py-10 text-center text-red-500 text-sm">Failed to load documents.</td></tr>
                 ) : filteredDocuments.length === 0 ? (
@@ -437,7 +440,11 @@ export default function DocumentManagement() {
                     </div>
                     <div>
                       <h2 className="text-white font-semibold text-lg leading-tight">
-                        {detailsLoading ? 'Loading...' : details?.documentName ?? '—'}
+                        {detailsLoading ? (
+                          <SkeletonBlock className="h-5 w-40 bg-white/30" />
+                        ) : (
+                          details?.documentName ?? '—'
+                        )}
                       </h2>
                       <p className="text-teal-100 text-sm mt-0.5">Document Details</p>
                     </div>
@@ -450,7 +457,7 @@ export default function DocumentManagement() {
 
               <div className="px-6 py-5">
                 {detailsLoading ? (
-                  <div className="flex items-center justify-center py-10 text-gray-400 text-sm">Loading document details...</div>
+                  <DetailPageSkeleton />
                 ) : !details ? (
                   <div className="flex items-center justify-center py-10 text-red-400 text-sm">Failed to load document details.</div>
                 ) : (

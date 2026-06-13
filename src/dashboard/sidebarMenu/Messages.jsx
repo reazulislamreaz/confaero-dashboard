@@ -11,6 +11,7 @@ import {
 } from '../../redux/features/messageSlice/messageSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { useFetchUserProfileQuery } from '../../redux/features/userSlice/userSlice';
+import ListSkeleton from '../../components/loading/ListSkeleton';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import calendar from 'dayjs/plugin/calendar';
@@ -193,7 +194,9 @@ export default function MessagingSystem() {
           
           <div className="overflow-y-auto flex-1">
             {conversationsLoading ? (
-              <div className="text-center p-4 text-gray-500">Loading...</div>
+              <div className="p-3">
+                <ListSkeleton rows={5} />
+              </div>
             ) : filteredConversations.map((conv) => (
               <div
                 key={conv._id}
@@ -273,7 +276,9 @@ export default function MessagingSystem() {
               {/* Messages */}
               <div className="flex-1 p-6 px-8 bg-white overflow-y-auto">
                 {messagesLoading ? (
-                  <div className="flex justify-center items-center h-full text-gray-500">Loading messages...</div>
+                  <div className="h-full p-4">
+                    <ListSkeleton rows={6} showAvatar={false} />
+                  </div>
                 ) : (
                   <div className="space-y-4">
                     {messages.map((msg, index) => {

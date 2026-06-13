@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Select } from 'antd';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import { useEventOverviewQuery } from '../../redux/features/eventSlice/eventSlice';
+import ChartSkeleton from '../../components/loading/ChartSkeleton';
 
 export default function RegistrationTrendChart({ eventId }) {
   const [period, setPeriod] = useState('weekly');
@@ -53,9 +54,7 @@ export default function RegistrationTrendChart({ eventId }) {
   if (isLoading) {
     return (
       <div className="bg-gray-50 p-8">
-        <div className="bg-white rounded-lg p-6 shadow-sm flex items-center justify-center h-48">
-          <p className="text-gray-400 text-sm">Loading chart...</p>
-        </div>
+        <ChartSkeleton />
       </div>
     );
   }

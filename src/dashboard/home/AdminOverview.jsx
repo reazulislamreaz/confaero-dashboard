@@ -3,6 +3,7 @@ import { Calendar, MapPin, Users, UserPlus, TrendingUp, ChevronLeft, ChevronRigh
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import { useAddminDashboardOverviewQuery, useGetGlobalEventTrendQuery } from '../../redux/features/eventSlice/eventSlice';
 import { Link } from 'react-router-dom';
+import DashboardPageSkeleton from '../../components/loading/DashboardPageSkeleton';
 // test
 export default function DashboardOverview() {
   const [selectedMonth, setSelectedMonth] = useState('Monthly');
@@ -119,7 +120,7 @@ export default function DashboardOverview() {
     setOrganizerEmails(['example@email.com']);
   };
 
-  if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-500">Loading...</div>;
+  if (isLoading) return <DashboardPageSkeleton />;
   if (isError)   return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">Failed to load dashboard data.</div>;
 
   return (

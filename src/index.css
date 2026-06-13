@@ -3,3 +3,14 @@
 @tailwind utilities; */
 
 @import "tailwindcss";
+
+@layer base {
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+

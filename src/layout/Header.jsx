@@ -10,6 +10,7 @@ import Swal from "sweetalert2";
 import { useState } from "react";
 import { MessageCircle, MessageCircleCodeIcon, MessageSquareMore } from "lucide-react";
 import { useFetchUserProfileQuery } from "../redux/features/userSlice/userSlice";
+import { SkeletonBlock } from "../components/loading/SkeletonBlock";
  
  
  
@@ -102,7 +103,7 @@ const handleMenuVisibility = (visible) => {
     
     {/* Skeleton */}
     {imageLoading && (
-      <div className="absolute inset-0 rounded-full bg-gray-300 animate-pulse"></div>
+      <SkeletonBlock className="absolute inset-0 rounded-full" />
     )}
 
     {/* Profile Image */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGetTopPostersQuery } from '../../redux/features/reviwer/reviewerSlice';
 import { useSelectedEvent } from '../../hooks/useSelectedEvent';
 import { Star } from 'lucide-react';
+import CardGridSkeleton from '../../components/loading/CardGridSkeleton';
 
 const PostersRanking = () => {
   const { eventId } = useSelectedEvent();
@@ -28,8 +29,8 @@ const PostersRanking = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading posters...</p>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <CardGridSkeleton count={6} columns={2} />
       </div>
     );
   }
