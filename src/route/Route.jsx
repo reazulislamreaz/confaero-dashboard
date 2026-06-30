@@ -66,6 +66,7 @@ const PublicAboutUs = lazyWithRetry(() => import("../pages/public/PublicAboutUs"
 const PublicPrivacyPolicy = lazyWithRetry(() => import("../pages/public/PublicPrivacyPolicy"));
 const PublicTermsOfService = lazyWithRetry(() => import("../pages/public/PublicTermsOfService"));
 const PublicDeleteAccount = lazyWithRetry(() => import("../pages/public/PublicDeleteAccount"));
+const PublicSupport = lazyWithRetry(() => import("../pages/public/PublicSupport"));
 
 function AdminEventsWrapper() {
   const { handleEventSelect, resetEventSelection } = useOutletContext();
@@ -114,6 +115,10 @@ export const router = createBrowserRouter([
     {
         path: "terms-condition",
         element: authPage(<PublicTermsOfService />)
+    },
+    {
+        path: "support",
+        element: authPage(<PublicSupport />)
     },
 
     {

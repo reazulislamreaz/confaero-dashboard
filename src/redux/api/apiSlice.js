@@ -32,6 +32,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     "/privacy-policy",
     "/terms-of-service",
     "/terms-condition",
+    "/support",
   ];
   const isPublicPage = publicPaths.includes(window.location.pathname);
 

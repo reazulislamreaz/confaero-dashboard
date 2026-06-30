@@ -225,6 +225,13 @@ const Login = () => {
                 >
                   Delete Account
                 </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/support")}
+                  className="hover:text-[#0FC3C2]"
+                >
+                  Support
+                </button>
               </div>
             </div>
           </div>
