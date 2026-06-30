@@ -14,3 +14,49 @@
   }
 }
 
+.public-content {
+  color: #374151;
+  line-height: 1.75;
+}
+
+.public-content h2,
+.public-content h3,
+.public-content h4 {
+  color: #111827;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.public-content h2 {
+  font-size: 1.5rem;
+}
+
+.public-content h3 {
+  font-size: 1.125rem;
+}
+
+.public-content p,
+.public-content ul,
+.public-content ol {
+  margin-bottom: 1rem;
+}
+
+.public-content ul,
+.public-content ol {
+  padding-left: 1.5rem;
+}
+
+.public-content ul {
+  list-style: disc;
+}
+
+.public-content ol {
+  list-style: decimal;
+}
+
+.public-content a {
+  color: #0fc3c2;
+  text-decoration: underline;
+}
+

@@ -195,6 +195,37 @@ const Login = () => {
                   {isLoading ? "Signing in..." : "Sign in"}
                 </button>
               </form>
+
+              <div className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 border-t border-gray-100 pt-6 text-center text-sm text-gray-500">
+                <button
+                  type="button"
+                  onClick={() => navigate("/about-us")}
+                  className="hover:text-[#0FC3C2]"
+                >
+                  About Us
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/privacy-policy")}
+                  className="hover:text-[#0FC3C2]"
+                >
+                  Privacy Policy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/terms-of-service")}
+                  className="hover:text-[#0FC3C2]"
+                >
+                  Terms of Service
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/delete-account")}
+                  className="hover:text-[#0FC3C2]"
+                >
+                  Delete Account
+                </button>
+              </div>
             </div>
           </div>
         </div>

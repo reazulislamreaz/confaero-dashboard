@@ -26,7 +26,16 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
       ? args.includes("/auth/login")
       : args.url?.includes("/auth/login");
 
-  if (result.error && result.error.status === 401 && !isLoginRequest) {
+  const publicPaths = [
+    "/about-us",
+    "/delete-account",
+    "/privacy-policy",
+    "/terms-of-service",
+    "/terms-condition",
+  ];
+  const isPublicPage = publicPaths.includes(window.location.pathname);
+
+  if (result.error && result.error.status === 401 && !isLoginRequest && !isPublicPage) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("user-info");

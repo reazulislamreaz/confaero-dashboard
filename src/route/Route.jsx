@@ -62,6 +62,10 @@ const DashboardOverview = lazyWithRetry(() => import("../dashboard/home/AdminOve
 const EventOverview = lazyWithRetry(() => import("../dashboard/home/EventOverview"));
 const PaymentManagement = lazyWithRetry(() => import("../dashboard/sidebarMenu/PaymentManagement"));
 const VerifiedEmails = lazyWithRetry(() => import("../dashboard/sidebarMenu/VerifiedEmails"));
+const PublicAboutUs = lazyWithRetry(() => import("../pages/public/PublicAboutUs"));
+const PublicPrivacyPolicy = lazyWithRetry(() => import("../pages/public/PublicPrivacyPolicy"));
+const PublicTermsOfService = lazyWithRetry(() => import("../pages/public/PublicTermsOfService"));
+const PublicDeleteAccount = lazyWithRetry(() => import("../pages/public/PublicDeleteAccount"));
 
 function AdminEventsWrapper() {
   const { handleEventSelect, resetEventSelection } = useOutletContext();
@@ -90,6 +94,26 @@ export const router = createBrowserRouter([
     {
         path: "updatepassword",
         element: authPage(<UpdatePassword />)
+    },
+    {
+        path: "about-us",
+        element: authPage(<PublicAboutUs />)
+    },
+    {
+        path: "delete-account",
+        element: authPage(<PublicDeleteAccount />)
+    },
+    {
+        path: "privacy-policy",
+        element: authPage(<PublicPrivacyPolicy />)
+    },
+    {
+        path: "terms-of-service",
+        element: authPage(<PublicTermsOfService />)
+    },
+    {
+        path: "terms-condition",
+        element: authPage(<PublicTermsOfService />)
     },
 
     {
